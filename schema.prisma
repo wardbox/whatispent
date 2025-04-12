@@ -26,6 +26,7 @@ model Institution {
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken     String
   itemId          String      @unique
+  plaidInstitutionId String?
   institutionName String
   lastSync        DateTime?
   accounts        Account[]
@@ -61,6 +62,7 @@ model Transaction {
   merchantName       String?
   name               String
   category           String[]
+  categoryIconUrl    String?
   pending            Boolean
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt

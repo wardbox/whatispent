@@ -10,15 +10,15 @@ import { Toaster } from './components/toaster'
 import { TransitionPlayground } from './components/transition-playground'
 import { transitions } from '../motion/transitionPresets'
 import './Root.css'
-import '@fontsource-variable/grenze-gotisch'
-import '@fontsource-variable/public-sans'
+// Supports weights 100-900
+import '@fontsource-variable/inter';
 
 export default function Root() {
   const { data: user, isLoading } = useAuth()
 
   return (
     <MotionConfig reducedMotion='user' transition={transitions.snappy}>
-      <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
+      <ThemeProvider storageKey='vite-ui-theme'>
         <MotionProvider>
           <div className='flex h-screen flex-col'>
             <header className='border-b'>

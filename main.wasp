@@ -17,7 +17,9 @@ app whatispent {
     "<meta property='twitter:url' content='https://example.com'>",
     "<meta name='twitter:title' content='Roke: A Full-Stack Wasp Starter with Modern UI Components'>",
     "<meta name='twitter:description' content='A comprehensive Wasp starter template featuring shadcn/ui components, Motion animations, and TypeScript support for building modern full-stack web applications.'>",
-    "<meta name='twitter:image' content='https://example.com/example.png'>"
+    "<meta name='twitter:image' content='https://example.com/example.png'>",
+
+    "<script src='https://cdn.plaid.com/link/v2/stable/link-initialize.js'></script>"
   ],
   auth: {
     userEntity: User,
@@ -52,18 +54,24 @@ app whatispent {
 
 //#region Routes
 route Landing { path: "/", to: Landing }
+route Dashboard { path: "/dashboard", to: DashboardPage }
 route Profile { path: "/profile/:id", to: ProfilePage }
 route LoginRoute { path: "/login", to: LoginPage }
 route SignupRoute { path: "/signup", to: SignupPage }
 route RequestPasswordResetRoute { path: "/request-password-reset", to: RequestPasswordResetPage }
 route PasswordResetRoute { path: "/password-reset", to: PasswordResetPage }
 route EmailVerificationRoute { path: "/email-verification", to: EmailVerificationPage }
+route TransactionsRoute { path: "/transactions", to: TransactionsPage }
 route NotFoundRoute { path: "*", to: NotFoundPage }
 //#endregion
 
 //#region Pages
 page Landing {
   component: import Landing from "@src/landing/LandingPage",
+}
+
+page DashboardPage {
+  component: import Dashboard from "@src/dashboard/DashboardPage",
 }
 
 page ProfilePage {
@@ -91,7 +99,65 @@ page EmailVerificationPage {
   component: import { EmailVerification } from "@src/auth/auth",
 }
 
+page TransactionsPage {
+  component: import { TransactionsPage } from "@src/client/TransactionsPage.tsx"
+}
+
 page NotFoundPage {
   component: import NotFound from "@src/404Page"
 }
+
+//#endregion
+
+//#region Plaid Actions
+
+action createLinkToken {
+  fn: import { createLinkToken } from "@src/plaid/operations.js",
+  // Auth is implicitly required by the implementation
+}
+
+action exchangePublicToken {
+  fn: import { exchangePublicToken } from "@src/plaid/operations.ts",
+  entities: [Institution, Account]
+}
+
+action syncTransactions {
+  fn: import { syncTransactions } from "@src/plaid/operations.ts",
+  entities: [Institution, Account, Transaction]
+}
+
+//#endregion
+
+//#region General Queries
+
+query getUserSubscriptionStatus {
+  fn: import { getUserSubscriptionStatus } from "@src/queries.ts",
+  entities: [User]
+}
+
+query getSpendingSummary {
+  fn: import { getSpendingSummary } from "@src/plaid/operations.ts",
+  entities: [Transaction]
+}
+
+query getMonthlySpending {
+  fn: import { getMonthlySpending } from "@src/plaid/operations.ts",
+  entities: [Transaction]
+}
+
+query getCategorySpending {
+  fn: import { getCategorySpending } from "@src/plaid/operations.ts",
+  entities: [Transaction]
+}
+
+query getAllTransactions {
+  fn: import { getAllTransactions } from "@src/plaid/operations.ts",
+  entities: [Transaction]
+}
+
+query getInstitutions {
+  fn: import { getInstitutions } from "@src/plaid/operations.ts",
+  entities: [Institution]
+}
+
 //#endregion

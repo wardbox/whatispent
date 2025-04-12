@@ -42,32 +42,65 @@ This plan outlines the steps to build the "What I Spent" application using Wasp,
         *   - [x] `name` (String - Transaction description)
         *   - [x] `category` (String Array - Plaid categories)
         *   - [x] `pending` (Boolean)
-4.  - [ ] **Run Migrations**:
-    *   - [ ] `wasp db migrate-dev`
+4.  - [x] **Run Migrations**:
+    *   - [x] `wasp db migrate-dev`
 
 ## Phase 2: Plaid Integration (Backend)
 
-1.  - [ ] **Setup Plaid**:
-    *   - [ ] Get Plaid API keys (start with Sandbox). Store securely (e.g., environment variables, `.env.server`).
-    *   - [ ] Install Plaid Node client: `npm install plaid`
-2.  - [ ] **Create Plaid Server Actions/Functions (`src/server/plaid.js` or similar)**:
-    *   - [ ] `createLinkToken`: Generates a `link_token` for the frontend Plaid Link component. Requires the `userId`.
-    *   - [ ] `exchangePublicToken`: Takes a `public_token` (from frontend), exchanges it for an `access_token` and `item_id`. Stores the `Institution` (encrypting the `access_token`). Fetches initial account info and stores `Accounts`.
-    *   - [ ] `fetchTransactions`: Takes an `Institution`'s `accessToken`, fetches recent transactions, and saves/updates them in the `Transaction` table. Handle pagination and deduplication using `plaidTransactionId`.
-    *   - [ ] `syncTransactions`: A helper action/job that iterates through user's `Institution`s and calls `fetchTransactions`.
-3.  - [ ] **Declare Plaid Actions in `main.wasp`**: Expose the server functions created above as Wasp Actions.
+1.  - [x] **Setup Plaid**:
+    *   - [x] Get Plaid API keys (start with Sandbox). Store securely (e.g., environment variables, `.env.server`).
+    *   - [x] Install Plaid Node client: `npm install plaid`
+    *   - [x] Install `dayjs` dependency: `npm install dayjs`
+2.  - [x] **Create Plaid Service and Wasp Operations (`src/plaid/`)**:
+    *   - [x] Create `src/plaid/client.ts`: Initialize and configure the Plaid client using environment variables.
+    *   - [x] Create `src/plaid/service.ts`: Implement core Plaid API interaction functions (`_internalCreateLinkToken`, `_internalExchangePublicToken`, `_internalFetchTransactions`). Handle `accessToken` encryption/decryption here or using a utility.
+    *   - [x] Create `src/plaid/operations.ts`: Define Wasp Actions (`createLinkToken`, `exchangePublicToken`, `syncTransactions`) that call the service functions and interact with the database. Plaid-related Wasp Queries will also go here later.
+    *   - [x] *(Optional but Recommended)* Create `src/server/utils/encryption.ts` for encrypting/decrypting the Plaid `accessToken`. Requires an `ENCRYPTION_KEY` environment variable. (Assuming this was done implicitly or previously)
+3.  - [x] **Declare Plaid Actions in `main.wasp`**: Import and declare the Actions (`createLinkToken`, `exchangePublicToken`, `syncTransactions`) from `src/plaid/operations.ts` with necessary `entities`.
 
 ## Phase 3: Backend Logic (Data Queries)
 
-1.  - [ ] **Create Wasp Queries (`src/queries.js` or similar)**:
-    *   - [ ] `getSpendingSummary`: Calculates totals for Today, This Week, This Month based on `Transaction` data for the logged-in user.
-    *   - [ ] `getMonthlySpending`: Aggregates spending by month for the last N months for the chart.
-    *   - [ ] `getCategorySpending`: Aggregates spending by top-level category for the current month.
-    *   - [ ] `getAllTransactions`: Fetches all transactions for the user, possibly with pagination.
-    *   - [ ] `getUserSubscriptionStatus`: Fetches the `subscriptionStatus` for the logged-in user.
-2.  - [ ] **Declare Queries in `main.wasp`**: Expose these queries for frontend use.
+1.  - [x] **Create Wasp Queries (`src/plaid/operations.ts`)**: **Completed**
+    *   - [x] Moved queries (`getSpendingSummary`, `getMonthlySpending`, `getCategorySpending`, `getAllTransactions`) from `src/queries.ts` to `src/plaid/operations.ts` to keep Plaid logic together.
+    *   - [x] Implemented logic to fetch and aggregate transaction data (summaries, monthly, category).
+    *   - [x] Ensured queries filter for logged-in user and non-pending expenses.
+    *   - [x] `getUserSubscriptionStatus` remains in `src/queries.ts`.
+2.  - [x] **Declare Queries in `main.wasp`**: **Completed**
+    *   - [x] Declared new queries, linking them to `src/plaid/operations.ts` and the `Transaction` entity.
 
-## Phase 4: Stripe Payments Integration (Backend & Frontend)
+## Phase 4: Frontend Development (React - Core App)
+
+1.  - [ ] **Setup Dashboard Structure**:
+    *   - [x] Create `src/dashboard/DashboardPage.tsx` as the main dashboard container.
+    *   - [x] Create `src/dashboard/components/spending-metrics.tsx`:
+        *   - [x] Fetch and display Today/Week/Month spending summaries using `getSpendingSummary`.
+        *   - [x] Include percentage change display.
+        *   - [x] Implement basic loading/error states.
+    *   - [ ] Create `src/dashboard/components/monthly-spending-chart.tsx` (placeholder/basic structure).
+    *   - [ ] Create `src/dashboard/components/category-spending.tsx` (placeholder/basic structure).
+2.  - [ ] **Implement Dashboard Components**:
+    *   - [ ] **Monthly Spending Chart**: Integrate a charting library (e.g., Recharts) in `monthly-spending-chart.tsx` to display data from `getMonthlySpending`.
+    *   - [ ] **Category Spending**: Display top categories from `getCategorySpending` in `category-spending.tsx`.
+    *   - [ ] **Styling**: Apply consistent styling using Tailwind/shadcn.
+3.  - [ ] **Transactions Page (`src/client/TransactionsPage.tsx`)**: *(Review/Refine if needed)*
+    *   - [x] Uses `getAllTransactions`.
+    *   - [x] Displays data in a `shadcn/ui` Table.
+    *   - [ ] Implement pagination.
+    *   - [ ] *(Deferred)* Add subscription check.
+4.  - [ ] **Routing**: Define routes in `main.wasp` for Dashboard, TransactionsPage, Login/Signup, etc.
+5.  - [ ] **Plaid Link Integration (User Flow)**:
+    *   - [ ] Determine where the "Connect Bank" flow should live (e.g., dedicated settings page, initial onboarding, button on dashboard if no institutions exist).
+    *   - [x] *Current `PlaidLinkButton` exists in `src/landing/components/` - Needs integration into the main app flow.* 
+    *   - [ ] Ensure `refetchInstitutions` is called after successful connection.
+6.  - [ ] **Institution Management/Syncing**: *(Review/Refine)*
+    *   - [x] *Current sync button exists on `LandingPage.tsx` - Needs integration into the main app flow (e.g., settings or dashboard institution list).*
+    *   - [ ] Provide clear feedback during sync.
+
+*(Subscription checks (`getUserSubscriptionStatus`) are deferred to after core frontend development)*
+
+## Phase 5: Stripe Payments Integration (Backend & Frontend) - *Deferred*
+
+*(All steps in this phase are deferred until after Phase 4 is complete)*
 
 1.  - [ ] **Setup Stripe**:
     *   - [ ] Create Stripe account and get API keys (Test keys first). Store securely (`.env.server`).
@@ -87,38 +120,13 @@ This plan outlines the steps to build the "What I Spent" application using Wasp,
     *   - [ ] Add a "Manage Subscription" button (visible if subscribed) that calls the `createCustomerPortalSession` action and redirects the user to the Stripe Billing Portal.
     *   - [ ] Display current subscription status using the `getUserSubscriptionStatus` query.
 
-## Phase 5: Frontend Development (React - Core App)
-
-1.  - [ ] **Restrict Access Based on Subscription**:
-    *   - [ ] On core pages (Dashboard, etc.), use the `getUserSubscriptionStatus` query.
-    *   - [ ] If the user doesn't have an active subscription, display a message prompting them to subscribe (linking to the subscription page/flow) instead of the page content.
-2.  - [ ] **Setup Plaid Link Frontend**:
-    *   - [ ] Install Plaid React component: `npm install react-plaid-link`
-    *   - [ ] Create a component (`src/client/PlaidLink.jsx`) that:
-        *   - [ ] Calls the `createLinkToken` action.
-        *   - [ ] Uses `react-plaid-link` with the obtained token.
-        *   - [ ] On success (`onSuccess` callback), calls the `exchangePublicToken` action with the `public_token`.
-3.  - [ ] **Create Dashboard Page (`src/client/DashboardPage.jsx`)**:
-    *   - [ ] Check subscription status first.
-    *   - [ ] Use `useQuery` to fetch data from `getSpendingSummary`, `getMonthlySpending`, and `getCategorySpending`.
-    *   - [ ] Display the summary cards (Today, Week, Month).
-    *   - [ ] Integrate a charting library (e.g., Recharts, Chart.js) for the Monthly Comparison Chart. Pass data from `getMonthlySpending`. Add timeframe toggles (1M, 3M, 6M, 1Y) which will re-fetch the query with different parameters.
-    *   - [ ] Display the Categories list using data from `getCategorySpending`.
-    *   - [ ] Include the `PlaidLink` component behind a "Connect Bank" button (ensure it's only active/visible for subscribed users).
-4.  - [ ] **Create Transactions Page (`src/client/TransactionsPage.jsx` - Optional)**:
-    *   - [ ] Check subscription status first.
-    *   - [ ] Use `useQuery` to fetch data from `getAllTransactions`.
-    *   - [ ] Display transactions in a table or list format.
-    *   - [ ] Implement pagination if needed.
-5.  - [ ] **Routing**: Define routes in `main.wasp` for the Dashboard, Login/Signup, Subscription, and potentially the Transactions page.
-
 ## Phase 6: Connecting & Refinement
 
 1.  - [ ] **Connect UI & Logic**: Ensure all `useQuery` and `useAction` hooks are correctly implemented, handling loading and error states gracefully, especially around subscription status checks.
 2.  - [ ] **Styling**: Apply CSS/styling to match the mockups (e.g., using Tailwind CSS if preferred).
-3.  - [ ] **Transaction Sync Strategy**:
+3.  - [x] **Transaction Sync Strategy**:
     *   - [ ] Implement an initial sync after Plaid Link success.
-    *   - [ ] Consider a simple "Sync Now" button calling `syncTransactions`.
+    *   - [x] *Implemented a manual "Sync Now" button per institution on the landing page calling `syncTransactions` action.*
     *   - [ ] _(Advanced)_ Set up a Wasp Job (`jobs` in `main.wasp`) to run `syncTransactions` periodically (e.g., daily).
     *   - [ ] _(Advanced)_ Implement Plaid Webhooks for real-time updates (requires a publicly accessible endpoint and handling webhook events in a Wasp API endpoint).
 4.  - [ ] **Testing**: Thoroughly test:
