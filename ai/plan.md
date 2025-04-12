@@ -10,38 +10,38 @@ This plan outlines the steps to build the "What I Spent" application using Wasp,
 2.  - [x] **Implement Authentication**:
     *   - [x] Enable Wasp's email/password or other desired auth method in `main.wasp`.
     *   - [x] Create basic Login/Signup pages. All subsequent features will require user authentication.
-3.  - [ ] **Define Database Schema (`schema.prisma`)**:
-    *   - [ ] **User**: Default Wasp user model. Add relation to `PlaidItem`. Add `stripeCustomerId` (String, optional, unique) and `subscriptionStatus` (String, optional - e.g., "active", "canceled", "incomplete").
-    *   - [ ] **PlaidItem**: Stores details for each linked financial institution.
-        *   - [ ] `id` (String, CUID)
-        *   - [ ] `userId` (Int)
-        *   - [ ] `user` (Relation to User)
-        *   - [ ] `accessToken` (String - **Must be encrypted before storing**)
-        *   - [ ] `itemId` (String, unique - Plaid's Item ID)
-        *   - [ ] `institutionName` (String)
-        *   - [ ] `lastSync` (DateTime, optional)
-    *   - [ ] **Account**: Represents individual accounts within a `PlaidItem`.
-        *   - [ ] `id` (String, CUID)
-        *   - [ ] `plaidItemId` (String)
-        *   - [ ] `plaidItem` (Relation to PlaidItem)
-        *   - [ ] `plaidAccountId` (String, unique - Plaid's Account ID)
-        *   - [ ] `name` (String)
-        *   - [ ] `mask` (String)
-        *   - [ ] `type` (String - e.g., checking, savings, credit)
-        *   - [ ] `subtype` (String)
-    *   - [ ] **Transaction**: Stores individual transactions.
-        *   - [ ] `id` (String, CUID)
-        *   - [ ] `userId` (Int)
-        *   - [ ] `user` (Relation to User)
-        *   - [ ] `accountId` (String)
-        *   - [ ] `account` (Relation to Account)
-        *   - [ ] `plaidTransactionId` (String, unique - Plaid's Transaction ID)
-        *   - [ ] `amount` (Float - Use negative for debits/spending)
-        *   - [ ] `date` (DateTime - Date of transaction)
-        *   - [ ] `merchantName` (String, optional)
-        *   - [ ] `name` (String - Transaction description)
-        *   - [ ] `category` (String Array - Plaid categories)
-        *   - [ ] `pending` (Boolean)
+3.  - [x] **Define Database Schema (`schema.prisma`)**:
+    *   - [x] **User**: Default Wasp user model. Add relation to `Institution`. Add `stripeCustomerId` (String, optional, unique) and `subscriptionStatus` (String, optional - e.g., "active", "canceled", "incomplete").
+    *   - [x] **Institution** (formerly PlaidItem): Stores details for each linked financial institution.
+        *   - [x] `id` (String, CUID)
+        *   - [x] `userId` (String - matching User ID type)
+        *   - [x] `user` (Relation to User)
+        *   - [x] `accessToken` (String - **Must be encrypted in application logic**)
+        *   - [x] `itemId` (String, unique - Plaid's Item ID)
+        *   - [x] `institutionName` (String)
+        *   - [x] `lastSync` (DateTime, optional)
+    *   - [x] **Account**: Represents individual accounts within an `Institution`.
+        *   - [x] `id` (String, CUID)
+        *   - [x] `institutionId` (String - FK to Institution)
+        *   - [x] `institution` (Relation to Institution)
+        *   - [x] `plaidAccountId` (String, unique - Plaid's Account ID)
+        *   - [x] `name` (String)
+        *   - [x] `mask` (String)
+        *   - [x] `type` (String - e.g., checking, savings, credit)
+        *   - [x] `subtype` (String)
+    *   - [x] **Transaction**: Stores individual transactions.
+        *   - [x] `id` (String, CUID)
+        *   - [x] `userId` (String - matching User ID type)
+        *   - [x] `user` (Relation to User)
+        *   - [x] `accountId` (String)
+        *   - [x] `account` (Relation to Account)
+        *   - [x] `plaidTransactionId` (String, unique - Plaid's Transaction ID)
+        *   - [x] `amount` (Float - Use negative for debits/spending)
+        *   - [x] `date` (DateTime - Date of transaction)
+        *   - [x] `merchantName` (String, optional)
+        *   - [x] `name` (String - Transaction description)
+        *   - [x] `category` (String Array - Plaid categories)
+        *   - [x] `pending` (Boolean)
 4.  - [ ] **Run Migrations**:
     *   - [ ] `wasp db migrate-dev`
 
@@ -52,9 +52,9 @@ This plan outlines the steps to build the "What I Spent" application using Wasp,
     *   - [ ] Install Plaid Node client: `npm install plaid`
 2.  - [ ] **Create Plaid Server Actions/Functions (`src/server/plaid.js` or similar)**:
     *   - [ ] `createLinkToken`: Generates a `link_token` for the frontend Plaid Link component. Requires the `userId`.
-    *   - [ ] `exchangePublicToken`: Takes a `public_token` (from frontend), exchanges it for an `access_token` and `item_id`. Stores the `PlaidItem` (encrypting the `access_token`). Fetches initial account info and stores `Accounts`.
-    *   - [ ] `fetchTransactions`: Takes a `PlaidItem`'s `accessToken`, fetches recent transactions, and saves/updates them in the `Transaction` table. Handle pagination and deduplication using `plaidTransactionId`.
-    *   - [ ] `syncTransactions`: A helper action/job that iterates through user's `PlaidItems` and calls `fetchTransactions`.
+    *   - [ ] `exchangePublicToken`: Takes a `public_token` (from frontend), exchanges it for an `access_token` and `item_id`. Stores the `Institution` (encrypting the `access_token`). Fetches initial account info and stores `Accounts`.
+    *   - [ ] `fetchTransactions`: Takes an `Institution`'s `accessToken`, fetches recent transactions, and saves/updates them in the `Transaction` table. Handle pagination and deduplication using `plaidTransactionId`.
+    *   - [ ] `syncTransactions`: A helper action/job that iterates through user's `Institution`s and calls `fetchTransactions`.
 3.  - [ ] **Declare Plaid Actions in `main.wasp`**: Expose the server functions created above as Wasp Actions.
 
 ## Phase 3: Backend Logic (Data Queries)
