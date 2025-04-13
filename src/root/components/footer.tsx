@@ -35,12 +35,12 @@ const navigation = {
     { name: 'Home', href: '/' },
     { name: 'Dashboard', href: '/dashboard' },
     { name: 'Transactions', href: '/transactions' },
-    { name: 'Profile', href: '/profile' },
+    { name: 'Subscription', href: '/subscription' },
   ],
   social: [
     {
       name: 'GitHub',
-      href: 'https://github.com/wardbox/roke',
+      href: 'https://github.com/wardbox',
       icon: 'GithubLogo',
     },
     {

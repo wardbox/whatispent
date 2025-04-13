@@ -43,8 +43,8 @@ export default function SubscriptionPage() {
     try {
       console.log('User active, redirecting to portal...');
       const result = await createCustomerPortalSessionFn({});
-      if ((result as { url: string })?.url) {
-        window.location.href = (result as { url: string }).url;
+      if ((result as { sessionUrl: string })?.sessionUrl) {
+        window.location.href = (result as { sessionUrl: string }).sessionUrl;
       } else {
         console.error('Could not get customer portal URL.');
         // TODO: Show error message to user

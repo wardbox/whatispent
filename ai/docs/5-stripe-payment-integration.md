@@ -34,7 +34,7 @@
         *   Redirects the user to the Stripe Checkout URL.
     *   Provides a "Manage Subscription" button if the user is active:
         *   Calls the `createCustomerPortalSession` action.
-        *   Redirects the user to the Stripe Billing Portal URL.
+        *   Redirects the user to the Stripe Billing Portal URL (using the `sessionUrl` key returned by the action).
     *   Handles loading states for the buttons.
 *   **Checkout Result Page (`src/CheckoutResultPage.tsx`):**
     *   Route: `/checkout`

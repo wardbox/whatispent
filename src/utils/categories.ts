@@ -12,6 +12,7 @@ import {
   PiggyBank,
   Gift,
   Icon,
+  QuestionMark,
 } from '@phosphor-icons/react'
 
 // Mapping from Plaid category names to pretty names
@@ -32,6 +33,7 @@ export const prettyCategoryNames: { [key: string]: string } = {
   TRANSPORTATION: 'Transportation',
   TRAVEL: 'Travel',
   RENT_AND_UTILITIES: 'Rent & Utilities',
+  OTHER: 'Other',
 }
 
 // Function to get the pretty name, falling back to the original if not found
@@ -66,7 +68,7 @@ export const categoryIcons: { [key: string]: Icon } = {
   TRANSPORTATION: Car,
   TRAVEL: AirplaneTilt,
   RENT_AND_UTILITIES: HouseSimple,
-  // Add more specific mappings as needed
+  OTHER: QuestionMark,
 }
 
 // Function to get the icon for a category, falling back to a default if not found

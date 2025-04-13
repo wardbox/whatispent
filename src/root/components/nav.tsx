@@ -22,26 +22,48 @@ import {
   DropdownMenuTrigger,
 } from '../../client/components/ui/dropdown-menu'
 import { logout } from 'wasp/client/auth'
-import { type User } from 'wasp/entities'
 import { Skeleton } from '../../client/components/ui/skeleton'
 import { motion } from 'motion/react'
 import { fadeIn } from '../../motion/transitionPresets'
+import { useSubscriptionStatus } from '../../hooks/useSubscriptionStatus'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+dayjs.extend(relativeTime)
 
-interface NavProps extends React.HTMLAttributes<HTMLElement> {
-  user?: User | null
-  userLoading?: boolean
-}
+// Helper function to format remaining trial time
+const formatRemainingTime = (minutes: number): string => {
+  if (minutes <= 0) {
+    return 'Trial ended';
+  }
+  if (minutes < 60) {
+    return 'Less than 1h left';
+  }
+  const days = Math.floor(minutes / (60 * 24));
+  const hours = Math.floor((minutes % (60 * 24)) / 60);
 
-const Nav = React.forwardRef<HTMLElement, NavProps>(
-  ({ user, userLoading, ...props }, ref) => {
+  if (days > 0) {
+    return `${days}d ${hours}h left`;
+  }
+  return `${hours}h left`;
+};
+
+const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
+  ({ ...props }, ref) => {
     const [open, setOpen] = useState(false)
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const location = useLocation()
     const prefetch = usePrefetch()
+    const { user, isLoading: userLoading, isTrialing, trialEndsAt } = useSubscriptionStatus()
 
     const handleNavigation = () => {
       setOpen(false)
     }
+
+    // Calculate remaining time in minutes for precision
+    const remainingTotalMinutes = trialEndsAt ? dayjs(trialEndsAt).diff(dayjs(), 'minute') : 0;
+    // Show info only if user is trialing and time > 0
+    const showTrialInfo = user && isTrialing && remainingTotalMinutes > 0;
+    const formattedTimeLeft = formatRemainingTime(remainingTotalMinutes);
 
     return (
       <nav
@@ -95,6 +117,13 @@ const Nav = React.forwardRef<HTMLElement, NavProps>(
         </div>
 
         <div className='flex items-center gap-4'>
+          {showTrialInfo && (
+            <Link to='/subscription' className='hidden md:block'>
+              <Button variant='outline' size='sm' className='text-sm'>
+                {formattedTimeLeft}
+              </Button>
+            </Link>
+          )}
           <ModeToggle iconSize='md' />
           {/* Desktop Menu */}
           <div className='hidden items-center space-x-4 md:flex'>
@@ -239,6 +268,13 @@ const Nav = React.forwardRef<HTMLElement, NavProps>(
                   >
                     {user ? (
                       <div className='col-span-2 mx-auto flex w-full flex-col justify-center gap-8'>
+                        {showTrialInfo && (
+                          <Link to='/subscription' onClick={handleNavigation} className='w-full text-center'>
+                            <Button variant='outline' size='sm' className='w-full text-sm'>
+                              Trial: {formattedTimeLeft}
+                            </Button>
+                          </Link>
+                        )}
                         <DropdownMenuSeparator />
                         <Link
                           to='/profile'

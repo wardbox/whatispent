@@ -40,7 +40,7 @@ app whatispent {
         userSignupFields: import { getEmailUserFields } from "@src/auth/user-signup-fields",
       }
     },
-    onAuthSucceededRedirectTo: "/profile",
+    onAuthSucceededRedirectTo: "/dashboard",
     onAuthFailedRedirectTo: "/login"
   },
   client: {
