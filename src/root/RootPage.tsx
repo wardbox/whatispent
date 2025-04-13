@@ -20,7 +20,7 @@ export default function Root() {
     <MotionConfig reducedMotion='user' transition={transitions.snappy}>
       <ThemeProvider storageKey='vite-ui-theme'>
         <MotionProvider>
-          <div className='flex min-h-screen w-full flex-col'>
+          <div className="flex min-h-screen w-full flex-col">
             <header>
               <Nav user={user} userLoading={isLoading} />
             </header>
