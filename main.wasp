@@ -1,6 +1,6 @@
 app whatispent {
   wasp: {
-    version: "^0.16.2"
+    version: "^0.16.3"
   },
   title: "Roke: A Full-Stack Wasp Starter with Modern UI Components",
   head: [
