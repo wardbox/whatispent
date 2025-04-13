@@ -2,29 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Add this to prevent layout shift from scrollbar */
-html {
-  scrollbar-gutter: stable;
-}
-
-/* Optional: If you want to style the scrollbar to be less obtrusive */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: hsl(var(--background));
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
-}
-
 @layer base {
   :root {
     --success: 106 47% 64%;
@@ -103,6 +80,7 @@ html {
   }
 
   html {
+    overflow-x: hidden;
     @apply scroll-smooth antialiased;
   }
 
