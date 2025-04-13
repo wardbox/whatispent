@@ -128,6 +128,14 @@ const Nav = React.forwardRef<HTMLElement, NavProps>(
                       >
                         <DropdownMenuItem>Profile</DropdownMenuItem>
                       </Link>
+                      <Link
+                        to='/subscription'
+                        onMouseEnter={() => prefetch('/subscription')}
+                        onClick={() => setDropdownOpen(false)}
+                        className='cursor-pointer'
+                      >
+                        <DropdownMenuItem>Subscription</DropdownMenuItem>
+                      </Link>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className='cursor-pointer text-red-600'
@@ -251,6 +259,40 @@ const Nav = React.forwardRef<HTMLElement, NavProps>(
                           </Button>
                           <span className='text-3xl'>Profile</span>
                         </Link>
+                        <Link
+                          to='/subscription'
+                          className={cn(
+                            'text-md flex items-center space-x-4 font-medium transition-colors hover:text-primary',
+                            location.pathname.startsWith('/subscription') &&
+                              'text-primary',
+                          )}
+                          onClick={handleNavigation}
+                          onMouseEnter={() => prefetch('/subscription')}
+                        >
+                          <Button
+                            size='icon'
+                            className='rounded-full'
+                            iconSize='lg'
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="lucide lucide-credit-card"
+                            >
+                              <rect width="20" height="14" x="2" y="5" rx="2" />
+                              <line x1="2" x2="22" y1="10" y2="10" />
+                            </svg>
+                          </Button>
+                          <span className='text-3xl'>Subscription</span>
+                        </Link>
+                        <DropdownMenuSeparator />
                         <Button
                           onClick={() => {
                             logout()

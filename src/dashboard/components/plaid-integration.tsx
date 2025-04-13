@@ -74,7 +74,7 @@ export function PlaidIntegration() {
 
   if (isLoadingInstitutions) {
     return (
-      <div className='flex h-40 items-center justify-center rounded-2xl border border-zinc-100 p-6 text-xs text-zinc-400'>
+      <div className='flex h-40 items-center justify-center rounded-2xl border border-border p-6 text-xs text-muted-foreground'>
         Loading connected accounts...
       </div>
     )
@@ -108,7 +108,7 @@ export function PlaidIntegration() {
       <div className='mt-1'>
         {!isConnected ? (
           <motion.div
-            className='flex flex-col items-center space-y-4 rounded-2xl border border-zinc-100 p-6 text-center'
+            className='flex flex-col items-center space-y-4 rounded-2xl border border-border p-6 text-center'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
@@ -125,14 +125,14 @@ export function PlaidIntegration() {
           </motion.div>
         ) : (
           <motion.div
-            className='flex flex-col space-y-4 rounded-2xl border border-zinc-100 p-6'
+            className='flex flex-col space-y-4 rounded-2xl border border-border p-6'
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
-                <div className='flex h-6 w-6 items-center justify-center rounded-full bg-black text-white'>
+                <div className='flex h-6 w-6 items-center justify-center rounded-full border-border bg-background text-foreground'>
                   <Check size={16} />
                 </div>
                 <span className='text-sm font-light'>Connected</span>
@@ -150,15 +150,15 @@ export function PlaidIntegration() {
               {institutions?.map((institution, index) => (
                 <motion.div
                   key={institution.id}
-                  className='flex items-center justify-between border-b border-zinc-50 pb-3 last:border-0'
+                  className='flex items-center justify-between border-b border-border pb-3 last:border-0'
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index, duration: 0.5 }}
                 >
                   <div className='flex flex-1 items-center gap-3 overflow-hidden pr-2'>
-                    <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-zinc-50'>
+                    <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted'>
                       {/* Use a generic bank icon or fetch institution logo if available */}
-                      <CreditCard className='h-4 w-4 text-zinc-900' />
+                      <CreditCard className='h-4 w-4 text-foreground' />
                     </div>
                     <div className='flex-1 overflow-hidden'>
                       <p className='truncate text-sm font-light'>

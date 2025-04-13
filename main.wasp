@@ -62,6 +62,8 @@ route RequestPasswordResetRoute { path: "/request-password-reset", to: RequestPa
 route PasswordResetRoute { path: "/password-reset", to: PasswordResetPage }
 route EmailVerificationRoute { path: "/email-verification", to: EmailVerificationPage }
 route TransactionsRoute { path: "/transactions", to: TransactionsPage }
+route SubscriptionRoute { path: "/subscription", to: SubscriptionPage }
+route CheckoutResultRoute { path: "/checkout", to: CheckoutResultPage }
 route NotFoundRoute { path: "*", to: NotFoundPage }
 //#endregion
 
@@ -71,7 +73,8 @@ page Landing {
 }
 
 page DashboardPage {
-  component: import Dashboard from "@src/dashboard/DashboardPage",
+  component: import Dashboard from "@src/dashboard/DashboardPage.jsx",
+  authRequired: true
 }
 
 page ProfilePage {
@@ -105,6 +108,15 @@ page TransactionsPage {
 
 page NotFoundPage {
   component: import NotFound from "@src/404Page"
+}
+
+page SubscriptionPage {
+  component: import SubscriptionPage from "@src/SubscriptionPage",
+  authRequired: true
+}
+
+page CheckoutResultPage {
+  component: import CheckoutResult from "@src/CheckoutResultPage.tsx"
 }
 
 //#endregion
@@ -163,6 +175,31 @@ query getAllTransactions {
 query getInstitutions {
   fn: import { getInstitutions } from "@src/plaid/operations.js",
   entities: [Institution]
+}
+
+//#endregion
+
+//#region Stripe Actions
+
+action createCheckoutSession {
+  fn: import { createCheckoutSession } from "@src/stripe/operations.ts",
+  entities: [User]
+}
+
+action createCustomerPortalSession {
+  fn: import { createCustomerPortalSession } from "@src/stripe/operations.ts",
+  entities: [User]
+}
+
+//#endregion
+
+//#region Stripe API
+
+api stripeWebhook {
+  fn: import { handleStripeWebhook } from "@src/stripe/webhooks.ts",
+  middlewareConfigFn: import { stripeWebhookMiddlewareConfigFn } from "@src/stripe/webhooks",
+  httpRoute: (POST, "/stripe-webhooks"),
+  entities: [User]
 }
 
 //#endregion
