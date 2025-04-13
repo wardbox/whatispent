@@ -68,7 +68,9 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
       setIsLoading(true) // Indicate processing
       try {
         // Capture the result of the exchange action
-        const result = await exchangePublicTokenAction({ publicToken: public_token })
+        const result = await exchangePublicTokenAction({
+          publicToken: public_token,
+        })
         console.log('Public token exchanged successfully!', result)
         // Optionally: Trigger UI update or navigation
         if (onSuccess) {
@@ -105,15 +107,15 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
   const handleOpen = async () => {
     if (!window.Plaid) {
       console.error('Plaid.js script not loaded')
-      const err = { message: 'Plaid script failed to load.' };
+      const err = { message: 'Plaid script failed to load.' }
       if (onError) {
         onError(err)
       } else {
         toast({
-          variant: "destructive",
-          title: "Connection Error",
-          description: err.message || "Plaid script failed to load.",
-        });
+          variant: 'destructive',
+          title: 'Connection Error',
+          description: err.message || 'Plaid script failed to load.',
+        })
       }
       return
     }
@@ -145,12 +147,17 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
       setIsLoading(false)
 
       // Safely determine the error message
-      let errorMessage = "Could not initialize connection."; // Default message
+      let errorMessage = 'Could not initialize connection.' // Default message
       if (err instanceof Error) {
-        errorMessage = err.message;
-      } else if (typeof err === 'object' && err !== null && 'message' in err && typeof err.message === 'string') {
+        errorMessage = err.message
+      } else if (
+        typeof err === 'object' &&
+        err !== null &&
+        'message' in err &&
+        typeof err.message === 'string'
+      ) {
         // Handle cases where it might be an error-like object from Plaid or elsewhere
-        errorMessage = err.message;
+        errorMessage = err.message
       }
 
       // Also call onError for initialization errors
@@ -158,10 +165,10 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
         onError(err) // Pass the original error object
       } else {
         toast({
-          variant: "destructive",
-          title: "Connection Error",
+          variant: 'destructive',
+          title: 'Connection Error',
           description: errorMessage, // Use the safely determined message
-        });
+        })
       }
     }
   }

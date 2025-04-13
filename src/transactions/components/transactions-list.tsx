@@ -134,7 +134,10 @@ export function TransactionsList({
   const transactionGroups: TransactionGroup[] | undefined = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
     const endIndex = startIndex + ITEMS_PER_PAGE
-    const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex)
+    const paginatedTransactions = filteredTransactions.slice(
+      startIndex,
+      endIndex,
+    )
 
     if (paginatedTransactions.length === 0) return []
 
@@ -211,7 +214,7 @@ export function TransactionsList({
       })
 
     return sortedGroups
-  }, [filteredTransactions, currentPage, sortCriteria])
+  }, [filteredTransactions, currentPage])
 
   useEffect(() => {
     setCurrentPage(1)

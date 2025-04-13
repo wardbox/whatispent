@@ -5,7 +5,11 @@ import {
 } from '../../utils/categories' // Import both helper functions
 import { type CategorySummaryProps } from '../DashboardPage'
 
-export function CategorySummary({ categories, isLoading, error }: CategorySummaryProps) {
+export function CategorySummary({
+  categories,
+  isLoading,
+  error,
+}: CategorySummaryProps) {
   if (isLoading)
     return (
       <div className='text-sm text-muted-foreground'>Loading categories...</div>

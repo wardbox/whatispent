@@ -149,7 +149,7 @@ export const exchangePublicToken = (async (
     })
 
     // Wait for 3 seconds before syncing transactions
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     await syncTransactions({ institutionId: newInstitution.id }, context)
 
