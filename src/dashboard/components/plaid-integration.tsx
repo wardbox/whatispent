@@ -144,8 +144,9 @@ export function PlaidIntegration({
     }
   }
 
-  if (isLoading && !syncingInstitutionId && !institutions) {
-    // Adjusted loading condition
+  // Simplified loading check: Show loading if the initial fetch is happening,
+  // regardless of syncing state or if institutions array already exists (it might be stale).
+  if (isLoading) {
     return (
       <div className='flex h-40 items-center justify-center rounded-2xl border border-border p-6 text-xs text-muted-foreground'>
         Loading connected accounts...
@@ -177,7 +178,8 @@ export function PlaidIntegration({
       }}
     >
       <div className='mt-1'>
-        {!isConnected ? (
+        {/* Render content only after initial loading is complete */}
+        {!isLoading && !isConnected && (
           <motion.div
             className='flex flex-col items-center space-y-4 rounded-2xl border border-border p-6 text-center'
             initial={{ opacity: 0 }}
@@ -195,7 +197,8 @@ export function PlaidIntegration({
               onError={handleConnectionError}
             />
           </motion.div>
-        ) : (
+        )}
+        {!isLoading && isConnected && (
           <motion.div
             className='flex flex-col space-y-4 rounded-2xl border border-border p-6'
             initial={{ opacity: 0, scale: 0.95 }}

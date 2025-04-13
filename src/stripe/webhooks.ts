@@ -59,7 +59,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
   )
   // @ts-ignore - rawBody is added by middleware
   console.debug('[handleStripeWebhook] req.rawBody type:', typeof req.rawBody)
-  // @ts-ignore - rawBody is added by middleware
+
   // --- END DEBUGGING ---
 
   if (!STRIPE_WEBHOOK_SECRET) {

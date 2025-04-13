@@ -24,7 +24,7 @@ import { Check } from '@phosphor-icons/react' // Import Check icon
 // Define details for the single subscription plan
 const PLAN_NAME = 'Standard Plan'
 const PLAN_PRICE = 499 // Price in cents ($4.99)
-const PLAN_FEATURES = ['Feature 1', 'Feature 2', 'Feature 3']
+const PLAN_FEATURES = ['this day.', 'this week.', 'this month.']
 
 // const PLAN_TIER_NAME = 'standard'; // Internal name used for user.subscriptionTier
 
