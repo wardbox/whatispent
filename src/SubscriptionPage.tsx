@@ -17,6 +17,7 @@ import {
 import { Loader2 } from 'lucide-react'
 import { cn } from './lib/utils' // Assuming this path is correct now
 import { useState } from 'react'
+import { Check } from '@phosphor-icons/react' // Import Check icon
 
 // --- Removed Enum and Multi-Tier Types ---
 
@@ -107,30 +108,36 @@ export default function SubscriptionPage() {
   const isSubscribed = user?.subscriptionStatus === 'active'
 
   return (
-    <div className='container mx-auto px-4 py-8'>
-      <h1 className='mb-8 text-center text-3xl font-bold'>Subscription</h1>
+    <div className='flex w-full flex-col'>
+      {/* Page Header */}
+      <header className='mb-8 flex items-center justify-between'>
+        <h1 className='text-3xl font-extralight tracking-tight text-foreground'>
+          Subscription
+        </h1>
+        {/* Potential placeholder for actions if needed */}
+      </header>
 
       {/* Removed Tier Loading/Error states */}
 
-      <div className='mx-auto max-w-md'>
+      {/* Center the card */}
+      <div className='mx-auto w-full max-w-md'>
         <Card className={cn(isSubscribed ? 'border-2 border-primary' : '')}>
           <CardHeader>
             <CardTitle>{PLAN_NAME}</CardTitle>
             <CardDescription>Access all features.</CardDescription>{' '}
-            {/* Simple description */}
           </CardHeader>
-          <CardContent className='space-y-4'>
+          <CardContent className='space-y-6'>
             <p className='text-3xl font-bold'>
               ${formatPrice(PLAN_PRICE)}
               <span className='text-sm font-normal text-muted-foreground'>
                 /month
               </span>
             </p>
-            <ul className='space-y-2'>
+            <ul className='space-y-2 pt-4'>
               {PLAN_FEATURES.map((feature, index) => (
-                <li key={index} className='flex items-center'>
-                  {/* Add check icon if desired */}
-                  <span className='text-sm text-muted-foreground'>
+                <li key={index} className='flex items-center gap-2'>
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span className='text-sm font-light text-muted-foreground'>
                     {feature}
                   </span>
                 </li>
@@ -154,7 +161,13 @@ export default function SubscriptionPage() {
         {/* Display status if needed */}
         {user && (
           <p className='mt-4 text-center text-sm text-muted-foreground'>
-            Current status: {user.subscriptionStatus || 'Not Subscribed'}
+            Current status:{' '}
+            <span className="font-medium">
+              {user.subscriptionStatus
+                ? user.subscriptionStatus.charAt(0).toUpperCase() +
+                  user.subscriptionStatus.slice(1)
+                : 'Not Subscribed'}
+            </span>
             {user.subscriptionStatus === 'canceled' &&
               ' (Expires end of period)'}
           </p>

@@ -60,12 +60,6 @@ export async function handleStripeWebhook(req: Request, res: Response) {
   // @ts-ignore - rawBody is added by middleware
   console.debug('[handleStripeWebhook] req.rawBody type:', typeof req.rawBody)
   // @ts-ignore - rawBody is added by middleware
-  console.debug(
-    '[handleStripeWebhook] req.rawBody value:',
-    req.rawBody
-      ? req.rawBody.toString('utf-8').substring(0, 100) + '...'
-      : 'N/A',
-  ) // Log first 100 chars
   // --- END DEBUGGING ---
 
   if (!STRIPE_WEBHOOK_SECRET) {
