@@ -33,19 +33,19 @@ dayjs.extend(relativeTime)
 // Helper function to format remaining trial time
 const formatRemainingTime = (minutes: number): string => {
   if (minutes <= 0) {
-    return 'Trial ended';
+    return 'Trial ended'
   }
   if (minutes < 60) {
-    return 'Less than 1h left';
+    return 'Less than 1h left'
   }
-  const days = Math.floor(minutes / (60 * 24));
-  const hours = Math.floor((minutes % (60 * 24)) / 60);
+  const days = Math.floor(minutes / (60 * 24))
+  const hours = Math.floor((minutes % (60 * 24)) / 60)
 
   if (days > 0) {
-    return `${days}d ${hours}h left`;
+    return `${days}d ${hours}h left`
   }
-  return `${hours}h left`;
-};
+  return `${hours}h left`
+}
 
 const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
   ({ ...props }, ref) => {
@@ -53,17 +53,24 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const location = useLocation()
     const prefetch = usePrefetch()
-    const { user, isLoading: userLoading, isTrialing, trialEndsAt } = useSubscriptionStatus()
+    const {
+      user,
+      isLoading: userLoading,
+      isTrialing,
+      trialEndsAt,
+    } = useSubscriptionStatus()
 
     const handleNavigation = () => {
       setOpen(false)
     }
 
     // Calculate remaining time in minutes for precision
-    const remainingTotalMinutes = trialEndsAt ? dayjs(trialEndsAt).diff(dayjs(), 'minute') : 0;
+    const remainingTotalMinutes = trialEndsAt
+      ? dayjs(trialEndsAt).diff(dayjs(), 'minute')
+      : 0
     // Show info only if user is trialing and time > 0
-    const showTrialInfo = user && isTrialing && remainingTotalMinutes > 0;
-    const formattedTimeLeft = formatRemainingTime(remainingTotalMinutes);
+    const showTrialInfo = user && isTrialing && remainingTotalMinutes > 0
+    const formattedTimeLeft = formatRemainingTime(remainingTotalMinutes)
 
     return (
       <nav
@@ -269,8 +276,16 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                     {user ? (
                       <div className='col-span-2 mx-auto flex w-full flex-col justify-center gap-8'>
                         {showTrialInfo && (
-                          <Link to='/subscription' onClick={handleNavigation} className='w-full text-center'>
-                            <Button variant='outline' size='sm' className='w-full text-sm'>
+                          <Link
+                            to='/subscription'
+                            onClick={handleNavigation}
+                            className='w-full text-center'
+                          >
+                            <Button
+                              variant='outline'
+                              size='sm'
+                              className='w-full text-sm'
+                            >
                               Trial: {formattedTimeLeft}
                             </Button>
                           </Link>
@@ -311,19 +326,19 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                             iconSize='lg'
                           >
                             <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="lucide lucide-credit-card"
+                              xmlns='http://www.w3.org/2000/svg'
+                              width='24'
+                              height='24'
+                              viewBox='0 0 24 24'
+                              fill='none'
+                              stroke='currentColor'
+                              strokeWidth='2'
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              className='lucide lucide-credit-card'
                             >
-                              <rect width="20" height="14" x="2" y="5" rx="2" />
-                              <line x1="2" x2="22" y1="10" y2="10" />
+                              <rect width='20' height='14' x='2' y='5' rx='2' />
+                              <line x1='2' x2='22' y1='10' y2='10' />
                             </svg>
                           </Button>
                           <span className='text-3xl'>Subscription</span>

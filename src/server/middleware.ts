@@ -1,4 +1,4 @@
-import express from 'express';
+import express from 'express'
 
 // Export the configured middleware
-export const rawBodyMiddleware = express.raw({ type: 'application/json' }); 
+export const rawBodyMiddleware = express.raw({ type: 'application/json' })

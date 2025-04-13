@@ -16,16 +16,26 @@ import { SubscriptionInterstitial } from './components/SubscriptionInterstitial'
 import { Skeleton } from '../client/components/ui/skeleton'
 
 // Define routes that don't require subscription check
-const PUBLIC_ROUTES = ['/login', '/signup', '/request-password-reset', '/password-reset', '/email-verification', '/', '/checkout'];
+const PUBLIC_ROUTES = [
+  '/login',
+  '/signup',
+  '/request-password-reset',
+  '/password-reset',
+  '/email-verification',
+  '/',
+  '/checkout',
+]
 
 export default function Root() {
-  const { user, isLoading, isSubscribedOrTrialing, trialEndsAt } = useSubscriptionStatus();
-  const location = useLocation();
+  const { user, isLoading, isSubscribedOrTrialing, trialEndsAt } =
+    useSubscriptionStatus()
+  const location = useLocation()
 
   // Determine if the current route requires a subscription check
-  const isProtectedRoute = user && !PUBLIC_ROUTES.includes(location.pathname);
-  const isSubscriptionPage = location.pathname === '/subscription';
-  const showInterstitial = isProtectedRoute && !isSubscribedOrTrialing && !isSubscriptionPage;
+  const isProtectedRoute = user && !PUBLIC_ROUTES.includes(location.pathname)
+  const isSubscriptionPage = location.pathname === '/subscription'
+  const showInterstitial =
+    isProtectedRoute && !isSubscribedOrTrialing && !isSubscriptionPage
 
   return (
     <MotionConfig reducedMotion='user' transition={transitions.snappy}>

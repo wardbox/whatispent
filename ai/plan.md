@@ -174,10 +174,13 @@ _(All steps in this phase are deferred until after Phase 4 is complete)_
 3.  - [x] **Implement Stripe Webhook Handler (`src/stripe/webhooks.ts`)**:
     * - [x] Create Wasp API endpoint (`api stripeWebhook` in `main.wasp`) with
             `handleStripeWebhook` function.
-    * - [x] Configure `express.raw` middleware via `stripeWebhookMiddlewareConfigFn`.
-    * - [x] Configure webhook locally using `stripe listen` and `STRIPE_WEBHOOK_SECRET`.
+    * - [x] Configure `express.raw` middleware via
+            `stripeWebhookMiddlewareConfigFn`.
+    * - [x] Configure webhook locally using `stripe listen` and
+            `STRIPE_WEBHOOK_SECRET`.
     * - [x] Handle `checkout.session.completed`,
-            `customer.subscription.updated`, `customer.subscription.deleted` events.
+            `customer.subscription.updated`, `customer.subscription.deleted`
+            events.
     * - [x] Update `User.subscriptionStatus` via `prisma.user.update`.
 4.  - [x] **Declare Stripe Actions/API in `main.wasp`**: Expose
           `createCheckoutSession`, `createCustomerPortalSession` as Wasp Actions
@@ -185,10 +188,11 @@ _(All steps in this phase are deferred until after Phase 4 is complete)_
 5.  - [x] **Frontend Payment Integration (`src/SubscriptionPage.tsx`)**:
     * - [x] Create `SubscriptionPage` and `/subscription` route.
     * - [x] Create `CheckoutResultPage` and `/checkout` route for redirects.
-    * - [x] Add "Subscribe Now" button calling `createCheckoutSession` action and
-            redirecting to Stripe Checkout URL.
+    * - [x] Add "Subscribe Now" button calling `createCheckoutSession` action
+            and redirecting to Stripe Checkout URL.
     * - [x] Add "Manage Subscription" button (visible if subscribed) calling
-            `createCustomerPortalSession` action and redirecting to Stripe Billing Portal.
+            `createCustomerPortalSession` action and redirecting to Stripe
+            Billing Portal.
     * - [x] Display current subscription status using `useAuth`.
 
 ## Phase 6: Connecting & Refinement

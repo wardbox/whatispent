@@ -1,15 +1,15 @@
 // import { type User } from 'wasp/entities'; // Keep User import for context type checking
-import { HttpError } from 'wasp/server';
+import { HttpError } from 'wasp/server'
 // Import generated action types
 import {
   type CreateCheckoutSession,
   type CreateCustomerPortalSession,
-} from 'wasp/server/operations';
+} from 'wasp/server/operations'
 import {
   _createStripeCheckoutSession,
   _createStripeCustomerPortalSession,
-} from './service.js';
-import { type User } from 'wasp/entities'; // Keep User import for context type checking
+} from './service.js'
+import { type User } from 'wasp/entities' // Keep User import for context type checking
 
 // Remove unused type aliases
 // type CreateCheckoutSessionInput = unknown;
@@ -18,44 +18,51 @@ import { type User } from 'wasp/entities'; // Keep User import for context type 
 // Removed args from CreateCheckoutSession as we use a fixed plan
 export const createCheckoutSession: CreateCheckoutSession = async (
   _args, // No longer expecting priceId here
-  context
+  context,
 ) => {
   if (!context.user) {
-    throw new HttpError(401, 'User not authenticated');
+    throw new HttpError(401, 'User not authenticated')
   }
 
   // Removed explicit prismaContext casting as we pass the whole context
 
   // Get the single plan's Price ID from server environment variables
-  const priceId = process.env.STRIPE_PRICE_ID;
+  const priceId = process.env.STRIPE_PRICE_ID
   if (!priceId) {
-    console.error('STRIPE_PRICE_ID environment variable is not set.');
-    throw new HttpError(500, 'Server configuration error: Stripe Price ID missing.');
+    console.error('STRIPE_PRICE_ID environment variable is not set.')
+    throw new HttpError(
+      500,
+      'Server configuration error: Stripe Price ID missing.',
+    )
   }
 
   try {
     // Pass context.entities.User as the second argument
     const { url, sessionId } = await _createStripeCheckoutSession(
-      context.user as User & { stripeCustomerId: string | null; email: string | null },
+      context.user as User & {
+        stripeCustomerId: string | null
+        email: string | null
+      },
       context.entities.User, // Pass the Prisma User delegate
-      priceId
-    );
+      priceId,
+    )
     if (!url) {
-      throw new HttpError(500, 'Checkout session URL is unexpectedly null.');
+      throw new HttpError(500, 'Checkout session URL is unexpectedly null.')
     }
-    return { sessionUrl: url, sessionId };
+    return { sessionUrl: url, sessionId }
   } catch (error: any) {
-    console.error('Error in createCheckoutSession action:', error);
+    console.error('Error in createCheckoutSession action:', error)
     if (error instanceof HttpError) {
-      throw error;
+      throw error
     } else {
       throw new HttpError(
         500,
-        error.message || 'An unexpected error occurred creating checkout session.'
-      );
+        error.message ||
+          'An unexpected error occurred creating checkout session.',
+      )
     }
   }
-};
+}
 
 // Remove unused type aliases
 // type CreateCustomerPortalSessionInput = unknown;
@@ -66,36 +73,37 @@ export const createCheckoutSession: CreateCheckoutSession = async (
 // No changes needed for createCustomerPortalSession for single plan
 export const createCustomerPortalSession: CreateCustomerPortalSession = async (
   _args,
-  context
+  context,
 ) => {
   if (!context.user) {
-    throw new HttpError(401, 'User not authenticated.');
+    throw new HttpError(401, 'User not authenticated.')
   }
   if (!context.user.stripeCustomerId) {
-    throw new HttpError(403, 'User does not have a Stripe customer ID.');
+    throw new HttpError(403, 'User does not have a Stripe customer ID.')
   }
 
   try {
     const { url } = await _createStripeCustomerPortalSession(
-      context.user.stripeCustomerId
-    );
+      context.user.stripeCustomerId,
+    )
     if (!url) {
       throw new HttpError(
         500,
-        'Customer portal session URL is unexpectedly null.'
-      );
+        'Customer portal session URL is unexpectedly null.',
+      )
     }
     // Frontend expects sessionUrl key
-    return { sessionUrl: url };
+    return { sessionUrl: url }
   } catch (error: any) {
-    console.error('Error in createCustomerPortalSession action:', error);
+    console.error('Error in createCustomerPortalSession action:', error)
     if (error instanceof HttpError) {
-      throw error;
+      throw error
     } else {
       throw new HttpError(
         500,
-        error.message || 'An unexpected error occurred creating portal session.'
-      );
+        error.message ||
+          'An unexpected error occurred creating portal session.',
+      )
     }
   }
-}; 
+}
