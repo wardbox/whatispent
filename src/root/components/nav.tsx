@@ -3,12 +3,7 @@ import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { cn, usePrefetch } from '../../lib/utils'
 import { Link } from 'wasp/client/router'
-import {
-  HouseSimple,
-  List,
-  Mountains,
-  User as UserIcon,
-} from '@phosphor-icons/react'
+import { HouseSimple, List, User as UserIcon } from '@phosphor-icons/react'
 import { ModeToggle } from '../../client/components/mode-toggle'
 import {
   Sheet,
@@ -52,7 +47,7 @@ const Nav = React.forwardRef<HTMLElement, NavProps>(
       <nav
         ref={ref}
         className={cn(
-          'sticky top-0 z-50 mx-auto flex w-full max-w-7xl items-center justify-between bg-background p-3 px-4 lg:px-6',
+          'sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-background/90 px-6 backdrop-blur-md',
           props.className,
         )}
         {...props}
@@ -63,10 +58,7 @@ const Nav = React.forwardRef<HTMLElement, NavProps>(
             className='flex items-center space-x-2'
             onMouseEnter={() => prefetch('/', undefined, { assets: true })}
           >
-            <Mountains size={24} />
-            <span className='font-bold'>
-              {import.meta.env.REACT_APP_NAME || 'Roke'}
-            </span>
+            <span className='font-light tracking-tighter'>what i spent</span>
           </Link>
           <div className='hidden items-center space-x-4 text-muted-foreground md:flex lg:space-x-6'>
             <Link
@@ -78,6 +70,26 @@ const Nav = React.forwardRef<HTMLElement, NavProps>(
               onMouseEnter={() => prefetch('/', undefined, { assets: true })}
             >
               <span>Home</span>
+            </Link>
+            <Link
+              to='/dashboard'
+              className={cn(
+                'text-md flex items-center space-x-2 font-medium transition-colors hover:text-primary',
+                location.pathname === '/dashboard' && 'text-primary',
+              )}
+              onMouseEnter={() => prefetch('/dashboard')}
+            >
+              <span>Dashboard</span>
+            </Link>
+            <Link
+              to='/transactions'
+              className={cn(
+                'text-md flex items-center space-x-2 font-medium transition-colors hover:text-primary',
+                location.pathname === '/transactions' && 'text-primary',
+              )}
+              onMouseEnter={() => prefetch('/transactions')}
+            >
+              <span>Transactions</span>
             </Link>
           </div>
         </div>
@@ -109,11 +121,8 @@ const Nav = React.forwardRef<HTMLElement, NavProps>(
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end'>
                       <Link
-                        to='/profile/:id'
-                        params={{ id: user.id }}
-                        onMouseEnter={() =>
-                          prefetch('/profile/:id', { id: user.id })
-                        }
+                        to='/profile'
+                        onMouseEnter={() => prefetch('/profile')}
                         onClick={() => setDropdownOpen(false)}
                         className='cursor-pointer'
                       >
@@ -224,17 +233,14 @@ const Nav = React.forwardRef<HTMLElement, NavProps>(
                       <div className='col-span-2 mx-auto flex w-full flex-col justify-center gap-8'>
                         <DropdownMenuSeparator />
                         <Link
-                          to='/profile/:id'
-                          params={{ id: user.id }}
+                          to='/profile'
                           className={cn(
                             'text-md flex items-center space-x-4 font-medium transition-colors hover:text-primary',
                             location.pathname.startsWith('/profile') &&
                               'text-primary',
                           )}
                           onClick={handleNavigation}
-                          onMouseEnter={() =>
-                            prefetch('/profile/:id', { id: user.id })
-                          }
+                          onMouseEnter={() => prefetch('/profile')}
                         >
                           <Button
                             size='icon'

@@ -1,10 +1,8 @@
-import { useAuth } from 'wasp/client/auth'
+import { type AuthUser } from 'wasp/auth'
 import { motion } from 'motion/react'
 import { fadeIn } from './motion/transitionPresets'
 
-export default function Profile() {
-  const { data: user } = useAuth()
-
+const Profile = ({ user }: { user: AuthUser }) => {
   return (
     <motion.div
       initial='initial'
@@ -21,3 +19,5 @@ export default function Profile() {
     </motion.div>
   )
 }
+
+export default Profile

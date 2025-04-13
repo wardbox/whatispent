@@ -1,23 +1,25 @@
 app whatispent {
   wasp: {
-    version: "^0.16.2"
+    version: "^0.16.3"
   },
-  title: "Roke: A Full-Stack Wasp Starter with Modern UI Components",
+  title: "what i spent: this day. this week. this month.",
   head: [
-    "<meta name='description' content='A comprehensive Wasp starter template featuring shadcn/ui components, Motion animations, and TypeScript support for building modern full-stack web applications.'>",
+    "<meta name='description' content='what i spent helps you understand where your money goes.'>",
     
-    "<meta property='og:url' content='https://example.com'>",
+    "<meta property='og:url' content='https://whatispent.com'>",
     "<meta property='og:type' content='website'>",
-    "<meta property='og:title' content='Roke: A Full-Stack Wasp Starter with Modern UI Components'>",
-    "<meta property='og:description' content='A comprehensive Wasp starter template featuring shadcn/ui components, Motion animations, and TypeScript support for building modern full-stack web applications.'>",
-    "<meta property='og:image' content='https://example.com/example.png'>",
+    "<meta property='og:title' content='what i spent: this day. this week. this month.'>",
+    "<meta property='og:description' content='what i spent helps you understand where your money goes.'>",
+    "<meta property='og:image' content='https://whatispent.com/og-image.png'>",
     
     "<meta name='twitter:card' content='summary_large_image'>",
-    "<meta property='twitter:domain' content='example.com'>",
-    "<meta property='twitter:url' content='https://example.com'>",
-    "<meta name='twitter:title' content='Roke: A Full-Stack Wasp Starter with Modern UI Components'>",
-    "<meta name='twitter:description' content='A comprehensive Wasp starter template featuring shadcn/ui components, Motion animations, and TypeScript support for building modern full-stack web applications.'>",
-    "<meta name='twitter:image' content='https://example.com/example.png'>"
+    "<meta property='twitter:domain' content='whatispent.com'>",
+    "<meta property='twitter:url' content='https://whatispent.com'>",
+    "<meta name='twitter:title' content='what i spent: this day. this week. this month.'>",
+    "<meta name='twitter:description' content='what i spent helps you understand where your money goes.'>",
+    "<meta name='twitter:image' content='https://whatispent.com/og-image.png'>",
+
+    "<script src='https://cdn.plaid.com/link/v2/stable/link-initialize.js'></script>"
   ],
   auth: {
     userEntity: User,
@@ -38,7 +40,7 @@ app whatispent {
         userSignupFields: import { getEmailUserFields } from "@src/auth/user-signup-fields",
       }
     },
-    onAuthSucceededRedirectTo: "/profile/:id",
+    onAuthSucceededRedirectTo: "/profile",
     onAuthFailedRedirectTo: "/login"
   },
   client: {
@@ -47,23 +49,29 @@ app whatispent {
   },
   emailSender: {
     provider: Dummy,
-  }
+  },
 }
 
 //#region Routes
 route Landing { path: "/", to: Landing }
-route Profile { path: "/profile/:id", to: ProfilePage }
+route Dashboard { path: "/dashboard", to: DashboardPage }
+route Profile { path: "/profile", to: ProfilePage }
 route LoginRoute { path: "/login", to: LoginPage }
 route SignupRoute { path: "/signup", to: SignupPage }
 route RequestPasswordResetRoute { path: "/request-password-reset", to: RequestPasswordResetPage }
 route PasswordResetRoute { path: "/password-reset", to: PasswordResetPage }
 route EmailVerificationRoute { path: "/email-verification", to: EmailVerificationPage }
+route TransactionsRoute { path: "/transactions", to: TransactionsPage }
 route NotFoundRoute { path: "*", to: NotFoundPage }
 //#endregion
 
 //#region Pages
 page Landing {
   component: import Landing from "@src/landing/LandingPage",
+}
+
+page DashboardPage {
+  component: import Dashboard from "@src/dashboard/DashboardPage",
 }
 
 page ProfilePage {
@@ -91,7 +99,70 @@ page EmailVerificationPage {
   component: import { EmailVerification } from "@src/auth/auth",
 }
 
+page TransactionsPage {
+  component: import TransactionsPage from "@src/transactions/TransactionsPage"
+}
+
 page NotFoundPage {
   component: import NotFound from "@src/404Page"
 }
+
+//#endregion
+
+//#region Plaid Actions
+
+action createLinkToken {
+  fn: import { createLinkToken } from "@src/plaid/operations.ts",
+  entities: [User, Institution, Account, Transaction]
+}
+
+action exchangePublicToken {
+  fn: import { exchangePublicToken } from "@src/plaid/operations.ts",
+  entities: [User, Institution, Account, Transaction]
+}
+
+action syncTransactions {
+  fn: import { syncTransactions } from "@src/plaid/operations.ts",
+  entities: [User, Institution, Account, Transaction]
+}
+
+action deleteInstitution {
+  fn: import { deleteInstitution } from "@src/plaid/operations.ts",
+  entities: [User, Institution, Account, Transaction]
+}
+
+//#endregion
+
+//#region General Queries
+
+query getUserSubscriptionStatus {
+  fn: import { getUserSubscriptionStatus } from "@src/queries.ts",
+  entities: [User]
+}
+
+query getSpendingSummary {
+  fn: import { getSpendingSummary } from "@src/plaid/operations.ts",
+  entities: [Transaction]
+}
+
+query getMonthlySpending {
+  fn: import { getMonthlySpending } from "@src/plaid/operations.ts",
+  entities: [Transaction]
+}
+
+query getCategorySpending {
+  fn: import { getCategorySpending } from "@src/plaid/operations.ts",
+  entities: [Transaction]
+}
+
+query getAllTransactions {
+  fn: import { getAllTransactions } from "@src/plaid/operations.ts",
+  entities: [Transaction]
+}
+
+query getInstitutions {
+  fn: import { getInstitutions } from "@src/plaid/operations.js",
+  entities: [Institution]
+}
+
 //#endregion

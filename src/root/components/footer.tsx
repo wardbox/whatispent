@@ -33,10 +33,9 @@ const ScrollToTopLink = ({
 const navigation = {
   main: [
     { name: 'Home', href: '/' },
-    { name: 'Guide', href: '/guide' },
-    { name: 'Notes', href: '/note-example' },
-    { name: 'Motion', href: '/motion' },
-    { name: 'Utils', href: '/utils' },
+    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Transactions', href: '/transactions' },
+    { name: 'Profile', href: '/profile' },
   ],
   social: [
     {
@@ -68,8 +67,7 @@ export function Footer() {
             <div className='flex items-center gap-2'>
               <Mountains size={20} weight='fill' />
               <span className='text-sm text-muted-foreground'>
-                &copy; {new Date().getFullYear()}{' '}
-                {import.meta.env.REACT_APP_NAME || 'Roke'}
+                &copy; {new Date().getFullYear()} what i spent
               </span>
             </div>
             <div className='flex gap-4'>
@@ -113,22 +111,12 @@ export function Footer() {
           <div className='flex items-center space-x-8'>
             {/* Logo & Title */}
             <div className='flex items-center space-x-3'>
-              <h2 className='flex items-center gap-2 text-lg font-semibold'>
-                <Mountains size={20} weight='fill' />
-                {import.meta.env.REACT_APP_NAME || 'Roke'}
+              <h2 className='flex items-center gap-2 text-lg font-light tracking-tighter'>
+                what i spent
               </h2>
               <span className='text-muted-foreground'>|</span>
               <p className='text-sm text-muted-foreground'>
-                A{' '}
-                <a
-                  href='https://wasp-lang.dev'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-foreground transition-colors hover:text-primary'
-                >
-                  Wasp
-                </a>{' '}
-                starter with sensible defaults
+                this day. this week. this month.
               </p>
             </div>
 

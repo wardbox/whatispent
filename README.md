@@ -1,47 +1,84 @@
-# Roke
+# What I Spent
 
-A Wasp starter with sensible defaults.
+A personal finance application designed to provide users with a clear and simple
+overview of their spending habits.
 
-## What's he building in there?
+## What's this about?
 
-I built Roke because I was tired of repeating the same setup ritual for every
-new Wasp project. Instead of continuing that cycle, I created the starting point
-I always wished I had.
+What I Spent helps you understand where your money goes. By securely connecting
+to your bank accounts via Plaid, it automatically imports transactions and
+provides insights into your spending on a daily, weekly, and monthly basis.
+Access requires a monthly subscription managed via Stripe.
 
-This isn't just another blank slate. It's a thoughtfully crafted foundation that
-includes:
+This starter aims to provide a solid foundation with:
 
-- Preconfigured shadcn/ui components
-- Motion animation presets
-- Helper scripts for common tasks
-- Real-world examples beyond the basics
-- Best practices baked in
+- Secure bank integration using Plaid.
+- Subscription management via Stripe.
+- Preconfigured shadcn/ui components.
+- Best practices for Wasp development baked in.
 
-## Philosophy
+## Features
 
-While most starters give you an empty canvas, Roke provides opinionated defaults
-that reflect how modern web apps are actually built. It embraces shadcn/ui's
-principles of being "Accessible. Customizable. Open Source." and extends them to
-the entire project structure.
-
-The goal isn't just to give you boilerplate - it's to provide a foundation that
-makes web development more enjoyable and accessible. Batteries included, but
-replaceable.
+- **Dashboard Summary**: See spending for Today, This Week, and This Month at a
+  glance.
+- **Monthly Comparison Chart**: Visualize spending trends over the past months.
+- **Spending Categories**: Understand spending distribution across categories
+  like Food, Shopping, etc.
+- **Detailed Transaction List**: View all imported transactions with details.
+- **Secure Bank Connection**: Easily link bank accounts using Plaid Link.
+- **Subscription Management**: Handle subscriptions securely via Stripe Checkout
+  and Customer Portal.
 
 ## Getting Started
 
-Click "Use this template" button at the top of the repository
+1.  **Clone or Use Template**: Click "Use this template" or clone the
+    repository.
+2.  **Install Dependencies**: Run `npm install` (if not using Wasp's install).
+3.  **Environment Variables**:
+    - Create a `.env.server` file in the project root.
+    - Add your Plaid API keys (obtainable from
+      [Plaid Dashboard](https://dashboard.plaid.com/)):
+      ```env
+      PLAID_CLIENT_ID=your_plaid_client_id
+      PLAID_SECRET_KEY_SANDBOX=your_plaid_sandbox_secret
+      # Add other keys (Development, Production) as needed
+      ```
+    - Add your Stripe API keys (obtainable from
+      [Stripe Dashboard](https://dashboard.stripe.com/)):
+      ```env
+      STRIPE_SECRET_KEY=your_stripe_secret_key
+      STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+      ```
+    - Generate and add an encryption key for securing sensitive data (like Plaid
+      access tokens):
+      ```bash
+      # Run this command in your terminal and copy the output
+      node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+      ```
+      Add the generated key to `.env.server`:
+      ```env
+      ENCRYPTION_KEY=your_generated_32_byte_hex_key
+      ```
+    - Ensure your database URL is set (Wasp usually handles this, but verify if
+      needed):
+      ```env
+      DATABASE_URL="postgresql://user:password@host:port/dbname"
+      ```
+    - (Optional) Create a `.env.client` file if you need client-side environment
+      variables (like the public Stripe key, though Wasp often manages passing
+      these).
+4.  **Database Setup**:
+    ```bash
+    wasp db start # Only if using local psql, can often be skipped
+    wasp db migrate-dev
+    ```
+5.  **Run the App**:
+    ```bash
+    wasp start
+    ```
 
-```bash
-# Start the development server
-wasp db start
-wasp db migrate-dev
-wasp start
-```
-
-Visit [roke.dev](https://roke.dev) for comprehensive documentation.  
-<br /> ![Format & Lint pipeline status](https://github.com/wardbox/roke/actions/workflows/format.yml/badge.svg)  
-![Deployment pipeline status](https://github.com/wardbox/roke/actions/workflows/deploy.yml/badge.svg?branch=deploy)
+Visit the running application (usually `http://localhost:3000`).
 
 ## Contributing
 

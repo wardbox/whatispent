@@ -3,7 +3,7 @@ import { defineConfig, searchForWorkspaceRoot } from 'vite'
 
 export default defineConfig({
   server: {
-    open: true,
+    open: false,
     fs: {
       allow: [
         // Keeping the original behaviour how Vite searches for the workspace root

@@ -8,21 +8,66 @@ generator client {
 }
 
 model User {
-  id         String      @id @default(uuid())
-  username   String      @unique
-  email      String      @unique
-  isAdmin    Boolean     @default(false)
-  notes      Note[]      
-  
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id                 String      @id @default(uuid())
+  username           String?     @unique
+  email              String?     @unique
+  isAdmin            Boolean     @default(false)
+  stripeCustomerId   String?     @unique
+  subscriptionStatus String?
+  institutions       Institution[]
+  transactions       Transaction[]
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 }
 
-model Note {
-  id        String   @id @default(uuid())
-  content   String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Institution {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken     String
+  itemId          String      @unique
+  plaidInstitutionId String?
+  institutionName String
+  lastSync        DateTime?
+  accounts        Account[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  @@index([userId])
+}
+
+model Account {
+  id             String        @id @default(cuid())
+  institutionId  String
+  institution    Institution   @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  plaidAccountId String        @unique
+  name           String
+  mask           String
+  type           String
+  subtype        String
+  transactions   Transaction[]
+  currentBalance Float?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  @@index([institutionId])
+}
+
+model Transaction {
+  id                 String    @id @default(cuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId          String
+  account            Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  plaidTransactionId String    @unique
+  amount             Float
+  date               DateTime
+  merchantName       String?
+  name               String
+  category           String[]
+  categoryIconUrl    String?
+  pending            Boolean
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  @@index([userId])
+  @@index([accountId])
+  @@index([date])
 }
