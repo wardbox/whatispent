@@ -136,7 +136,7 @@ export default function SubscriptionPage() {
             <ul className='space-y-2 pt-4'>
               {PLAN_FEATURES.map((feature, index) => (
                 <li key={index} className='flex items-center gap-2'>
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className='h-4 w-4 text-green-500' />
                   <span className='text-sm font-light text-muted-foreground'>
                     {feature}
                   </span>
@@ -162,7 +162,7 @@ export default function SubscriptionPage() {
         {user && (
           <p className='mt-4 text-center text-sm text-muted-foreground'>
             Current status:{' '}
-            <span className="font-medium">
+            <span className='font-medium'>
               {user.subscriptionStatus
                 ? user.subscriptionStatus.charAt(0).toUpperCase() +
                   user.subscriptionStatus.slice(1)
