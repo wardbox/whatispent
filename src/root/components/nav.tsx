@@ -3,11 +3,7 @@ import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { cn, usePrefetch } from '../../lib/utils'
 import { Link } from 'wasp/client/router'
-import {
-  HouseSimple,
-  List,
-  User as UserIcon,
-} from '@phosphor-icons/react'
+import { HouseSimple, List, User as UserIcon } from '@phosphor-icons/react'
 import { ModeToggle } from '../../client/components/mode-toggle'
 import {
   Sheet,
@@ -62,9 +58,7 @@ const Nav = React.forwardRef<HTMLElement, NavProps>(
             className='flex items-center space-x-2'
             onMouseEnter={() => prefetch('/', undefined, { assets: true })}
           >
-            <span className='font-light tracking-tighter'>
-              what i spent
-            </span>
+            <span className='font-light tracking-tighter'>what i spent</span>
           </Link>
           <div className='hidden items-center space-x-4 text-muted-foreground md:flex lg:space-x-6'>
             <Link
