@@ -11,6 +11,14 @@ import {
   getCategoryCssVariable,
 } from '../../utils/categories'
 import type { TransactionWithDetails } from '../../plaid/operations'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+} from '../../client/components/ui/pagination'
+import { cn } from '../../lib/utils'
 
 dayjs.extend(isBetween)
 dayjs.extend(relativeTime)
@@ -56,6 +64,8 @@ interface TransactionsListProps {
   _transactionTypeDummy?: TransactionWithDetails
 }
 
+const ITEMS_PER_PAGE = 20
+
 export function TransactionsList({
   transactions,
   isLoading: isLoadingTransactions,
@@ -65,9 +75,10 @@ export function TransactionsList({
   sortCriteria,
 }: TransactionsListProps) {
   const [expandedGroup, setExpandedGroup] = useState(new Set<string>())
+  const [currentPage, setCurrentPage] = useState(1)
 
-  const transactionGroups: TransactionGroup[] | undefined = useMemo(() => {
-    if (!transactions) return []
+  const processedTransactions = useMemo(() => {
+    if (!transactions) return { filteredTransactions: [], totalCount: 0 }
 
     const queryLower = searchQuery.toLowerCase()
     const searchedTransactions = transactions.filter(
@@ -95,6 +106,41 @@ export function TransactionsList({
             return selectedCategories.has(prettyCategory)
           })
 
+    const sortedTransactions = [...filteredTransactions].sort(
+      (a: TransactionWithDetails, b: TransactionWithDetails) => {
+        switch (sortCriteria) {
+          case 'date-asc':
+            return dayjs(a.date).valueOf() - dayjs(b.date).valueOf()
+          case 'amount-desc':
+            return Math.abs(b.amount) - Math.abs(a.amount)
+          case 'amount-asc':
+            return Math.abs(a.amount) - Math.abs(b.amount)
+          case 'date-desc':
+          default:
+            return dayjs(b.date).valueOf() - dayjs(a.date).valueOf()
+        }
+      },
+    )
+
+    return {
+      filteredTransactions: sortedTransactions,
+      totalCount: sortedTransactions.length,
+    }
+  }, [transactions, searchQuery, selectedCategories, sortCriteria])
+
+  const { filteredTransactions, totalCount } = processedTransactions
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
+
+  const transactionGroups: TransactionGroup[] | undefined = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    const endIndex = startIndex + ITEMS_PER_PAGE
+    const paginatedTransactions = filteredTransactions.slice(
+      startIndex,
+      endIndex,
+    )
+
+    if (paginatedTransactions.length === 0) return []
+
     const groups: { [key: string]: TransactionWithDetails[] } = {}
     const now = dayjs()
     const today = now.startOf('day')
@@ -102,7 +148,7 @@ export function TransactionsList({
     const startOfWeek = now.startOf('week')
     const startOfLastWeek = startOfWeek.subtract(1, 'week')
 
-    filteredTransactions.forEach((tx: TransactionWithDetails) => {
+    paginatedTransactions.forEach((tx: TransactionWithDetails) => {
       const txDate = dayjs(tx.date)
       let groupKey: string
       if (txDate.isSame(today, 'day')) {
@@ -147,27 +193,11 @@ export function TransactionsList({
           dateRange = firstTxDate.format('MMMM YYYY')
         }
 
-        const sortedTransactions = [...txs].sort(
-          (a: TransactionWithDetails, b: TransactionWithDetails) => {
-            switch (sortCriteria) {
-              case 'date-asc':
-                return dayjs(a.date).valueOf() - dayjs(b.date).valueOf()
-              case 'amount-desc':
-                return Math.abs(b.amount) - Math.abs(a.amount)
-              case 'amount-asc':
-                return Math.abs(a.amount) - Math.abs(b.amount)
-              case 'date-desc':
-              default:
-                return dayjs(b.date).valueOf() - dayjs(a.date).valueOf()
-            }
-          },
-        )
-
         return {
           id: key,
           title: title,
           date: dateRange,
-          transactions: sortedTransactions,
+          transactions: txs,
         }
       })
       .sort((a, b) => {
@@ -184,7 +214,12 @@ export function TransactionsList({
       })
 
     return sortedGroups
-  }, [transactions, searchQuery, selectedCategories, sortCriteria])
+  }, [filteredTransactions, currentPage])
+
+  useEffect(() => {
+    setCurrentPage(1)
+    setExpandedGroup(new Set())
+  }, [searchQuery, selectedCategories, sortCriteria])
 
   useEffect(() => {
     if (searchQuery || selectedCategories.size > 0) {
@@ -232,7 +267,7 @@ export function TransactionsList({
     )
   }
 
-  if (!transactionGroups || transactionGroups.length === 0) {
+  if (totalCount === 0) {
     return (
       <div className='pt-4 text-center text-muted-foreground'>
         No transactions match your criteria.
@@ -336,6 +371,43 @@ export function TransactionsList({
           )}
         </div>
       ))}
+      {totalPages > 1 && (
+        <Pagination className='mt-4 pt-4'>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href='#' // href is required but we use onClick
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                  e.preventDefault()
+                  setCurrentPage(prev => Math.max(prev - 1, 1))
+                }}
+                className={cn({
+                  'cursor-not-allowed text-muted-foreground opacity-50':
+                    currentPage === 1,
+                })}
+              />
+            </PaginationItem>
+            <PaginationItem>
+              <span className='px-4 text-sm text-muted-foreground'>
+                Page {currentPage} of {totalPages}
+              </span>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                href='#' // href is required but we use onClick
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                  e.preventDefault()
+                  setCurrentPage(prev => Math.min(prev + 1, totalPages))
+                }}
+                className={cn({
+                  'cursor-not-allowed text-muted-foreground opacity-50':
+                    currentPage === totalPages,
+                })}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   )
 }

@@ -20,7 +20,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '../client/components/ui/dropdown-menu'
-import { getPrettyCategoryName } from '../utils/categories' // Import category utility
+import { getPrettyCategoryName } from '../utils/categories'
 
 export type AllTransactions = {
   transactions: Awaited<ReturnType<typeof getAllTransactions>>
@@ -46,7 +46,7 @@ export default function TransactionsPage() {
   const [selectedCategories, setSelectedCategories] = useState(
     new Set<string>(),
   )
-  const [sortCriteria, setSortCriteria] = useState<SortOption>('date-desc') // Use SortOption type
+  const [sortCriteria, setSortCriteria] = useState<SortOption>('date-desc')
 
   const handleCategoryToggle = (category: string) => {
     const newSelected = new Set(selectedCategories)
@@ -136,7 +136,6 @@ export default function TransactionsPage() {
                   >
                     <SortAscending className='h-3.5 w-3.5' />
                     {sortLabels[sortCriteria]}{' '}
-                    {/* Display current sort label */}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align='end'>
@@ -162,8 +161,8 @@ export default function TransactionsPage() {
             <Input
               placeholder='Search transactions, merchants, or categories'
               className='h-10 rounded-full border-border bg-background/90 pl-10 text-sm'
-              value={searchQuery} // Connect value
-              onChange={e => setSearchQuery(e.target.value)} // Connect onChange
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
           <TransactionsList

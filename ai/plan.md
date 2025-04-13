@@ -134,10 +134,10 @@ assuming development with the assistance of an LLM coding editor.
             appearance in `TransactionsList`.
     * - [x] Multi-Expand & Auto-Expand: Groups allow multi-selection and
             auto-expand on filter/search.
-    * - [ ] ~~Displays data in a `shadcn/ui` Table.~~ (Replaced with custom
+    * - [x] ~~Displays data in a `shadcn/ui` Table.~~ (Replaced with custom
             list)
-    * - [ ] Implement pagination.
-    * - [ ] _(Deferred)_ Add subscription check.
+    * - [x] Implement pagination.
+    * - [x] _(Deferred)_ Add subscription check.
 4.  - [x] **Routing**: Define routes in `main.wasp` for Dashboard,
           TransactionsPage, Login/Signup, etc.
 5.  - [x] **Plaid Link Integration (User Flow)**:
@@ -154,52 +154,53 @@ assuming development with the assistance of an LLM coding editor.
     * - [x] Added functionality to **delete** an institution via the dashboard
             (`plaid-integration.tsx`) with a confirmation dialog and backend
             action (`deleteInstitution`).
-    * - [ ] Provide clear feedback during sync.
+    * - [x] Provide clear feedback during sync.
 
-## Phase 5: Stripe Payments Integration (Backend & Frontend) - _Deferred_
+## Phase 5: Stripe Payments Integration (Backend & Frontend) - **In Progress**
 
 _(All steps in this phase are deferred until after Phase 4 is complete)_
 
-1.  - [ ] **Setup Stripe**:
-    * - [ ] Create Stripe account and get API keys (Test keys first). Store
+1.  - [x] **Setup Stripe**:
+    * - [x] Create Stripe account and get API keys (Test keys first). Store
             securely (`.env.server`).
-    * - [ ] Install Stripe Node client: `npm install stripe`
-    * - [ ] Create a Product and Price ($4.99/month recurring) in the Stripe
-            Dashboard.
-2.  - [ ] **Create Stripe Server Actions (`src/server/stripe.js` or similar)**:
-    * - [ ] `createCheckoutSession`: Takes the user ID and Price ID. Creates a
-            Stripe Customer if one doesn't exist (store `stripeCustomerId` on
-            User). Creates and returns a Stripe Checkout Session URL.
-    * - [ ] `createCustomerPortalSession`: Takes the `stripeCustomerId`. Creates
-            and returns a Stripe Billing Portal Session URL.
-3.  - [ ] **Implement Stripe Webhook Handler**:
-    * - [ ] Create a Wasp API endpoint (`api stripeWebhook` in `main.wasp`,
-            function in `src/server/stripe.js`).
-    * - [ ] Configure the webhook endpoint in the Stripe Dashboard.
-    * - [ ] Handle relevant events (e.g., `checkout.session.completed`,
-            `customer.subscription.updated`, `customer.subscription.deleted`) to
-            update the User's `subscriptionStatus` in the database. Secure the
-            webhook using Stripe signatures.
-4.  - [ ] **Declare Stripe Actions/API in `main.wasp`**: Expose
+    * - [x] Install Stripe Node client: `npm install stripe`
+    * - [x] Create a Product and Price ($4.99/month recurring) in the Stripe
+            Dashboard. Store Price ID in `.env.server`.
+2.  - [x] **Create Stripe Server Actions (`src/stripe/operations.ts`)**:
+    * - [x] `createCheckoutSession`: Fetches `STRIPE_PRICE_ID` from env. Calls
+            `_createStripeCheckoutSession` service.
+    * - [x] `createCustomerPortalSession`: Uses `user.stripeCustomerId`. Calls
+            `_createStripeCustomerPortalSession` service.
+3.  - [x] **Implement Stripe Webhook Handler (`src/stripe/webhooks.ts`)**:
+    * - [x] Create Wasp API endpoint (`api stripeWebhook` in `main.wasp`) with
+            `handleStripeWebhook` function.
+    * - [x] Configure `express.raw` middleware via
+            `stripeWebhookMiddlewareConfigFn`.
+    * - [x] Configure webhook locally using `stripe listen` and
+            `STRIPE_WEBHOOK_SECRET`.
+    * - [x] Handle `checkout.session.completed`,
+            `customer.subscription.updated`, `customer.subscription.deleted`
+            events.
+    * - [x] Update `User.subscriptionStatus` via `prisma.user.update`.
+4.  - [x] **Declare Stripe Actions/API in `main.wasp`**: Expose
           `createCheckoutSession`, `createCustomerPortalSession` as Wasp Actions
           and declare the `stripeWebhook` API endpoint.
-5.  - [ ] **Frontend Payment Integration (`src/client/SubscriptionPage.jsx` or
-          similar)**:
-    * - [ ] Create a dedicated page or section for subscription management.
-    * - [ ] Add a "Subscribe Now" button that calls the `createCheckoutSession`
-            action and redirects the user to the Stripe Checkout URL.
-    * - [ ] Add a "Manage Subscription" button (visible if subscribed) that
-            calls the `createCustomerPortalSession` action and redirects the
-            user to the Stripe Billing Portal.
-    * - [ ] Display current subscription status using the
-            `getUserSubscriptionStatus` query.
+5.  - [x] **Frontend Payment Integration (`src/SubscriptionPage.tsx`)**:
+    * - [x] Create `SubscriptionPage` and `/subscription` route.
+    * - [x] Create `CheckoutResultPage` and `/checkout` route for redirects.
+    * - [x] Add "Subscribe Now" button calling `createCheckoutSession` action
+            and redirecting to Stripe Checkout URL.
+    * - [x] Add "Manage Subscription" button (visible if subscribed) calling
+            `createCustomerPortalSession` action and redirecting to Stripe
+            Billing Portal.
+    * - [x] Display current subscription status using `useAuth`.
 
 ## Phase 6: Connecting & Refinement
 
 1.  - [ ] **Connect UI & Logic**: Ensure all `useQuery` and `useAction` hooks
           are correctly implemented, handling loading and error states
           gracefully, especially around subscription status checks.
-2.  - [ ] **Styling**: Apply CSS/styling to match the mockups (e.g., using
+2.  - [x] **Styling**: Apply CSS/styling to match the mockups (e.g., using
           Tailwind CSS if preferred).
 3.  - [x] **Transaction Sync Strategy**:
     * - [x] Implement an initial sync after Plaid Link success.
@@ -211,12 +212,12 @@ _(All steps in this phase are deferred until after Phase 4 is complete)_
             (requires a publicly accessible endpoint and handling webhook events
             in a Wasp API endpoint).
 4.  - [ ] **Testing**: Thoroughly test:
-    * - [ ] Authentication flow.
-    * - [ ] Stripe Checkout flow (using Test cards).
-    * - [ ] Stripe Webhook handling (using Stripe CLI or dashboard events).
-    * - [ ] Stripe Customer Portal access.
-    * - [ ] Subscription status checks and access control.
-    * - [ ] Plaid Link connection process (using Sandbox credentials).
+    * - [x] Authentication flow.
+    * - [x] Stripe Checkout flow (using Test cards).
+    * - [x] Stripe Webhook handling (using Stripe CLI).
+    * - [x] Stripe Customer Portal access.
+    * - [x] Subscription status checks and access control.
+    * - [x] Plaid Link connection process (using Sandbox credentials).
     * - [ ] Data fetching and display accuracy (summaries, charts, categories,
             transactions).
     * - [ ] Error handling (e.g., Plaid API errors, Stripe API errors, token

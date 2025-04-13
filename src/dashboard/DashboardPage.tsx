@@ -8,13 +8,42 @@ import { CategorySummary } from './components/category-summary'
 import { useState } from 'react'
 import { PlaidIntegration } from './components/plaid-integration'
 import { Link } from 'wasp/client/router'
+import {
+  useQuery,
+  getCategorySpending,
+  getInstitutions,
+} from 'wasp/client/operations'
 // Define the possible time range values explicitly
 type TimeRange = '1m' | '3m' | '6m' | '1y'
 
-export default function Dashboard() {
-  // Use the explicit type for the state
-  const [timeRange, setTimeRange] = useState<TimeRange>('6m')
+export type CategorySummaryProps = {
+  categories: Awaited<ReturnType<typeof getCategorySpending>>
+  isLoading: boolean
+  error: any
+}
 
+export type InstitutionsSummaryProps = {
+  institutions: Awaited<ReturnType<typeof getInstitutions>>
+  isLoading: boolean
+  error: any
+  refetch: () => void
+  refetchOnInstitutionAdd: () => void
+}
+
+export default function Dashboard() {
+  const {
+    data: categories,
+    isLoading,
+    error,
+    refetch: refetchCategorySummary,
+  } = useQuery(getCategorySpending)
+  const {
+    data: institutions,
+    isLoading: isLoadingInstitutions,
+    error: institutionsError,
+    refetch: refetchInstitutions,
+  } = useQuery(getInstitutions)
+  const [timeRange, setTimeRange] = useState<TimeRange>('6m')
   return (
     <>
       <SpendingMetrics />
@@ -59,14 +88,24 @@ export default function Dashboard() {
                 </Button>
               </Link>
             </div>
-            <CategorySummary />
+            <CategorySummary
+              categories={categories || []}
+              isLoading={isLoading}
+              error={error}
+            />
           </div>
 
           <div>
             <div className='mb-2'>
               <span className='text-sm font-light'>Connect Bank</span>
             </div>
-            <PlaidIntegration />
+            <PlaidIntegration
+              institutions={institutions || []}
+              isLoading={isLoadingInstitutions}
+              error={institutionsError}
+              refetch={refetchInstitutions}
+              refetchOnInstitutionAdd={refetchCategorySummary}
+            />
           </div>
         </div>
       </div>

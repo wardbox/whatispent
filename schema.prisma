@@ -14,6 +14,7 @@ model User {
   isAdmin            Boolean     @default(false)
   stripeCustomerId   String?     @unique
   subscriptionStatus String?
+  trialEndsAt        DateTime?
   institutions       Institution[]
   transactions       Transaction[]
   createdAt          DateTime    @default(now())

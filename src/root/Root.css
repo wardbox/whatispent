@@ -47,6 +47,7 @@
     --category-transportation: hsl(200 60% 50%); /* Cyan/Blue */
     --category-travel: hsl(220 65% 60%); /* Blue */
     --category-rent-utilities: hsl(50 60% 55%); /* Brownish/Gold */
+    --category-other: hsl(0 0% 60%); /* Neutral Gray */
     --category-uncategorized: hsl(0 0% 60%); /* Neutral Gray */
   }
 

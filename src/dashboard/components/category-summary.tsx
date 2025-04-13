@@ -1,21 +1,15 @@
 import { motion } from 'motion/react'
-import { useQuery, getCategorySpending } from 'wasp/client/operations'
 import {
   getPrettyCategoryName,
   getCategoryCssVariable,
 } from '../../utils/categories' // Import both helper functions
+import { type CategorySummaryProps } from '../DashboardPage'
 
-// Remove props type
-// type CategorySummaryProps = {
-//   timeRange: '1m' | '3m' | '6m' | '1y'
-// }
-
-// Mapping and helper function moved to src/utils/categories.ts
-
-export function CategorySummary(/* Remove { timeRange } */) {
-  // Remove timeRange argument from useQuery
-  const { data: categories, isLoading, error } = useQuery(getCategorySpending)
-
+export function CategorySummary({
+  categories,
+  isLoading,
+  error,
+}: CategorySummaryProps) {
   if (isLoading)
     return (
       <div className='text-sm text-muted-foreground'>Loading categories...</div>

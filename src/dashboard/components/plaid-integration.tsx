@@ -7,9 +7,7 @@ import {
   Terminal,
 } from '@phosphor-icons/react'
 import {
-  useQuery,
   useAction,
-  getInstitutions,
   createLinkToken,
   exchangePublicToken,
   deleteInstitution,
@@ -33,27 +31,96 @@ import {
   AlertDialogTrigger,
 } from '../../client/components/ui/alert-dialog'
 import { useState } from 'react'
-import { toast } from 'sonner'
+import { useToast } from '../../hooks/use-toast'
+import { InstitutionsSummaryProps } from '../DashboardPage'
 
-export function PlaidIntegration() {
-  // Fetch institutions and their accounts
-  const {
-    data: institutions,
-    isLoading: isLoadingInstitutions,
-    error: institutionsError,
-    refetch: refetchInstitutions,
-  } = useQuery(getInstitutions) // Remove explicit type, let Wasp infer
+type ExchangeResult = {
+  institutionId: string
+}
+
+export function PlaidIntegration({
+  institutions,
+  isLoading,
+  error,
+  refetch,
+}: InstitutionsSummaryProps) {
+  const { toast } = useToast()
   const deleteInstitutionAction = useAction(deleteInstitution)
   const [institutionToDelete, setInstitutionToDelete] = useState<string | null>(
     null,
   )
   const [isDeleting, setIsDeleting] = useState(false)
+  // State to track the ID of the institution currently syncing after being added
+  const [syncingInstitutionId, setSyncingInstitutionId] = useState<
+    string | null
+  >(null)
 
   // Determine connection status based on whether we have institutions
   const isConnected = institutions && institutions.length > 0
 
-  const handleConnectionSuccess = () => {
-    refetchInstitutions()
+  // Modified success handler to await refetch and clear state
+  const handleConnectionSuccess = async (
+    result: ExchangeResult | undefined,
+  ) => {
+    let currentSyncingId: string | null = null // Temporary variable
+    // Check if result and institutionId exist
+    if (result?.institutionId) {
+      currentSyncingId = result.institutionId
+      setSyncingInstitutionId(currentSyncingId)
+      toast({
+        title: 'Syncing transactions for new institution...',
+        description: 'This might take a moment.',
+      })
+    }
+
+    try {
+      refetch()
+      // Optional: Add a small delay if UI updates seem too fast
+      // await new Promise(resolve => setTimeout(resolve, 100));
+    } catch (refetchError) {
+      console.error(
+        'Error refetching institutions after connection success:',
+        refetchError,
+      )
+      // Handle refetch error if necessary, e.g., show a toast
+    } finally {
+      // Ensure the spinner for the *specific* institution that was syncing is cleared
+      // This check prevents clearing the spinner if another connection happened quickly
+      if (currentSyncingId) {
+        setSyncingInstitutionId(null)
+        // Consider showing a success toast now
+        toast({
+          title: 'Initial transaction sync complete!',
+          description: 'You can now view your transactions.',
+        })
+      }
+    }
+  }
+
+  // Error handler for Plaid Link connection
+  const handleConnectionError = (error: any) => {
+    console.log('Received connection error:', error) // Log the error structure for debugging
+    // Check for the status code in a potentially nested structure common in Wasp errors
+    const statusCode = error?.data?.httpError?.statusCode || error?.statusCode
+    const message =
+      error?.data?.httpError?.message ||
+      error?.message ||
+      'An unknown error occurred.'
+
+    if (statusCode === 409) {
+      toast({
+        title: 'This institution is already linked.',
+        description: message,
+      })
+    } else {
+      // Handle other potential errors during token exchange
+      toast({
+        title: 'Connection Failed',
+        description: message,
+      })
+    }
+    // Clear any potential syncing state if an error occurred before success
+    setSyncingInstitutionId(null)
   }
 
   const handleDelete = async () => {
@@ -61,26 +128,33 @@ export function PlaidIntegration() {
     setIsDeleting(true)
     try {
       await deleteInstitutionAction({ institutionId: institutionToDelete })
-      toast.success('Institution deleted successfully.')
-      refetchInstitutions()
+      toast({
+        title: 'Institution deleted successfully.',
+      })
+      refetch()
       setInstitutionToDelete(null)
     } catch (error: any) {
       console.error('Error deleting institution:', error)
-      toast.error(error.message || 'Failed to delete institution.')
+      toast({
+        title: 'Failed to delete institution.',
+        description: error.message || 'Failed to delete institution.',
+      })
     } finally {
       setIsDeleting(false)
     }
   }
 
-  if (isLoadingInstitutions) {
+  // Simplified loading check: Show loading if the initial fetch is happening,
+  // regardless of syncing state or if institutions array already exists (it might be stale).
+  if (isLoading) {
     return (
-      <div className='flex h-40 items-center justify-center rounded-2xl border border-zinc-100 p-6 text-xs text-zinc-400'>
+      <div className='flex h-40 items-center justify-center rounded-2xl border border-border p-6 text-xs text-muted-foreground'>
         Loading connected accounts...
       </div>
     )
   }
 
-  if (institutionsError) {
+  if (error) {
     return (
       <Alert variant='destructive'>
         <Terminal className='h-4 w-4' />
@@ -88,9 +162,7 @@ export function PlaidIntegration() {
         <AlertDescription>
           There was a problem fetching your connected bank accounts. Please try
           again later.
-          {institutionsError.message && (
-            <p className='mt-2 text-xs'>({institutionsError.message})</p>
-          )}
+          {error.message && <p className='mt-2 text-xs'>({error.message})</p>}
         </AlertDescription>
       </Alert>
     )
@@ -106,9 +178,10 @@ export function PlaidIntegration() {
       }}
     >
       <div className='mt-1'>
-        {!isConnected ? (
+        {/* Render content only after initial loading is complete */}
+        {!isLoading && !isConnected && (
           <motion.div
-            className='flex flex-col items-center space-y-4 rounded-2xl border border-zinc-100 p-6 text-center'
+            className='flex flex-col items-center space-y-4 rounded-2xl border border-border p-6 text-center'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
@@ -121,18 +194,20 @@ export function PlaidIntegration() {
               createLinkTokenAction={createLinkToken}
               exchangePublicTokenAction={exchangePublicToken}
               onSuccess={handleConnectionSuccess}
+              onError={handleConnectionError}
             />
           </motion.div>
-        ) : (
+        )}
+        {!isLoading && isConnected && (
           <motion.div
-            className='flex flex-col space-y-4 rounded-2xl border border-zinc-100 p-6'
+            className='flex flex-col space-y-4 rounded-2xl border border-border p-6'
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
-                <div className='flex h-6 w-6 items-center justify-center rounded-full bg-black text-white'>
+                <div className='flex h-6 w-6 items-center justify-center rounded-full border-border bg-background text-foreground'>
                   <Check size={16} />
                 </div>
                 <span className='text-sm font-light'>Connected</span>
@@ -142,6 +217,7 @@ export function PlaidIntegration() {
                 createLinkTokenAction={createLinkToken}
                 exchangePublicTokenAction={exchangePublicToken}
                 onSuccess={handleConnectionSuccess}
+                onError={handleConnectionError}
               />
             </div>
 
@@ -150,36 +226,46 @@ export function PlaidIntegration() {
               {institutions?.map((institution, index) => (
                 <motion.div
                   key={institution.id}
-                  className='flex items-center justify-between border-b border-zinc-50 pb-3 last:border-0'
+                  className='flex items-center justify-between border-b border-border pb-3 last:border-0'
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index, duration: 0.5 }}
                 >
                   <div className='flex flex-1 items-center gap-3 overflow-hidden pr-2'>
-                    <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-zinc-50'>
+                    <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted'>
                       {/* Use a generic bank icon or fetch institution logo if available */}
-                      <CreditCard className='h-4 w-4 text-zinc-900' />
+                      <CreditCard className='h-4 w-4 text-foreground' />
                     </div>
                     <div className='flex-1 overflow-hidden'>
                       <p className='truncate text-sm font-light'>
                         {institution.institutionName}
+                        {/* Show spinner if this institution is the one being synced */}
+                        {syncingInstitutionId === institution.id && (
+                          <CircleNotch
+                            className='ml-2 inline h-4 w-4 animate-spin text-muted-foreground'
+                            aria-label='Syncing...'
+                          />
+                        )}
                       </p>
                       <p className='text-xs text-zinc-400'>
                         {institution.accounts.length} account(s) linked
                       </p>
                     </div>
                   </div>
-                  {/* Delete Button Trigger */}
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      className='flex-shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive'
-                      onClick={() => setInstitutionToDelete(institution.id)}
-                    >
-                      <X />
-                    </Button>
-                  </AlertDialogTrigger>
+                  {/* Delete Button Trigger - Hide if syncing */}
+                  {syncingInstitutionId !== institution.id && (
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='flex-shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive'
+                        onClick={() => setInstitutionToDelete(institution.id)}
+                        disabled={!!syncingInstitutionId} // Also disable if any sync is happening
+                      >
+                        <X />
+                      </Button>
+                    </AlertDialogTrigger>
+                  )}
                 </motion.div>
               ))}
             </div>
