@@ -33,20 +33,20 @@
     /* Category Colors - Light Mode */
     --category-income: 140 60% 45%; /* Greenish */
     --category-transfers-in: 120 50% 60%; /* Lighter Green */
-    --category-transfers-out: 0 60% 60%;   /* Reddish/Orange */
+    --category-transfers-out: 0 60% 60%; /* Reddish/Orange */
     --category-loan-payments: 210 50% 55%; /* Blueish */
-    --category-bank-fees: 30 70% 50%;    /* Orange/Brown */
+    --category-bank-fees: 30 70% 50%; /* Orange/Brown */
     --category-entertainment: 300 60% 60%; /* Purple */
-    --category-food-drink: 35 80% 60%;   /* Yellow/Orange */
-    --category-shopping: 260 60% 65%;    /* Indigo/Purple */
-    --category-home-improvement: 90 40% 50%;  /* Olive Green */
-    --category-medical: 0 70% 70%;       /* Pink/Red */
+    --category-food-drink: 35 80% 60%; /* Yellow/Orange */
+    --category-shopping: 260 60% 65%; /* Indigo/Purple */
+    --category-home-improvement: 90 40% 50%; /* Olive Green */
+    --category-medical: 0 70% 70%; /* Pink/Red */
     --category-personal-care: 330 70% 70%; /* Pink */
-    --category-services: 190 45% 55%;    /* Teal */
+    --category-services: 190 45% 55%; /* Teal */
     --category-government-non-profit: 240 30% 60%; /* Muted Blue */
     --category-transportation: 200 60% 50%; /* Cyan/Blue */
-    --category-travel: 220 65% 60%;      /* Blue */
-    --category-rent-utilities: 50 60% 55%;   /* Brownish/Gold */
+    --category-travel: 220 65% 60%; /* Blue */
+    --category-rent-utilities: 50 60% 55%; /* Brownish/Gold */
   }
 
   .dark {

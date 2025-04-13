@@ -25,7 +25,7 @@ export default function Dashboard() {
               <Tabs
                 defaultValue='6m'
                 value={timeRange}
-                onValueChange={(value) => setTimeRange(value as TimeRange)}
+                onValueChange={value => setTimeRange(value as TimeRange)}
               >
                 <TabsList className='h-7 bg-transparent'>
                   <TabsTrigger value='1m' className='text-xs'>

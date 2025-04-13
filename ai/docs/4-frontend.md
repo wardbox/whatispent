@@ -28,6 +28,7 @@
 
 - **`MonthlyComparisonChart` Component
   (`src/dashboard/components/monthly-comparison-chart.tsx`):**
+
   - Fetches monthly or daily spending data using the `getMonthlySpending` query.
   - Accepts a `timeRange` prop from `DashboardPage.tsx`.
   - Dynamically adjusts the query parameters (`months`, `granularity`) based on
@@ -40,7 +41,8 @@
   - Formats axis labels and tooltips appropriately for daily or monthly views.
   - Includes loading and error states.
 
-- **`CategorySummary` Component (`src/dashboard/components/category-summary.tsx`):**
+- **`CategorySummary` Component
+  (`src/dashboard/components/category-summary.tsx`):**
   - Fetches aggregated spending data for the **current month** using the
     `getCategorySpending` query.
   - Calculates total spending for the month and the percentage contribution of
@@ -62,5 +64,6 @@
   (Phase 5) will follow Phase 4.
 - **Styling:** Basic styling is applied using Tailwind CSS classes and
   conventions from `shadcn/ui` (e.g., `text-muted-foreground`).
-- **Placeholders:** Plaid Integration/Bank Connection UI still needs implementation.
+- **Placeholders:** Plaid Integration/Bank Connection UI still needs
+  implementation.
 - **Next:** Integrate the Plaid Link flow for connecting bank accounts.

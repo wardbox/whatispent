@@ -114,7 +114,8 @@ assuming development with the assistance of an LLM coding editor.
     * - [x] **Category Spending**: Display top categories from
             `getCategorySpending` in `category-spending.tsx`.
     * - [ ] **Styling**: Apply consistent styling using Tailwind/shadcn.
-      * - [x] Added category-specific color variables and applied to summary progress bars.
+      * - [x] Added category-specific color variables and applied to summary
+              progress bars.
 3.  - [ ] **Transactions Page (`src/client/TransactionsPage.tsx`)**:
           _(Review/Refine if needed)_
     * - [x] Uses `getAllTransactions`.
