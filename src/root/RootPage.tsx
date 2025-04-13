@@ -11,7 +11,7 @@ import { TransitionPlayground } from './components/transition-playground'
 import { transitions } from '../motion/transitionPresets'
 import './Root.css'
 // Supports weights 100-900
-import '@fontsource-variable/inter';
+import '@fontsource-variable/inter'
 
 export default function Root() {
   const { data: user, isLoading } = useAuth()

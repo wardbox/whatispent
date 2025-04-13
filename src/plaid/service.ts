@@ -1,4 +1,4 @@
-import { plaidClient } from './client';
+import { plaidClient } from './client'
 import {
   CountryCode,
   LinkTokenCreateRequest,
@@ -6,14 +6,16 @@ import {
   TransactionsGetRequest,
   Transaction as PlaidTransaction,
   AccountBase,
-} from 'plaid';
-import { encrypt, decrypt } from './utils/encryption';
+} from 'plaid'
+import { encrypt, decrypt } from './utils/encryption'
 
 /**
  * Creates a Plaid Link token for a given user.
  * This token is used by the frontend Plaid Link component.
  */
-export async function _internalCreateLinkToken(userId: string): Promise<string> {
+export async function _internalCreateLinkToken(
+  userId: string,
+): Promise<string> {
   // Define the Plaid Link configuration
   const request: LinkTokenCreateRequest = {
     user: {
@@ -21,20 +23,23 @@ export async function _internalCreateLinkToken(userId: string): Promise<string> 
     },
     client_name: 'What I Spent',
     // Specify the products you want to use (e.g., 'transactions', 'auth')
-    products: [Products.Transactions], 
+    products: [Products.Transactions],
     // Specify the countries your users are in
-    country_codes: [CountryCode.Us], 
+    country_codes: [CountryCode.Us],
     language: 'en', // Specify the language
     // Optional: webhook configuration if using webhooks
-    // webhook: 'https://your-webhook-url.com/plaid', 
-  };
+    // webhook: 'https://your-webhook-url.com/plaid',
+  }
 
   try {
-    const response = await plaidClient.linkTokenCreate(request);
-    return response.data.link_token;
+    const response = await plaidClient.linkTokenCreate(request)
+    return response.data.link_token
   } catch (error: any) {
-    console.error('Error creating Plaid link token:', error.response?.data || error.message);
-    throw new Error('Could not create Plaid link token.');
+    console.error(
+      'Error creating Plaid link token:',
+      error.response?.data || error.message,
+    )
+    throw new Error('Could not create Plaid link token.')
   }
 }
 
@@ -45,33 +50,33 @@ export async function _internalCreateLinkToken(userId: string): Promise<string> 
  * Encrypts the access token before returning.
  */
 export async function _internalExchangePublicToken(
-  publicToken: string
+  publicToken: string,
 ): Promise<{
-  accessToken: string;
-  itemId: string;
-  institutionName: string;
-  institutionId: string;
-  accounts: AccountBase[];
+  accessToken: string
+  itemId: string
+  institutionName: string
+  institutionId: string
+  accounts: AccountBase[]
 }> {
   try {
     // Exchange public token for access token and item ID
     const exchangeResponse = await plaidClient.itemPublicTokenExchange({
       public_token: publicToken,
-    });
-    const accessToken = exchangeResponse.data.access_token;
-    const itemId = exchangeResponse.data.item_id;
+    })
+    const accessToken = exchangeResponse.data.access_token
+    const itemId = exchangeResponse.data.item_id
 
     // Decrypt needed for subsequent calls within this function
-    const decryptedAccessToken = accessToken; // No need to decrypt yet as it's fresh
+    const decryptedAccessToken = accessToken // No need to decrypt yet as it's fresh
 
     // Fetch item details (including institution ID)
     const itemResponse = await plaidClient.itemGet({
       access_token: decryptedAccessToken,
-    });
-    const institutionId = itemResponse.data.item.institution_id;
+    })
+    const institutionId = itemResponse.data.item.institution_id
 
     if (!institutionId) {
-      throw new Error('Could not retrieve institution ID for the item.');
+      throw new Error('Could not retrieve institution ID for the item.')
     }
 
     // Fetch institution details by ID
@@ -79,18 +84,18 @@ export async function _internalExchangePublicToken(
       institution_id: institutionId,
       country_codes: [CountryCode.Us], // Specify country code(s)
       options: { include_optional_metadata: true }, // Get name, logo, etc.
-    });
+    })
 
-    const institutionName = institutionResponse.data.institution.name;
+    const institutionName = institutionResponse.data.institution.name
 
     // Fetch accounts associated with the item
     const accountsResponse = await plaidClient.accountsGet({
-        access_token: decryptedAccessToken,
-    });
-    const accounts = accountsResponse.data.accounts;
+      access_token: decryptedAccessToken,
+    })
+    const accounts = accountsResponse.data.accounts
 
     // Encrypt the access token before returning
-    const encryptedAccessToken = encrypt(accessToken);
+    const encryptedAccessToken = encrypt(accessToken)
 
     return {
       accessToken: encryptedAccessToken,
@@ -98,16 +103,16 @@ export async function _internalExchangePublicToken(
       institutionName: institutionName,
       institutionId: institutionId, // Plaid's ID for the institution
       accounts: accounts,
-    };
+    }
   } catch (error: any) {
     console.error(
       'Error exchanging Plaid public token, fetching institution, or fetching accounts:',
-      error.response?.data || error.message
-    );
+      error.response?.data || error.message,
+    )
     // Consider more specific error handling based on Plaid error codes if needed
     throw new Error(
-      'Could not exchange Plaid public token, fetch institution details, or fetch accounts.'
-    );
+      'Could not exchange Plaid public token, fetch institution details, or fetch accounts.',
+    )
   }
 }
 
@@ -119,13 +124,13 @@ export async function _internalExchangePublicToken(
 export async function _internalFetchTransactions(
   encryptedAccessToken: string,
   startDate: string, // YYYY-MM-DD
-  endDate: string // YYYY-MM-DD
+  endDate: string, // YYYY-MM-DD
 ): Promise<PlaidTransaction[]> {
-  const accessToken = decrypt(encryptedAccessToken);
-  let allTransactions: PlaidTransaction[] = [];
-  let hasMore = true;
-  let offset = 0;
-  const count = 100; // Fetch 100 transactions per request (max 500)
+  const accessToken = decrypt(encryptedAccessToken)
+  let allTransactions: PlaidTransaction[] = []
+  let hasMore = true
+  let offset = 0
+  const count = 100 // Fetch 100 transactions per request (max 500)
 
   try {
     while (hasMore) {
@@ -137,18 +142,18 @@ export async function _internalFetchTransactions(
           count: count,
           offset: offset,
         },
-      };
+      }
 
-      const response = await plaidClient.transactionsGet(request);
-      const transactions = response.data.transactions;
-      const totalTransactions = response.data.total_transactions;
+      const response = await plaidClient.transactionsGet(request)
+      const transactions = response.data.transactions
+      const totalTransactions = response.data.total_transactions
 
-      allTransactions = allTransactions.concat(transactions);
+      allTransactions = allTransactions.concat(transactions)
 
       if (allTransactions.length < totalTransactions) {
-        offset += transactions.length; // Use actual length in case it's less than count
+        offset += transactions.length // Use actual length in case it's less than count
       } else {
-        hasMore = false;
+        hasMore = false
       }
 
       // Optional: Add a small delay if hitting rate limits frequently
@@ -159,20 +164,22 @@ export async function _internalFetchTransactions(
     // but for just transactions, this is sufficient.
     // const accounts = response.data.accounts;
 
-    return allTransactions;
+    return allTransactions
   } catch (error: any) {
     console.error(
       'Error fetching Plaid transactions:',
-      error.response?.data || error.message
-    );
+      error.response?.data || error.message,
+    )
     // Consider specific error handling, e.g., ITEM_LOGIN_REQUIRED
     if (error.response?.data?.error_code === 'ITEM_LOGIN_REQUIRED') {
-        // Need to inform the user to re-authenticate this item
-        console.warn(`Item login required for token associated with fetch attempt.`);
-        // Depending on use case, might throw a specific error type
+      // Need to inform the user to re-authenticate this item
+      console.warn(
+        `Item login required for token associated with fetch attempt.`,
+      )
+      // Depending on use case, might throw a specific error type
     }
-    throw new Error('Could not fetch Plaid transactions.');
+    throw new Error('Could not fetch Plaid transactions.')
   }
 }
 
-// We will add _internalFetchTransactions later 
+// We will add _internalFetchTransactions later
