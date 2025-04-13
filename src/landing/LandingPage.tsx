@@ -251,10 +251,8 @@ export default function Landing() {
                 {monthlySpending && monthlySpending.length > 0 ? (
                   <ul className='space-y-2 text-sm'>
                     {monthlySpending.map(entry => (
-                      <li key={entry.month} className='flex justify-between'>
-                        <span>
-                          {dayjs(entry.month + '-01').format('MMM YYYY')}
-                        </span>
+                      <li key={entry.period} className='flex justify-between'>
+                        <span>{dayjs(entry.period).format('MMM YYYY')}</span>
                         <span className='font-medium'>
                           {formatCurrency(entry.total)}
                         </span>

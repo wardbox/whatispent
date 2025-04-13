@@ -437,12 +437,15 @@ export const getSpendingSummary: GetSpendingSummary<
   return summary
 }
 
+// Update Args type
 type MonthlySpendingArgs = {
   months?: number
+  granularity?: 'monthly' | 'daily' // Add granularity option
 }
 
+// Update Entry type
 type MonthlySpendingEntry = {
-  month: string // Format YYYY-MM
+  period: string // Can be 'YYYY-MM' or 'YYYY-MM-DD'
   total: number
 }
 
@@ -456,11 +459,24 @@ export const getMonthlySpending: GetMonthlySpending<
 
   const userId = context.user.id
   const numMonths = args?.months ?? 6
-  const startDate = dayjs
-    .utc()
-    .subtract(numMonths - 1, 'month')
-    .startOf('month')
-    .toDate()
+  const granularity = args?.granularity ?? 'monthly'
+
+  let startDate: Date
+  let periodFormat: string
+
+  if (granularity === 'daily' && numMonths === 1) {
+    // If daily granularity requested for 1 month, fetch last 30 days
+    startDate = dayjs.utc().subtract(30, 'day').startOf('day').toDate()
+    periodFormat = 'YYYY-MM-DD'
+  } else {
+    // Default to monthly aggregation
+    startDate = dayjs
+      .utc()
+      .subtract(numMonths - 1, 'month')
+      .startOf('month')
+      .toDate()
+    periodFormat = 'YYYY-MM'
+  }
 
   const transactions = await context.entities.Transaction.findMany({
     where: {
@@ -482,24 +498,37 @@ export const getMonthlySpending: GetMonthlySpending<
     },
   })
 
-  const monthlyTotals: { [key: string]: number } = {}
+  const periodTotals: { [key: string]: number } = {}
 
   transactions.forEach(tx => {
-    const monthKey = dayjs.utc(tx.date).format('YYYY-MM')
+    const periodKey = dayjs.utc(tx.date).format(periodFormat)
     const amount = Math.abs(tx.amount)
-    monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + amount
+    periodTotals[periodKey] = (periodTotals[periodKey] || 0) + amount
   })
 
   const result: MonthlySpendingEntry[] = []
-  for (let i = 0; i < numMonths; i++) {
-    const monthKey = dayjs
-      .utc()
-      .subtract(numMonths - 1 - i, 'month')
-      .format('YYYY-MM')
-    result.push({
-      month: monthKey,
-      total: monthlyTotals[monthKey] || 0,
-    })
+  const today = dayjs.utc()
+
+  if (granularity === 'daily' && numMonths === 1) {
+    // Generate entries for the last 30 days
+    for (let i = 0; i < 30; i++) {
+      const date = today.subtract(29 - i, 'day')
+      const periodKey = date.format('YYYY-MM-DD')
+      result.push({
+        period: periodKey,
+        total: periodTotals[periodKey] || 0,
+      })
+    }
+  } else {
+    // Generate entries for the last numMonths
+    for (let i = 0; i < numMonths; i++) {
+      const date = today.subtract(numMonths - 1 - i, 'month')
+      const periodKey = date.format('YYYY-MM')
+      result.push({
+        period: periodKey,
+        total: periodTotals[periodKey] || 0,
+      })
+    }
   }
 
   return result
