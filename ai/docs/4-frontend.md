@@ -59,54 +59,85 @@
 ### Plaid Integration (`src/dashboard/components/plaid-integration.tsx`)
 
 - **Component Created & Wired:**
+
   - Replaced placeholder/mock data with live data fetching.
   - Uses the `getInstitutions` query to fetch connected bank institutions.
   - Displays a loading state while fetching institutions.
   - Shows an error message if the query fails.
-  - Integrates the `PlaidLinkButton` component (moved from `src/landing/components/` to `src/dashboard/components/`).
-  - If no institutions are connected, it displays the `PlaidLinkButton` to initiate the connection flow.
-  - If institutions are connected, it lists each institution by name and shows the number of linked accounts.
-  - The `PlaidLinkButton` is also shown in the connected state to allow adding more institutions.
-  - Uses `createLinkToken` and `exchangePublicToken` actions for the Plaid Link flow.
-  - Implemented an `onSuccess` callback in `PlaidLinkButton` to trigger `refetchInstitutions` after a new bank is successfully linked, automatically updating the list.
+  - Integrates the `PlaidLinkButton` component (moved from
+    `src/landing/components/` to `src/dashboard/components/`).
+  - If no institutions are connected, it displays the `PlaidLinkButton` to
+    initiate the connection flow.
+  - If institutions are connected, it lists each institution by name and shows
+    the number of linked accounts.
+  - The `PlaidLinkButton` is also shown in the connected state to allow adding
+    more institutions.
+  - Uses `createLinkToken` and `exchangePublicToken` actions for the Plaid Link
+    flow.
+  - Implemented an `onSuccess` callback in `PlaidLinkButton` to trigger
+    `refetchInstitutions` after a new bank is successfully linked, automatically
+    updating the list.
 
 - **Delete Institution Functionality:**
-  - Added a delete button (using `@phosphor-icons/react`) next to each institution.
+
+  - Added a delete button (using `@phosphor-icons/react`) next to each
+    institution.
   - Implemented a `shadcn/ui AlertDialog` to confirm the deletion action.
-  - Clicking the confirmation button triggers the `deleteInstitution` Wasp action on the backend.
-  - The backend action deletes the institution, its accounts, and all associated transactions.
-  - Provides user feedback via `sonner` toasts (success/error) and loading states.
+  - Clicking the confirmation button triggers the `deleteInstitution` Wasp
+    action on the backend.
+  - The backend action deletes the institution, its accounts, and all associated
+    transactions.
+  - Provides user feedback via `sonner` toasts (success/error) and loading
+    states.
   - Automatically refreshes the institution list upon successful deletion.
 
 - **Backend Updates for Balance:**
-  - Modified `schema.prisma`: Added `currentBalance` (Float, optional) to the `Account` model.
-  - Updated `exchangePublicToken` action (`src/plaid/operations.ts`): Now fetches and saves the `currentBalance` when initially linking an institution.
-  - Updated `syncTransactions` action (`src/plaid/operations.ts`): Added a call to fetch latest balances (`_internalFetchBalances`) for all accounts within the institution during transaction sync and updates the `currentBalance` in the database.
-  - Updated `getInstitutions` query (`src/plaid/operations.ts`): Now selects and returns the `currentBalance` for each account.
+  - Modified `schema.prisma`: Added `currentBalance` (Float, optional) to the
+    `Account` model.
+  - Updated `exchangePublicToken` action (`src/plaid/operations.ts`): Now
+    fetches and saves the `currentBalance` when initially linking an
+    institution.
+  - Updated `syncTransactions` action (`src/plaid/operations.ts`): Added a call
+    to fetch latest balances (`_internalFetchBalances`) for all accounts within
+    the institution during transaction sync and updates the `currentBalance` in
+    the database.
+  - Updated `getInstitutions` query (`src/plaid/operations.ts`): Now selects and
+    returns the `currentBalance` for each account.
 
 ### Transactions Page & List (`src/transactions/`)
 
 - **`TransactionsPage.tsx`:**
+
   - Fetches all transactions using the `getAllTransactions` query (`useQuery`).
-  - Manages state for `searchQuery`, `selectedCategories` (using `Set<string>`), and `sortCriteria` (using `useState`).
+  - Manages state for `searchQuery`, `selectedCategories` (using `Set<string>`),
+    and `sortCriteria` (using `useState`).
   - Implements UI controls for interacting with the state:
     - A text `Input` for `searchQuery`.
-    - A `DropdownMenu` with `DropdownMenuCheckboxItem` for `selectedCategories`, dynamically populated with available categories.
+    - A `DropdownMenu` with `DropdownMenuCheckboxItem` for `selectedCategories`,
+      dynamically populated with available categories.
     - A `DropdownMenu` with `DropdownMenuRadioGroup` for `sortCriteria`.
   - Passes fetched data and state down to the `TransactionsList` component.
   - Includes basic page structure with a header and back navigation.
 
-- **`TransactionsList` Component (`src/transactions/components/transactions-list.tsx`):**
+- **`TransactionsList` Component
+  (`src/transactions/components/transactions-list.tsx`):**
   - Receives transactions, loading/error status, and filter/sort state as props.
-  - Uses `useMemo` to filter, group (by date period: Today, Yesterday, This Week, Last Week, Month), and sort transactions based on the props.
-  - Uses `useState` with a `Set<string>` to manage `expandedGroup` state, allowing multiple groups to be expanded.
+  - Uses `useMemo` to filter, group (by date period: Today, Yesterday, This
+    Week, Last Week, Month), and sort transactions based on the props.
+  - Uses `useState` with a `Set<string>` to manage `expandedGroup` state,
+    allowing multiple groups to be expanded.
   - Implements a `toggleGroup` function to handle user interaction.
-  - Uses `useEffect` to automatically expand all relevant groups when `searchQuery` or `selectedCategories` are active.
-  - Renders transaction groups and individual transactions using `framer-motion` for smooth animations:
+  - Uses `useEffect` to automatically expand all relevant groups when
+    `searchQuery` or `selectedCategories` are active.
+  - Renders transaction groups and individual transactions using `framer-motion`
+    for smooth animations:
     - Group expansion/collapse animates height and opacity.
-    - Transaction items within a group animate opacity and position with a staggered delay.
-  - Displays transaction details including merchant/name, category (with icon and color), amount (formatted), account name, and date/time.
-  - Utilizes `getPrettyCategoryName`, `getCategoryIcon`, and `getCategoryCssVariable` helpers from `src/utils/categories.ts`.
+    - Transaction items within a group animate opacity and position with a
+      staggered delay.
+  - Displays transaction details including merchant/name, category (with icon
+    and color), amount (formatted), account name, and date/time.
+  - Utilizes `getPrettyCategoryName`, `getCategoryIcon`, and
+    `getCategoryCssVariable` helpers from `src/utils/categories.ts`.
   - Uses `dayjs` for date formatting and relative time calculations.
 
 ### Development Notes & Next Steps
@@ -120,4 +151,5 @@
 - **Placeholders:** Plaid Integration/Bank Connection UI still needs
   implementation.
 - **Next:** Integrate the Plaid Link flow for connecting bank accounts.
-- **Next:** Implement functionality for managing connected institutions (e.g., manual sync trigger per institution, remove institution).
+- **Next:** Implement functionality for managing connected institutions (e.g.,
+  manual sync trigger per institution, remove institution).

@@ -52,11 +52,11 @@ export default function Dashboard() {
           <div className='md:col-span-2'>
             <div className='mb-2 flex items-center justify-between'>
               <span className='text-sm font-light'>Categories</span>
-              <Link to="/transactions">
-              <Button variant='ghost' size='sm' className='h-7 gap-1 text-xs'>
-                All transactions
-                <ArrowRight className='h-3 w-3' />
-              </Button>
+              <Link to='/transactions'>
+                <Button variant='ghost' size='sm' className='h-7 gap-1 text-xs'>
+                  All transactions
+                  <ArrowRight className='h-3 w-3' />
+                </Button>
               </Link>
             </div>
             <CategorySummary />

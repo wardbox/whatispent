@@ -115,18 +115,27 @@ assuming development with the assistance of an LLM coding editor.
     * - [x] **Category Spending**: Display top categories from
             `getCategorySpending` in `category-spending.tsx`.
     * - [x] **Styling**: Apply consistent styling using Tailwind/shadcn.
-      * - [x] Added category-specific color variables and applied to summary progress bars.
+      * - [x] Added category-specific color variables and applied to summary
+              progress bars.
 3.  - [x] **Transactions Page (`src/transactions/TransactionsPage.tsx`)**:
           _(Refactored and Enhanced)_
     * - [x] Uses `getAllTransactions`.
-    * - [x] Component Refactor: Moved display logic to `TransactionsList` component.
-    * - [x] State Management: Handles search, filter (category), and sort state in `TransactionsPage`.
-    * - [x] UI Controls: Implemented `Input`, `DropdownMenu` (filter), and `DropdownMenu` (sort) for interaction.
-    * - [x] Filtering & Sorting: Logic implemented in `TransactionsList` based on props.
-    * - [x] Grouping: Transactions grouped by date periods in `TransactionsList`.
-    * - [x] Animations: `framer-motion` used for group expansion and item appearance in `TransactionsList`.
-    * - [x] Multi-Expand & Auto-Expand: Groups allow multi-selection and auto-expand on filter/search.
-    * - [ ] ~~Displays data in a `shadcn/ui` Table.~~ (Replaced with custom list)
+    * - [x] Component Refactor: Moved display logic to `TransactionsList`
+            component.
+    * - [x] State Management: Handles search, filter (category), and sort state
+            in `TransactionsPage`.
+    * - [x] UI Controls: Implemented `Input`, `DropdownMenu` (filter), and
+            `DropdownMenu` (sort) for interaction.
+    * - [x] Filtering & Sorting: Logic implemented in `TransactionsList` based
+            on props.
+    * - [x] Grouping: Transactions grouped by date periods in
+            `TransactionsList`.
+    * - [x] Animations: `framer-motion` used for group expansion and item
+            appearance in `TransactionsList`.
+    * - [x] Multi-Expand & Auto-Expand: Groups allow multi-selection and
+            auto-expand on filter/search.
+    * - [ ] ~~Displays data in a `shadcn/ui` Table.~~ (Replaced with custom
+            list)
     * - [ ] Implement pagination.
     * - [ ] _(Deferred)_ Add subscription check.
 4.  - [x] **Routing**: Define routes in `main.wasp` for Dashboard,
@@ -139,8 +148,12 @@ assuming development with the assistance of an LLM coding editor.
             Needs integration into the main app flow._
     * - [x] Ensure `refetchInstitutions` is called after successful connection.
 6.  - [ ] **Institution Management/Syncing**: _(Review/Refine)_
-    * - [x] _Current sync button exists on `LandingPage.tsx` - Needs integration into the main app flow (e.g., settings or dashboard institution list)._
-    * - [x] Added functionality to **delete** an institution via the dashboard (`plaid-integration.tsx`) with a confirmation dialog and backend action (`deleteInstitution`).
+    * - [x] _Current sync button exists on `LandingPage.tsx` - Needs integration
+            into the main app flow (e.g., settings or dashboard institution
+            list)._
+    * - [x] Added functionality to **delete** an institution via the dashboard
+            (`plaid-integration.tsx`) with a confirmation dialog and backend
+            action (`deleteInstitution`).
     * - [ ] Provide clear feedback during sync.
 
 ## Phase 5: Stripe Payments Integration (Backend & Frontend) - _Deferred_

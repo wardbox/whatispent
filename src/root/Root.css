@@ -93,7 +93,9 @@
     --category-transportation: hsl(200 50% 60%);
     --category-travel: hsl(220 55% 70%);
     --category-rent-utilities: hsl(50 50% 65%);
-    --category-uncategorized: hsl(0 0% 50%); /* Slightly lighter gray for dark */
+    --category-uncategorized: hsl(
+      0 0% 50%
+    ); /* Slightly lighter gray for dark */
   }
 
   html {

@@ -12,7 +12,7 @@ import {
   PiggyBank,
   Gift,
   Icon,
-} from "@phosphor-icons/react";
+} from '@phosphor-icons/react'
 
 // Mapping from Plaid category names to pretty names
 export const prettyCategoryNames: { [key: string]: string } = {
@@ -67,12 +67,10 @@ export const categoryIcons: { [key: string]: Icon } = {
   TRAVEL: AirplaneTilt,
   RENT_AND_UTILITIES: HouseSimple,
   // Add more specific mappings as needed
-};
+}
 
 // Function to get the icon for a category, falling back to a default if not found
-export const getCategoryIcon = (
-  plaidCategory: string | undefined
-): Icon => {
-  if (!plaidCategory) return Receipt; // Default icon
-  return categoryIcons[plaidCategory] || Receipt; // Default icon if specific category not mapped
-};
+export const getCategoryIcon = (plaidCategory: string | undefined): Icon => {
+  if (!plaidCategory) return Receipt // Default icon
+  return categoryIcons[plaidCategory] || Receipt // Default icon if specific category not mapped
+}

@@ -143,8 +143,14 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
   }
 
   return (
-      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleOpen} disabled={isButtonDisabled}>
-        {buttonText}
-      </Button>
+    <Button
+      variant='outline'
+      size='sm'
+      className='h-7 text-xs'
+      onClick={handleOpen}
+      disabled={isButtonDisabled}
+    >
+      {buttonText}
+    </Button>
   )
 }

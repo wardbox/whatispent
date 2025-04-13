@@ -189,7 +189,8 @@ export async function _internalFetchTransactions(
  */
 export async function _internalFetchBalances(
   encryptedAccessToken: string,
-): Promise<AccountBase[]> { // Returns an array of accounts with balances
+): Promise<AccountBase[]> {
+  // Returns an array of accounts with balances
   const accessToken = decrypt(encryptedAccessToken)
 
   try {

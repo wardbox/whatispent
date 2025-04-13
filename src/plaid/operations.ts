@@ -399,7 +399,10 @@ export const deleteInstitution = (async (
       `Failed to delete institution ${institution.institutionName}.`,
     )
   }
-}) satisfies DeleteInstitution<DeleteInstitutionPayload, DeleteInstitutionResult>
+}) satisfies DeleteInstitution<
+  DeleteInstitutionPayload,
+  DeleteInstitutionResult
+>
 
 dayjs.extend(weekOfYear)
 dayjs.extend(utc)

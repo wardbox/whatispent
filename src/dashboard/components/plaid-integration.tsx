@@ -1,5 +1,11 @@
-import { motion } from "framer-motion"
-import { Check, X, CircleNotch, CreditCard, Terminal } from "@phosphor-icons/react"
+import { motion } from 'framer-motion'
+import {
+  Check,
+  X,
+  CircleNotch,
+  CreditCard,
+  Terminal,
+} from '@phosphor-icons/react'
 import {
   useQuery,
   useAction,
@@ -7,9 +13,13 @@ import {
   createLinkToken,
   exchangePublicToken,
   deleteInstitution,
-} from "wasp/client/operations"
-import { PlaidLinkButton } from "./plaid-link-button"
-import { Alert, AlertDescription, AlertTitle } from '../../client/components/ui/alert'
+} from 'wasp/client/operations'
+import { PlaidLinkButton } from './plaid-link-button'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '../../client/components/ui/alert'
 import { Button } from '../../client/components/ui/button'
 import {
   AlertDialog,
@@ -22,8 +32,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../../client/components/ui/alert-dialog'
-import { useState } from "react"
-import { toast } from "sonner"
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 export function PlaidIntegration() {
   // Fetch institutions and their accounts
@@ -64,7 +74,7 @@ export function PlaidIntegration() {
 
   if (isLoadingInstitutions) {
     return (
-      <div className="flex h-40 items-center justify-center rounded-2xl border border-zinc-100 p-6 text-xs text-zinc-400">
+      <div className='flex h-40 items-center justify-center rounded-2xl border border-zinc-100 p-6 text-xs text-zinc-400'>
         Loading connected accounts...
       </div>
     )
@@ -72,14 +82,14 @@ export function PlaidIntegration() {
 
   if (institutionsError) {
     return (
-      <Alert variant="destructive">
-        <Terminal className="h-4 w-4" />
+      <Alert variant='destructive'>
+        <Terminal className='h-4 w-4' />
         <AlertTitle>Error Loading Accounts</AlertTitle>
         <AlertDescription>
           There was a problem fetching your connected bank accounts. Please try
           again later.
           {institutionsError.message && (
-            <p className="mt-2 text-xs">({institutionsError.message})</p>
+            <p className='mt-2 text-xs'>({institutionsError.message})</p>
           )}
         </AlertDescription>
       </Alert>
@@ -95,15 +105,15 @@ export function PlaidIntegration() {
         }
       }}
     >
-      <div className="mt-1">
+      <div className='mt-1'>
         {!isConnected ? (
           <motion.div
-            className="flex flex-col items-center space-y-4 rounded-2xl border border-zinc-100 p-6 text-center"
+            className='flex flex-col items-center space-y-4 rounded-2xl border border-zinc-100 p-6 text-center'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-xs text-zinc-500">
+            <p className='text-xs text-zinc-500'>
               Connect your bank account to automatically track your spending
             </p>
             {/* Use PlaidLinkButton */}
@@ -115,17 +125,17 @@ export function PlaidIntegration() {
           </motion.div>
         ) : (
           <motion.div
-            className="flex flex-col space-y-4 rounded-2xl border border-zinc-100 p-6"
+            className='flex flex-col space-y-4 rounded-2xl border border-zinc-100 p-6'
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-black text-white">
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-2'>
+                <div className='flex h-6 w-6 items-center justify-center rounded-full bg-black text-white'>
                   <Check size={16} />
                 </div>
-                <span className="text-sm font-light">Connected</span>
+                <span className='text-sm font-light'>Connected</span>
               </div>
               {/* Simplified Add button - PlaidLinkButton can act as Add */}
               <PlaidLinkButton
@@ -135,26 +145,26 @@ export function PlaidIntegration() {
               />
             </div>
 
-            <div className="space-y-3 pt-3">
+            <div className='space-y-3 pt-3'>
               {/* Map over institutions instead of accounts */}
               {institutions?.map((institution, index) => (
                 <motion.div
                   key={institution.id}
-                  className="flex items-center justify-between border-b border-zinc-50 pb-3 last:border-0"
+                  className='flex items-center justify-between border-b border-zinc-50 pb-3 last:border-0'
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index, duration: 0.5 }}
                 >
-                  <div className="flex flex-1 items-center gap-3 overflow-hidden pr-2">
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-zinc-50">
+                  <div className='flex flex-1 items-center gap-3 overflow-hidden pr-2'>
+                    <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-zinc-50'>
                       {/* Use a generic bank icon or fetch institution logo if available */}
-                      <CreditCard className="h-4 w-4 text-zinc-900" />
+                      <CreditCard className='h-4 w-4 text-zinc-900' />
                     </div>
-                    <div className="flex-1 overflow-hidden">
-                      <p className="truncate text-sm font-light">
+                    <div className='flex-1 overflow-hidden'>
+                      <p className='truncate text-sm font-light'>
                         {institution.institutionName}
                       </p>
-                      <p className="text-xs text-zinc-400">
+                      <p className='text-xs text-zinc-400'>
                         {institution.accounts.length} account(s) linked
                       </p>
                     </div>
@@ -162,9 +172,9 @@ export function PlaidIntegration() {
                   {/* Delete Button Trigger */}
                   <AlertDialogTrigger asChild>
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="flex-shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      variant='ghost'
+                      size='icon'
+                      className='flex-shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive'
                       onClick={() => setInstitutionToDelete(institution.id)}
                     >
                       <X />
@@ -194,7 +204,9 @@ export function PlaidIntegration() {
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-            {isDeleting && <CircleNotch className="mr-2 h-4 w-4 animate-spin" />}
+            {isDeleting && (
+              <CircleNotch className='mr-2 h-4 w-4 animate-spin' />
+            )}
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -202,4 +214,3 @@ export function PlaidIntegration() {
     </AlertDialog>
   )
 }
-
