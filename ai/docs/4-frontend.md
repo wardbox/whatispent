@@ -84,6 +84,31 @@
   - Updated `syncTransactions` action (`src/plaid/operations.ts`): Added a call to fetch latest balances (`_internalFetchBalances`) for all accounts within the institution during transaction sync and updates the `currentBalance` in the database.
   - Updated `getInstitutions` query (`src/plaid/operations.ts`): Now selects and returns the `currentBalance` for each account.
 
+### Transactions Page & List (`src/transactions/`)
+
+- **`TransactionsPage.tsx`:**
+  - Fetches all transactions using the `getAllTransactions` query (`useQuery`).
+  - Manages state for `searchQuery`, `selectedCategories` (using `Set<string>`), and `sortCriteria` (using `useState`).
+  - Implements UI controls for interacting with the state:
+    - A text `Input` for `searchQuery`.
+    - A `DropdownMenu` with `DropdownMenuCheckboxItem` for `selectedCategories`, dynamically populated with available categories.
+    - A `DropdownMenu` with `DropdownMenuRadioGroup` for `sortCriteria`.
+  - Passes fetched data and state down to the `TransactionsList` component.
+  - Includes basic page structure with a header and back navigation.
+
+- **`TransactionsList` Component (`src/transactions/components/transactions-list.tsx`):**
+  - Receives transactions, loading/error status, and filter/sort state as props.
+  - Uses `useMemo` to filter, group (by date period: Today, Yesterday, This Week, Last Week, Month), and sort transactions based on the props.
+  - Uses `useState` with a `Set<string>` to manage `expandedGroup` state, allowing multiple groups to be expanded.
+  - Implements a `toggleGroup` function to handle user interaction.
+  - Uses `useEffect` to automatically expand all relevant groups when `searchQuery` or `selectedCategories` are active.
+  - Renders transaction groups and individual transactions using `framer-motion` for smooth animations:
+    - Group expansion/collapse animates height and opacity.
+    - Transaction items within a group animate opacity and position with a staggered delay.
+  - Displays transaction details including merchant/name, category (with icon and color), amount (formatted), account name, and date/time.
+  - Utilizes `getPrettyCategoryName`, `getCategoryIcon`, and `getCategoryCssVariable` helpers from `src/utils/categories.ts`.
+  - Uses `dayjs` for date formatting and relative time calculations.
+
 ### Development Notes & Next Steps
 
 - **Subscription Checks Deferred:** Implementation of subscription status checks

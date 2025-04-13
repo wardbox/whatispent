@@ -63,7 +63,7 @@ export function CategorySummary(/* Remove { timeRange } */) {
               </div>
             </div>
             <motion.div
-              className='h-[2px] rounded-sm bg-foreground/10'
+              className='h-[3px] rounded-sm bg-muted'
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{
@@ -74,7 +74,7 @@ export function CategorySummary(/* Remove { timeRange } */) {
               style={{ originX: 0 }}
             >
               <motion.div
-                className='h-full rounded-sm bg-foreground'
+                className='h-full rounded-sm bg-background'
                 initial={{ width: 0 }}
                 animate={{ width: `${category.percentage}%` }}
                 transition={{
@@ -82,6 +82,7 @@ export function CategorySummary(/* Remove { timeRange } */) {
                   duration: 0.7,
                   ease: 'easeOut',
                 }}
+                style={{ backgroundColor: `var(${cssVariable})` }}
               />
             </motion.div>
           </motion.div>

@@ -114,18 +114,19 @@ assuming development with the assistance of an LLM coding editor.
             `getMonthlySpending`.
     * - [x] **Category Spending**: Display top categories from
             `getCategorySpending` in `category-spending.tsx`.
-<<<<<<< Updated upstream
-    * - [ ] **Styling**: Apply consistent styling using Tailwind/shadcn.
-      * - [x] Added category-specific color variables and applied to summary
-              progress bars.
-=======
     * - [x] **Styling**: Apply consistent styling using Tailwind/shadcn.
       * - [x] Added category-specific color variables and applied to summary progress bars.
->>>>>>> Stashed changes
-3.  - [ ] **Transactions Page (`src/client/TransactionsPage.tsx`)**:
-          _(Review/Refine if needed)_
+3.  - [x] **Transactions Page (`src/transactions/TransactionsPage.tsx`)**:
+          _(Refactored and Enhanced)_
     * - [x] Uses `getAllTransactions`.
-    * - [x] Displays data in a `shadcn/ui` Table.
+    * - [x] Component Refactor: Moved display logic to `TransactionsList` component.
+    * - [x] State Management: Handles search, filter (category), and sort state in `TransactionsPage`.
+    * - [x] UI Controls: Implemented `Input`, `DropdownMenu` (filter), and `DropdownMenu` (sort) for interaction.
+    * - [x] Filtering & Sorting: Logic implemented in `TransactionsList` based on props.
+    * - [x] Grouping: Transactions grouped by date periods in `TransactionsList`.
+    * - [x] Animations: `framer-motion` used for group expansion and item appearance in `TransactionsList`.
+    * - [x] Multi-Expand & Auto-Expand: Groups allow multi-selection and auto-expand on filter/search.
+    * - [ ] ~~Displays data in a `shadcn/ui` Table.~~ (Replaced with custom list)
     * - [ ] Implement pagination.
     * - [ ] _(Deferred)_ Add subscription check.
 4.  - [x] **Routing**: Define routes in `main.wasp` for Dashboard,
