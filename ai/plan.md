@@ -134,10 +134,10 @@ assuming development with the assistance of an LLM coding editor.
             appearance in `TransactionsList`.
     * - [x] Multi-Expand & Auto-Expand: Groups allow multi-selection and
             auto-expand on filter/search.
-    * - [ ] ~~Displays data in a `shadcn/ui` Table.~~ (Replaced with custom
+    * - [x] ~~Displays data in a `shadcn/ui` Table.~~ (Replaced with custom
             list)
-    * - [ ] Implement pagination.
-    * - [ ] _(Deferred)_ Add subscription check.
+    * - [x] Implement pagination.
+    * - [x] _(Deferred)_ Add subscription check.
 4.  - [x] **Routing**: Define routes in `main.wasp` for Dashboard,
           TransactionsPage, Login/Signup, etc.
 5.  - [x] **Plaid Link Integration (User Flow)**:
@@ -154,7 +154,7 @@ assuming development with the assistance of an LLM coding editor.
     * - [x] Added functionality to **delete** an institution via the dashboard
             (`plaid-integration.tsx`) with a confirmation dialog and backend
             action (`deleteInstitution`).
-    * - [ ] Provide clear feedback during sync.
+    * - [x] Provide clear feedback during sync.
 
 ## Phase 5: Stripe Payments Integration (Backend & Frontend) - **In Progress**
 
@@ -200,7 +200,7 @@ _(All steps in this phase are deferred until after Phase 4 is complete)_
 1.  - [ ] **Connect UI & Logic**: Ensure all `useQuery` and `useAction` hooks
           are correctly implemented, handling loading and error states
           gracefully, especially around subscription status checks.
-2.  - [ ] **Styling**: Apply CSS/styling to match the mockups (e.g., using
+2.  - [x] **Styling**: Apply CSS/styling to match the mockups (e.g., using
           Tailwind CSS if preferred).
 3.  - [x] **Transaction Sync Strategy**:
     * - [x] Implement an initial sync after Plaid Link success.

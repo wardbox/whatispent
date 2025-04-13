@@ -155,8 +155,7 @@ export function Footer() {
               ))}
             </div>
             <p className='text-xs text-muted-foreground'>
-              &copy; {new Date().getFullYear()}{' '}
-              {import.meta.env.REACT_APP_NAME || 'Roke'}
+              &copy; {new Date().getFullYear()} what i spent
             </p>
           </div>
         </div>

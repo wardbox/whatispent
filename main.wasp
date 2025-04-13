@@ -154,7 +154,7 @@ query getUserSubscriptionStatus {
 
 query getSpendingSummary {
   fn: import { getSpendingSummary } from "@src/plaid/operations.ts",
-  entities: [Transaction]
+  entities: [Account, Institution, Transaction]
 }
 
 query getMonthlySpending {
@@ -164,17 +164,17 @@ query getMonthlySpending {
 
 query getCategorySpending {
   fn: import { getCategorySpending } from "@src/plaid/operations.ts",
-  entities: [Transaction]
+  entities: [Account, Institution,Transaction]
 }
 
 query getAllTransactions {
   fn: import { getAllTransactions } from "@src/plaid/operations.ts",
-  entities: [Transaction]
+  entities: [Account, Institution, Transaction]
 }
 
 query getInstitutions {
   fn: import { getInstitutions } from "@src/plaid/operations.js",
-  entities: [Institution]
+  entities: [Transaction,Institution]
 }
 
 //#endregion

@@ -109,6 +109,23 @@ export const exchangePublicToken = (async (
       accounts: plaidAccounts,
     } = await _internalExchangePublicToken(args.publicToken)
 
+    // Check if this institution already exists for this user
+    const existingInstitution = await context.entities.Institution.findFirst({
+      where: {
+        plaidInstitutionId: plaidInstitutionId,
+        userId: context.user.id,
+      },
+      select: { id: true }, // Only need to know if it exists
+    })
+
+    if (existingInstitution) {
+      // If it exists, throw an error instead of creating a duplicate
+      throw new HttpError(
+        409, // Conflict
+        `Institution '${institutionName}' is already linked to your account.`,
+      )
+    }
+
     // 2. Use Prisma transaction to ensure atomicity
     const newInstitution = await context.entities.Institution.create({
       data: {
@@ -131,7 +148,10 @@ export const exchangePublicToken = (async (
       select: { id: true }, // Only select the ID for the result
     })
 
-    syncTransactions({ institutionId: newInstitution.id }, context)
+    // Wait for 3 seconds before syncing transactions
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    await syncTransactions({ institutionId: newInstitution.id }, context)
 
     return {
       institutionId: newInstitution.id,

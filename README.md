@@ -31,49 +31,74 @@ This starter aims to provide a solid foundation with:
 
 ## Getting Started
 
-1.  **Clone or Use Template**: Click "Use this template" or clone the
-    repository.
-2.  **Install Dependencies**: Run `npm install` (if not using Wasp's install).
-3.  **Environment Variables**:
-    - Create a `.env.server` file in the project root.
-    - Add your Plaid API keys (obtainable from
-      [Plaid Dashboard](https://dashboard.plaid.com/)):
-      ```env
-      PLAID_CLIENT_ID=your_plaid_client_id
-      PLAID_SECRET_KEY_SANDBOX=your_plaid_sandbox_secret
-      # Add other keys (Development, Production) as needed
-      ```
-    - Add your Stripe API keys (obtainable from
-      [Stripe Dashboard](https://dashboard.stripe.com/)):
-      ```env
-      STRIPE_SECRET_KEY=your_stripe_secret_key
-      STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-      ```
-    - Generate and add an encryption key for securing sensitive data (like Plaid
-      access tokens):
-      ```bash
-      # Run this command in your terminal and copy the output
-      node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-      ```
-      Add the generated key to `.env.server`:
-      ```env
-      ENCRYPTION_KEY=your_generated_32_byte_hex_key
-      ```
-    - Ensure your database URL is set (Wasp usually handles this, but verify if
-      needed):
-      ```env
-      DATABASE_URL="postgresql://user:password@host:port/dbname"
-      ```
-    - (Optional) Create a `.env.client` file if you need client-side environment
-      variables (like the public Stripe key, though Wasp often manages passing
-      these).
-4.  **Database Setup**:
+1.  **Install Wasp**: If you haven't already, install Wasp:
     ```bash
-    wasp db start # Only if using local psql, can often be skipped
-    wasp db migrate-dev
+    curl -sSL https://get.wasp-lang.dev/installer.sh | sh
     ```
-5.  **Run the App**:
+    Follow the instructions provided by the installer.
+
+2.  **Clone or Use Template**: Click "Use this template" or clone the repository:
+    ```bash
+    git clone <repository-url>
+    cd <repository-directory>
+    ```
+
+3.  **Install Dependencies**: Run `npm install` (or let `wasp start` handle it).
+
+4.  **Environment Variables (`.env.server`)**:
+    *   Create a `.env.server` file in the project root.
+    *   **Plaid**: Add your Plaid API keys (use **Sandbox** keys for local development, obtainable from [Plaid Dashboard](https://dashboard.plaid.com/)):
+        ```env
+        PLAID_CLIENT_ID=your_plaid_client_id
+        PLAID_SECRET_KEY_SANDBOX=your_plaid_sandbox_secret
+        # PLAID_ENV=sandbox (Optional, depending on client implementation)
+        ```
+    *   **Stripe**:
+        *   Get API keys from [Stripe Dashboard](https://dashboard.stripe.com/).
+        *   Create a **Product** (e.g., "What I Spent Standard") and a **Price** (e.g., $4.99/month recurring) in your Stripe Dashboard. Copy the **Price ID** (it looks like `price_xxx`).
+        *   Add the keys and Price ID to `.env.server`:
+          ```env
+          STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+          STRIPE_PRICE_ID=price_your_stripe_price_id
+          ```
+    *   **Encryption Key**: Generate a secret key for encrypting Plaid access tokens:
+        ```bash
+        # Run this in your terminal and copy the output
+        node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+        ```
+        Add the generated key to `.env.server`:
+        ```env
+        ENCRYPTION_KEY=your_generated_32_byte_hex_key
+        ```
+    *   **Database**: Ensure your database URL is set (Wasp usually handles this via `DATABASE_URL` in `.env.server` if not using the default SQLite or managed Postgres):
+        ```env
+        # Example for external Postgres:
+        # DATABASE_URL="postgresql://user:password@host:port/dbname"
+        ```
+    *   **Client URL**: Add the base URL of your frontend application for Stripe redirects:
+        ```env
+        CLIENT_URL="http://localhost:3000"
+        ```
+
+5.  **Database Setup**:
+    *   Run migrations:
+        ```bash
+        wasp db migrate-dev
+        ```
+    *   _(Optional)_ If using Wasp's built-in local Postgres development database (requires Docker), you might need `wasp db start` first. This is often not needed if you let `wasp start` manage it or use SQLite/external DB.
+
+6.  **Stripe Webhook (Local Testing)**:
+    *   Install the [Stripe CLI](https://stripe.com/docs/stripe-cli).
+    *   Run the following command in a separate terminal to forward webhooks to your local Wasp app (adjust port/path if your Wasp setup differs):
+        ```bash
+        stripe listen --forward-to http://localhost:3001/api/stripe-webhooks
+        ```
+    *   The command will output a webhook signing secret (looks like `whsec_xxx`). Add this to your `.env.server`:
+        ```env
+        STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret
+        ```
+
+7.  **Run the App**:
     ```bash
     wasp start
     ```

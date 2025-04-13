@@ -96,7 +96,8 @@ export async function _createStripeCheckoutSession(
       customer: stripeCustomerId,
       success_url: successUrl,
       cancel_url: cancelUrl,
-    })
+      automatic_tax: { enabled: true },
+    });
 
     if (!session.url) {
       throw new HttpError(500, 'Stripe checkout session URL is missing')
