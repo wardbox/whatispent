@@ -56,6 +56,34 @@
   - Category name mapping and helper functions moved to a shared utility file
     (`src/utils/categories.ts`).
 
+### Plaid Integration (`src/dashboard/components/plaid-integration.tsx`)
+
+- **Component Created & Wired:**
+  - Replaced placeholder/mock data with live data fetching.
+  - Uses the `getInstitutions` query to fetch connected bank institutions.
+  - Displays a loading state while fetching institutions.
+  - Shows an error message if the query fails.
+  - Integrates the `PlaidLinkButton` component (moved from `src/landing/components/` to `src/dashboard/components/`).
+  - If no institutions are connected, it displays the `PlaidLinkButton` to initiate the connection flow.
+  - If institutions are connected, it lists each institution by name and shows the number of linked accounts.
+  - The `PlaidLinkButton` is also shown in the connected state to allow adding more institutions.
+  - Uses `createLinkToken` and `exchangePublicToken` actions for the Plaid Link flow.
+  - Implemented an `onSuccess` callback in `PlaidLinkButton` to trigger `refetchInstitutions` after a new bank is successfully linked, automatically updating the list.
+
+- **Delete Institution Functionality:**
+  - Added a delete button (using `@phosphor-icons/react`) next to each institution.
+  - Implemented a `shadcn/ui AlertDialog` to confirm the deletion action.
+  - Clicking the confirmation button triggers the `deleteInstitution` Wasp action on the backend.
+  - The backend action deletes the institution, its accounts, and all associated transactions.
+  - Provides user feedback via `sonner` toasts (success/error) and loading states.
+  - Automatically refreshes the institution list upon successful deletion.
+
+- **Backend Updates for Balance:**
+  - Modified `schema.prisma`: Added `currentBalance` (Float, optional) to the `Account` model.
+  - Updated `exchangePublicToken` action (`src/plaid/operations.ts`): Now fetches and saves the `currentBalance` when initially linking an institution.
+  - Updated `syncTransactions` action (`src/plaid/operations.ts`): Added a call to fetch latest balances (`_internalFetchBalances`) for all accounts within the institution during transaction sync and updates the `currentBalance` in the database.
+  - Updated `getInstitutions` query (`src/plaid/operations.ts`): Now selects and returns the `currentBalance` for each account.
+
 ### Development Notes & Next Steps
 
 - **Subscription Checks Deferred:** Implementation of subscription status checks
@@ -67,3 +95,4 @@
 - **Placeholders:** Plaid Integration/Bank Connection UI still needs
   implementation.
 - **Next:** Integrate the Plaid Link flow for connecting bank accounts.
+- **Next:** Implement functionality for managing connected institutions (e.g., manual sync trigger per institution, remove institution).

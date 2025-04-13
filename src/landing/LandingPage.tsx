@@ -11,7 +11,7 @@ import {
   getMonthlySpending,
   getCategorySpending,
 } from 'wasp/client/operations'
-import { PlaidLinkButton } from './components/PlaidLinkButton'
+import { PlaidLinkButton } from '../dashboard/components/plaid-link-button'
 import { useQuery, useAction } from 'wasp/client/operations'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -160,10 +160,10 @@ export default function Landing() {
                             className='flex items-center justify-between text-sm'
                           >
                             <span>
-                              {acc.name} ({acc.subtype})
+                              {acc.name} ({acc.subtype}) - {acc.mask}
                             </span>
                             <span className='font-mono text-xs text-muted-foreground'>
-                              *{acc.mask}
+                              {formatCurrency(acc.currentBalance || 0)}
                             </span>
                           </li>
                         ))}

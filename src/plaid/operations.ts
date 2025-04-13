@@ -8,11 +8,14 @@ import type {
   GetCategorySpending,
   GetAllTransactions,
   GetInstitutions,
+  DeleteInstitution,
+  // DeleteInstitution will be implicitly typed by Wasp later
 } from 'wasp/server/operations'
 import {
   _internalCreateLinkToken,
   _internalExchangePublicToken,
   _internalFetchTransactions,
+  _internalFetchBalances,
 } from './service'
 import dayjs from 'dayjs'
 import {
@@ -47,6 +50,15 @@ type SyncTransactionsPayload = {
 }
 type SyncTransactionsResult = {
   syncedTransactions: number
+  institutionId: string
+}
+
+// Added types for deleteInstitution
+type DeleteInstitutionPayload = {
+  institutionId: string
+}
+type DeleteInstitutionResult = {
+  success: boolean
   institutionId: string
 }
 
@@ -112,11 +124,14 @@ export const exchangePublicToken = (async (
             mask: account.mask ?? 'N/A', // Provide default if mask is null
             type: account.type,
             subtype: account.subtype ?? 'N/A', // Provide default if subtype is null
+            currentBalance: account.balances?.current ?? null,
           })),
         },
       },
       select: { id: true }, // Only select the ID for the result
     })
+
+    syncTransactions({ institutionId: newInstitution.id }, context)
 
     return {
       institutionId: newInstitution.id,
@@ -204,6 +219,11 @@ export const syncTransactions = (async (
       endDate,
     )
 
+    // 3.5 Fetch latest balances
+    const plaidAccountsWithBalances = await _internalFetchBalances(
+      institution.accessToken,
+    )
+
     if (plaidTransactions.length === 0) {
       console.log(
         `No new transactions found for institution ${institutionId} in the date range.`,
@@ -246,7 +266,7 @@ export const syncTransactions = (async (
       .filter((tx): tx is NonNullable<typeof tx> => tx !== null)
 
     // 5. Upsert transactions and update lastSync
-    const upsertPromises = transactionData.map(txData => {
+    const upsertTransactionPromises = transactionData.map(txData => {
       // Data for the update part (fields that can change)
       const updateData = {
         amount: txData.amount,
@@ -265,10 +285,32 @@ export const syncTransactions = (async (
       })
     })
 
-    // Execute upserts concurrently
-    await Promise.all(upsertPromises)
+    // Execute transaction upserts concurrently
+    await Promise.all(upsertTransactionPromises)
 
-    // Update lastSync timestamp on the institution
+    // 6. Update account balances
+    const updateBalancePromises = plaidAccountsWithBalances.map(
+      plaidAccount => {
+        const internalAccountId = accountIdMap.get(plaidAccount.account_id)
+        if (!internalAccountId) {
+          console.warn(
+            `Skipping balance update for Plaid account ${plaidAccount.account_id}: Cannot find internal account.`,
+          )
+          return Promise.resolve() // Skip if account not found in our DB
+        }
+        return context.entities.Account.update({
+          where: { id: internalAccountId },
+          data: {
+            currentBalance: plaidAccount.balances.current,
+          },
+        })
+      },
+    )
+
+    // Execute balance updates concurrently
+    await Promise.all(updateBalancePromises)
+
+    // 7. Update lastSync timestamp on the institution
     const updatedInstitution = await context.entities.Institution.update({
       where: { id: institutionId },
       data: { lastSync: new Date() },
@@ -305,6 +347,59 @@ export const syncTransactions = (async (
     )
   }
 }) satisfies SyncTransactions<SyncTransactionsPayload, SyncTransactionsResult>
+
+/**
+ * Wasp Action: Deletes a specific financial institution and all its associated data
+ * (accounts, transactions) for the authenticated user.
+ */
+export const deleteInstitution = (async (
+  args: DeleteInstitutionPayload,
+  context,
+): Promise<DeleteInstitutionResult> => {
+  if (!context.user) {
+    throw new HttpError(401)
+  }
+
+  const { institutionId } = args
+
+  if (!institutionId) {
+    throw new HttpError(400, 'Institution ID is required.')
+  }
+
+  // Verify the institution belongs to the user before deleting
+  const institution = await context.entities.Institution.findUnique({
+    where: { id: institutionId, userId: context.user.id },
+    select: { id: true, institutionName: true }, // Select minimal fields needed
+  })
+
+  if (!institution) {
+    throw new HttpError(404, 'Institution not found or access denied.')
+  }
+
+  console.log(
+    `Attempting to delete institution ${institution.institutionName} (ID: ${institutionId}) for user ${context.user.id}`,
+  )
+
+  try {
+    await context.entities.Institution.delete({
+      where: { id: institutionId },
+    })
+
+    console.log(
+      `Successfully deleted institution ${institution.institutionName} (ID: ${institutionId})`,
+    )
+    return {
+      success: true,
+      institutionId: institutionId,
+    }
+  } catch (error: any) {
+    console.error(`Error deleting institution ${institutionId}:`, error.message)
+    throw new HttpError(
+      500,
+      `Failed to delete institution ${institution.institutionName}.`,
+    )
+  }
+}) satisfies DeleteInstitution<DeleteInstitutionPayload, DeleteInstitutionResult>
 
 dayjs.extend(weekOfYear)
 dayjs.extend(utc)
@@ -608,10 +703,7 @@ export type TransactionWithDetails = Transaction & {
   }
 }
 
-export const getAllTransactions: GetAllTransactions<
-  AllTransactionsArgs,
-  TransactionWithDetails[]
-> = async (args, context) => {
+export const getAllTransactions = (async (args, context) => {
   if (!context.user) {
     throw new HttpError(401)
   }
@@ -644,14 +736,17 @@ export const getAllTransactions: GetAllTransactions<
 
   // Cast the result to the specific type. Prisma's include guarantees the structure.
   return transactions as TransactionWithDetails[]
-}
+}) satisfies GetAllTransactions<AllTransactionsArgs, TransactionWithDetails[]>
 
 // Update the result type to include accounts
 type GetInstitutionsResult = (Pick<
   Institution,
   'id' | 'institutionName' | 'lastSync' | 'plaidInstitutionId'
 > & {
-  accounts: Pick<Account, 'id' | 'name' | 'mask' | 'type' | 'subtype'>[]
+  accounts: Pick<
+    Account,
+    'id' | 'name' | 'mask' | 'type' | 'subtype' | 'currentBalance'
+  >[]
 })[]
 
 /**
@@ -681,6 +776,7 @@ export const getInstitutions: GetInstitutions<
           mask: true,
           type: true,
           subtype: true,
+          currentBalance: true,
         },
         orderBy: {
           name: 'asc', // Order accounts alphabetically

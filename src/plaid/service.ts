@@ -4,6 +4,7 @@ import {
   LinkTokenCreateRequest,
   Products,
   TransactionsGetRequest,
+  AccountsBalanceGetRequest,
   Transaction as PlaidTransaction,
   AccountBase,
 } from 'plaid'
@@ -179,6 +180,35 @@ export async function _internalFetchTransactions(
       // Depending on use case, might throw a specific error type
     }
     throw new Error('Could not fetch Plaid transactions.')
+  }
+}
+
+/**
+ * Fetches the current balance for all accounts associated with a given access token.
+ * Decrypts the provided access token before use.
+ */
+export async function _internalFetchBalances(
+  encryptedAccessToken: string,
+): Promise<AccountBase[]> { // Returns an array of accounts with balances
+  const accessToken = decrypt(encryptedAccessToken)
+
+  try {
+    const request: AccountsBalanceGetRequest = {
+      access_token: accessToken,
+    }
+    const response = await plaidClient.accountsBalanceGet(request)
+    return response.data.accounts
+  } catch (error: any) {
+    console.error(
+      'Error fetching Plaid account balances:',
+      error.response?.data || error.message,
+    )
+    if (error.response?.data?.error_code === 'ITEM_LOGIN_REQUIRED') {
+      console.warn(
+        `Item login required for token associated with balance fetch attempt.`,
+      )
+    }
+    throw new Error('Could not fetch Plaid account balances.')
   }
 }
 

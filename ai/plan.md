@@ -107,38 +107,40 @@ assuming development with the assistance of an LLM coding editor.
             (placeholder/basic structure).
     * - [x] Create `src/dashboard/components/category-spending.tsx`
             (implemented).
-2.  - [ ] **Implement Dashboard Components**:
+    * - [x] Create `src/dashboard/components/plaid-integration.tsx`
+2.  - [x] **Implement Dashboard Components**:
     * - [x] **Monthly Spending Chart**: Integrate a charting library (e.g.,
             Recharts) in `monthly-spending-chart.tsx` to display data from
             `getMonthlySpending`.
     * - [x] **Category Spending**: Display top categories from
             `getCategorySpending` in `category-spending.tsx`.
+<<<<<<< Updated upstream
     * - [ ] **Styling**: Apply consistent styling using Tailwind/shadcn.
       * - [x] Added category-specific color variables and applied to summary
               progress bars.
+=======
+    * - [x] **Styling**: Apply consistent styling using Tailwind/shadcn.
+      * - [x] Added category-specific color variables and applied to summary progress bars.
+>>>>>>> Stashed changes
 3.  - [ ] **Transactions Page (`src/client/TransactionsPage.tsx`)**:
           _(Review/Refine if needed)_
     * - [x] Uses `getAllTransactions`.
     * - [x] Displays data in a `shadcn/ui` Table.
     * - [ ] Implement pagination.
     * - [ ] _(Deferred)_ Add subscription check.
-4.  - [ ] **Routing**: Define routes in `main.wasp` for Dashboard,
+4.  - [x] **Routing**: Define routes in `main.wasp` for Dashboard,
           TransactionsPage, Login/Signup, etc.
-5.  - [ ] **Plaid Link Integration (User Flow)**:
-    * - [ ] Determine where the "Connect Bank" flow should live (e.g., dedicated
+5.  - [x] **Plaid Link Integration (User Flow)**:
+    * - [x] Determine where the "Connect Bank" flow should live (e.g., dedicated
             settings page, initial onboarding, button on dashboard if no
             institutions exist).
     * - [x] _Current `PlaidLinkButton` exists in `src/landing/components/` -
             Needs integration into the main app flow._
-    * - [ ] Ensure `refetchInstitutions` is called after successful connection.
+    * - [x] Ensure `refetchInstitutions` is called after successful connection.
 6.  - [ ] **Institution Management/Syncing**: _(Review/Refine)_
-    * - [x] _Current sync button exists on `LandingPage.tsx` - Needs integration
-            into the main app flow (e.g., settings or dashboard institution
-            list)._
+    * - [x] _Current sync button exists on `LandingPage.tsx` - Needs integration into the main app flow (e.g., settings or dashboard institution list)._
+    * - [x] Added functionality to **delete** an institution via the dashboard (`plaid-integration.tsx`) with a confirmation dialog and backend action (`deleteInstitution`).
     * - [ ] Provide clear feedback during sync.
-
-_(Subscription checks (`getUserSubscriptionStatus`) are deferred to after core
-frontend development)_
 
 ## Phase 5: Stripe Payments Integration (Backend & Frontend) - _Deferred_
 
@@ -186,7 +188,7 @@ _(All steps in this phase are deferred until after Phase 4 is complete)_
 2.  - [ ] **Styling**: Apply CSS/styling to match the mockups (e.g., using
           Tailwind CSS if preferred).
 3.  - [x] **Transaction Sync Strategy**:
-    * - [ ] Implement an initial sync after Plaid Link success.
+    * - [x] Implement an initial sync after Plaid Link success.
     * - [x] _Implemented a manual "Sync Now" button per institution on the
             landing page calling `syncTransactions` action._
     * - [ ] _(Advanced)_ Set up a Wasp Job (`jobs` in `main.wasp`) to run

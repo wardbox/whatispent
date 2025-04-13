@@ -6,7 +6,8 @@ import { Button } from '../client/components/ui/button'
 import { MonthlyComparisonChart } from './components/monthly-comparison-chart'
 import { CategorySummary } from './components/category-summary'
 import { useState } from 'react'
-
+import { PlaidIntegration } from './components/plaid-integration'
+import { Link } from 'wasp/client/router'
 // Define the possible time range values explicitly
 type TimeRange = '1m' | '3m' | '6m' | '1y'
 
@@ -51,10 +52,12 @@ export default function Dashboard() {
           <div className='md:col-span-2'>
             <div className='mb-2 flex items-center justify-between'>
               <span className='text-sm font-light'>Categories</span>
+              <Link to="/transactions">
               <Button variant='ghost' size='sm' className='h-7 gap-1 text-xs'>
                 All transactions
                 <ArrowRight className='h-3 w-3' />
               </Button>
+              </Link>
             </div>
             <CategorySummary />
           </div>
@@ -63,7 +66,7 @@ export default function Dashboard() {
             <div className='mb-2'>
               <span className='text-sm font-light'>Connect Bank</span>
             </div>
-            {/* <PlaidIntegration /> */}
+            <PlaidIntegration />
           </div>
         </div>
       </div>

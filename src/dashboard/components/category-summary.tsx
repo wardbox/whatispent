@@ -63,7 +63,7 @@ export function CategorySummary(/* Remove { timeRange } */) {
               </div>
             </div>
             <motion.div
-              className='h-[3px] rounded-sm bg-muted'
+              className='h-[2px] rounded-sm bg-foreground/10'
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{
@@ -82,7 +82,6 @@ export function CategorySummary(/* Remove { timeRange } */) {
                   duration: 0.7,
                   ease: 'easeOut',
                 }}
-                style={{ backgroundColor: `hsl(var(${cssVariable}))` }}
               />
             </motion.div>
           </motion.div>

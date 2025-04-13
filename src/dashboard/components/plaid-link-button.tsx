@@ -38,6 +38,7 @@ interface PlaidLinkButtonProps {
   exchangePublicTokenAction: (args: {
     publicToken: string
   }) => Promise<{ institutionId: string }>
+  onSuccess?: () => void
   onExit?: (err: any, metadata: any) => void
   onEvent?: (eventName: string, metadata: any) => void
 }
@@ -45,6 +46,7 @@ interface PlaidLinkButtonProps {
 export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
   createLinkTokenAction,
   exchangePublicTokenAction,
+  onSuccess,
   onExit,
   onEvent,
 }) => {
@@ -62,6 +64,9 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
         await exchangePublicTokenAction({ publicToken: public_token })
         console.log('Public token exchanged successfully!')
         // Optionally: Trigger UI update or navigation
+        if (onSuccess) {
+          onSuccess()
+        }
       } catch (err) {
         console.error('Error exchanging public token:', err)
         setError(err) // Show error state
@@ -69,7 +74,7 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
         setIsLoading(false)
       }
     },
-    [exchangePublicTokenAction],
+    [exchangePublicTokenAction, onSuccess],
   )
 
   const handlePlaidExit = useCallback(
@@ -127,29 +132,19 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
   }
 
   // Update button text and state logic
-  let buttonText = 'Connect Bank (Test)'
-  let helperText = 'Click to connect your bank account via Plaid.'
+  let buttonText = 'Add'
   let isButtonDisabled = isLoading
 
   if (isLoading) {
     buttonText = 'Connecting...'
-    helperText = 'Fetching token and opening Plaid...'
   } else if (error) {
     buttonText = 'Connection Error'
-    helperText = `Error: ${error.message || 'Failed to connect'}. Try again or check console.`
     isButtonDisabled = false // Allow retry
   }
 
   return (
-    <div className='flex flex-col items-start'>
-      <Button onClick={handleOpen} disabled={isButtonDisabled}>
+      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleOpen} disabled={isButtonDisabled}>
         {buttonText}
       </Button>
-      <p
-        className={`mt-1 text-xs ${error ? 'text-red-500' : 'text-muted-foreground'}`}
-      >
-        {helperText}
-      </p>
-    </div>
   )
 }
