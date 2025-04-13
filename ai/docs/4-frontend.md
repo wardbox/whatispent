@@ -40,6 +40,20 @@
   - Formats axis labels and tooltips appropriately for daily or monthly views.
   - Includes loading and error states.
 
+- **`CategorySummary` Component (`src/dashboard/components/category-summary.tsx`):**
+  - Fetches aggregated spending data for the **current month** using the
+    `getCategorySpending` query.
+  - Calculates total spending for the month and the percentage contribution of
+    each category.
+  - Displays the top 5 categories by spending amount.
+  - Shows a pretty category name (from `src/utils/categories.ts`), formatted
+    total amount, percentage, and a horizontal progress bar for each.
+  - Progress bars are dynamically colored based on the category using CSS
+    variables defined in `src/root/Root.css`.
+  - Uses `framer-motion` for animations and handles loading/error/empty states.
+  - Category name mapping and helper functions moved to a shared utility file
+    (`src/utils/categories.ts`).
+
 ### Development Notes & Next Steps
 
 - **Subscription Checks Deferred:** Implementation of subscription status checks
@@ -48,7 +62,5 @@
   (Phase 5) will follow Phase 4.
 - **Styling:** Basic styling is applied using Tailwind CSS classes and
   conventions from `shadcn/ui` (e.g., `text-muted-foreground`).
-- **Placeholders:** Placeholders for Category Summary (`category-spending.tsx`)
-  and Plaid Integration/Bank Connection UI still need implementation.
-- **Next:** Implement the `CategorySpending` component to display category
-  breakdowns. Integrate the Plaid Link flow for connecting bank accounts.
+- **Placeholders:** Plaid Integration/Bank Connection UI still needs implementation.
+- **Next:** Integrate the Plaid Link flow for connecting bank accounts.

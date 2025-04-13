@@ -103,17 +103,18 @@ assuming development with the assistance of an LLM coding editor.
               `getSpendingSummary`.
       * - [x] Include percentage change display.
       * - [x] Implement basic loading/error states.
-    * - [ ] Create `src/dashboard/components/monthly-spending-chart.tsx`
+    * - [x] Create `src/dashboard/components/monthly-spending-chart.tsx`
             (placeholder/basic structure).
-    * - [ ] Create `src/dashboard/components/category-spending.tsx`
-            (placeholder/basic structure).
+    * - [x] Create `src/dashboard/components/category-spending.tsx`
+            (implemented).
 2.  - [ ] **Implement Dashboard Components**:
-    * - [ ] **Monthly Spending Chart**: Integrate a charting library (e.g.,
+    * - [x] **Monthly Spending Chart**: Integrate a charting library (e.g.,
             Recharts) in `monthly-spending-chart.tsx` to display data from
             `getMonthlySpending`.
-    * - [ ] **Category Spending**: Display top categories from
+    * - [x] **Category Spending**: Display top categories from
             `getCategorySpending` in `category-spending.tsx`.
     * - [ ] **Styling**: Apply consistent styling using Tailwind/shadcn.
+      * - [x] Added category-specific color variables and applied to summary progress bars.
 3.  - [ ] **Transactions Page (`src/client/TransactionsPage.tsx`)**:
           _(Review/Refine if needed)_
     * - [x] Uses `getAllTransactions`.

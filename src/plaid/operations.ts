@@ -548,15 +548,16 @@ export const getCategorySpending: GetCategorySpending<
   }
 
   const userId = context.user.id
-  const startOfMonth = dayjs.utc().startOf('month').toDate()
-  const endOfMonth = dayjs.utc().endOf('month').toDate()
+  const now = dayjs.utc()
+  const startDate = now.startOf('month').toDate()
+  const endDate = now.endOf('month').toDate()
 
   const transactions = await context.entities.Transaction.findMany({
     where: {
       userId: userId,
       date: {
-        gte: startOfMonth,
-        lte: endOfMonth,
+        gte: startDate,
+        lte: endDate,
       },
       amount: {
         gt: 0, // Expenses are positive in Plaid

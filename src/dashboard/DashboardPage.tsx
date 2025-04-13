@@ -4,10 +4,15 @@ import { Tabs, TabsList, TabsTrigger } from '../client/components/ui/tabs'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '../client/components/ui/button'
 import { MonthlyComparisonChart } from './components/monthly-comparison-chart'
+import { CategorySummary } from './components/category-summary'
 import { useState } from 'react'
 
+// Define the possible time range values explicitly
+type TimeRange = '1m' | '3m' | '6m' | '1y'
+
 export default function Dashboard() {
-  const [timeRange, setTimeRange] = useState('6m') // Default to 6 months
+  // Use the explicit type for the state
+  const [timeRange, setTimeRange] = useState<TimeRange>('6m')
 
   return (
     <>
@@ -20,7 +25,7 @@ export default function Dashboard() {
               <Tabs
                 defaultValue='6m'
                 value={timeRange}
-                onValueChange={setTimeRange}
+                onValueChange={(value) => setTimeRange(value as TimeRange)}
               >
                 <TabsList className='h-7 bg-transparent'>
                   <TabsTrigger value='1m' className='text-xs'>
@@ -51,7 +56,7 @@ export default function Dashboard() {
                 <ArrowRight className='h-3 w-3' />
               </Button>
             </div>
-            {/* <CategorySummary /> */}
+            <CategorySummary />
           </div>
 
           <div>
