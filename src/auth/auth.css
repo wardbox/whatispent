@@ -17,4 +17,5 @@
 
 .login-text {
   color: hsl(var(--foreground));
+  font-weight: 300;
 }

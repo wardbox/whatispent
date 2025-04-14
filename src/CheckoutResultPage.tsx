@@ -8,7 +8,7 @@ import {
   CardFooter,
 } from './client/components/ui/card'
 import { Button } from './client/components/ui/button'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle } from '@phosphor-icons/react'
 
 function useQuery() {
   const { search } = useLocation()

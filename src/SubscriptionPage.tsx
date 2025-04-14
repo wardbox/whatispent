@@ -109,25 +109,14 @@ export default function SubscriptionPage() {
 
   return (
     <div className='flex w-full flex-col'>
-      {/* Page Header */}
-      <header className='mb-8 flex items-center justify-between'>
-        <h1 className='text-3xl font-extralight tracking-tight text-foreground'>
-          Subscription
-        </h1>
-        {/* Potential placeholder for actions if needed */}
-      </header>
-
-      {/* Removed Tier Loading/Error states */}
-
-      {/* Center the card */}
       <div className='mx-auto w-full max-w-md'>
         <Card className={cn(isSubscribed ? 'border-2 border-primary' : '')}>
           <CardHeader>
-            <CardTitle>{PLAN_NAME}</CardTitle>
+            <CardTitle className='font-light'>{PLAN_NAME}</CardTitle>
             <CardDescription>Access all features.</CardDescription>{' '}
           </CardHeader>
           <CardContent className='space-y-6'>
-            <p className='text-3xl font-bold'>
+            <p className='text-3xl font-light'>
               ${formatPrice(PLAN_PRICE)}
               <span className='text-sm font-normal text-muted-foreground'>
                 /month
@@ -158,7 +147,6 @@ export default function SubscriptionPage() {
           </CardFooter>
         </Card>
 
-        {/* Display status if needed */}
         {user && (
           <p className='mt-4 text-center text-sm text-muted-foreground'>
             Current status:{' '}

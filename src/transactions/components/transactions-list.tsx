@@ -216,20 +216,27 @@ export function TransactionsList({
     return sortedGroups
   }, [filteredTransactions, currentPage])
 
+  // Reset pagination when filters or sorting change
   useEffect(() => {
     setCurrentPage(1)
-    setExpandedGroup(new Set())
+    // Expansion state is handled by the effect below
   }, [searchQuery, selectedCategories, sortCriteria])
 
+  // Set expanded groups based on filters and available groups
   useEffect(() => {
-    if (searchQuery || selectedCategories.size > 0) {
-      if (transactionGroups && transactionGroups.length > 0) {
+    if (transactionGroups && transactionGroups.length > 0) {
+      if (searchQuery || selectedCategories.size > 0) {
+        // Filters active: Expand all groups
         setExpandedGroup(new Set(transactionGroups.map(g => g.id)))
       } else {
-        setExpandedGroup(new Set())
+        // No filters: Expand only the first (most recent) group
+        setExpandedGroup(new Set([transactionGroups[0].id]))
       }
+    } else {
+      // No groups: Ensure expanded set is empty
+      setExpandedGroup(new Set())
     }
-  }, [transactionGroups, searchQuery, selectedCategories])
+  }, [transactionGroups, searchQuery, selectedCategories]) // Depends on calculated groups and filters
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroup(prevExpanded => {
