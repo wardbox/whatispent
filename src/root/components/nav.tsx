@@ -172,6 +172,16 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                       >
                         <DropdownMenuItem>Subscription</DropdownMenuItem>
                       </Link>
+                      {user?.isAdmin && (
+                        <Link
+                          to='/admin'
+                          onMouseEnter={() => prefetch('/admin')}
+                          onClick={() => setDropdownOpen(false)}
+                          className='cursor-pointer'
+                        >
+                          <DropdownMenuItem>Admin Portal</DropdownMenuItem>
+                        </Link>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className='cursor-pointer text-red-600'
@@ -343,6 +353,16 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                           </Button>
                           <span className='text-3xl'>Subscription</span>
                         </Link>
+                        {user?.isAdmin && (
+                          <Link
+                            to='/admin'
+                            onMouseEnter={() => prefetch('/admin')}
+                            onClick={() => setDropdownOpen(false)}
+                            className='cursor-pointer'
+                          >
+                            <DropdownMenuItem>Admin Portal</DropdownMenuItem>
+                          </Link>
+                        )}
                         <DropdownMenuSeparator />
                         <Button
                           onClick={() => {

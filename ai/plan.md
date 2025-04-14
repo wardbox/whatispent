@@ -204,13 +204,12 @@ _(All steps in this phase are deferred until after Phase 4 is complete)_
           Tailwind CSS if preferred).
 3.  - [x] **Transaction Sync Strategy**:
     * - [x] Implement an initial sync after Plaid Link success.
-    * - [x] _Implemented a manual "Sync Now" button per institution on the
-            landing page calling `syncTransactions` action._
-    * - [ ] _(Advanced)_ Set up a Wasp Job (`jobs` in `main.wasp`) to run
-            `syncTransactions` periodically (e.g., daily).
-    * - [ ] _(Advanced)_ Implement Plaid Webhooks for real-time updates
-            (requires a publicly accessible endpoint and handling webhook events
-            in a Wasp API endpoint).
+    * - [x] Implement daily sync on user login (if not synced in last 24h)
+            triggered from `RootPage.tsx` calling modified `syncTransactions`.
+    * - [x] _Removed: Manual \"Sync Now\" button per institution._
+    * - [ ] _(Deferred)_ Set up a Wasp Job (`jobs` in `main.wasp`) for less
+            frequent background syncs (if needed). (won't do this for now)
+    * - [ ] _(Deferred)_ Implement Plaid Webhooks for real-time updates.
 4.  - [ ] **Testing**: Thoroughly test:
     * - [x] Authentication flow.
     * - [x] Stripe Checkout flow (using Test cards).

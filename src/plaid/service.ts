@@ -212,5 +212,3 @@ export async function _internalFetchBalances(
     throw new Error('Could not fetch Plaid account balances.')
   }
 }
-
-// We will add _internalFetchTransactions later

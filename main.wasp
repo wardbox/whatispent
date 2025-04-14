@@ -18,7 +18,7 @@ app whatispent {
     "<meta name='twitter:title' content='what i spent: this day. this week. this month.'>",
     "<meta name='twitter:description' content='what i spent helps you understand where your money goes.'>",
     "<meta name='twitter:image' content='https://whatispent.com/og-image.png'>",
-
+    "<script defer data-domain='whatispent.com' src='https://plausible.io/js/script.js'></script>",
     "<script src='https://cdn.plaid.com/link/v2/stable/link-initialize.js'></script>"
   ],
   auth: {
@@ -64,6 +64,7 @@ route EmailVerificationRoute { path: "/email-verification", to: EmailVerificatio
 route TransactionsRoute { path: "/transactions", to: TransactionsPage }
 route SubscriptionRoute { path: "/subscription", to: SubscriptionPage }
 route CheckoutResultRoute { path: "/checkout", to: CheckoutResultPage }
+route AdminRoute { path: "/admin", to: AdminPage }
 route NotFoundRoute { path: "*", to: NotFoundPage }
 //#endregion
 
@@ -104,6 +105,11 @@ page EmailVerificationPage {
 
 page TransactionsPage {
   component: import TransactionsPage from "@src/transactions/TransactionsPage"
+}
+
+page AdminPage {
+  component: import AdminPage from "@src/admin/AdminPage",
+  authRequired: true
 }
 
 page NotFoundPage {
@@ -175,6 +181,15 @@ query getAllTransactions {
 query getInstitutions {
   fn: import { getInstitutions } from "@src/plaid/operations.js",
   entities: [Transaction,Institution]
+}
+
+//#endregion
+
+//#region Admin Queries
+
+query getUsers {
+  fn: import { getUsers } from "@src/admin/operations.ts",
+  entities: [User, Institution, Account]
 }
 
 //#endregion

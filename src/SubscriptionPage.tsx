@@ -18,6 +18,7 @@ import { Loader2 } from 'lucide-react'
 import { cn } from './lib/utils' // Assuming this path is correct now
 import { useState } from 'react'
 import { Check } from '@phosphor-icons/react' // Import Check icon
+import { useToast } from './hooks/use-toast'
 
 // --- Removed Enum and Multi-Tier Types ---
 
@@ -34,6 +35,7 @@ function formatPrice(priceInCents: number): string {
 
 export default function SubscriptionPage() {
   const { data: user } = useAuth()
+  const { toast } = useToast()
   // Removed useQuery(getSubscriptionTiers)
   const createCheckoutSessionFn = useAction(createCheckoutSession)
   const createCustomerPortalSessionFn = useAction(createCustomerPortalSession)
@@ -48,17 +50,20 @@ export default function SubscriptionPage() {
 
     setIsPortalLoading(true)
     try {
-      console.log('User active, redirecting to portal...')
       const result = await createCustomerPortalSessionFn({})
       if ((result as { sessionUrl: string })?.sessionUrl) {
         window.location.href = (result as { sessionUrl: string }).sessionUrl
       } else {
-        console.error('Could not get customer portal URL.')
-        // TODO: Show error message to user
+        toast({
+          title: 'Error',
+          description: 'Could not get customer portal URL.',
+        })
       }
-    } catch (error) {
-      console.error('Error creating portal session:', error)
-      // TODO: Show error message to user
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Could not create portal session.',
+      })
     } finally {
       setIsPortalLoading(false)
     }
@@ -66,7 +71,10 @@ export default function SubscriptionPage() {
 
   const handleSubscribe = async () => {
     if (!user) {
-      console.log('User not logged in, redirecting to login...')
+      toast({
+        title: 'Error',
+        description: 'User not logged in, redirecting to login...',
+      })
       window.location.href = '/login?redirect=/subscribe'
       return
     }
@@ -83,12 +91,16 @@ export default function SubscriptionPage() {
       if ((result as { sessionUrl: string })?.sessionUrl) {
         window.location.href = (result as { sessionUrl: string }).sessionUrl
       } else {
-        console.error('Stripe Checkout Session URL not received.')
-        // TODO: Show error message to user
+        toast({
+          title: 'Error',
+          description: 'Stripe Checkout Session URL not received.',
+        })
       }
-    } catch (error) {
-      console.error('Error creating checkout session:', error)
-      // TODO: Show error message to user
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Could not create checkout session.',
+      })
     } finally {
       setIsCheckoutLoading(false)
     }

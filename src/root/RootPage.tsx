@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { MotionConfig } from 'motion/react'
 import { MotionProvider } from '../motion/motion-provider'
 import { ThemeProvider } from './components/theme-provider'
@@ -30,12 +30,46 @@ export default function Root() {
   const { user, isLoading, isSubscribedOrTrialing, trialEndsAt } =
     useSubscriptionStatus()
   const location = useLocation()
+  const navigate = useNavigate()
+  const { toast } = useToast()
 
   // Determine if the current route requires a subscription check
   const isProtectedRoute = user && !PUBLIC_ROUTES.includes(location.pathname)
   const isSubscriptionPage = location.pathname === '/subscription'
   const showInterstitial =
     isProtectedRoute && !isSubscribedOrTrialing && !isSubscriptionPage
+
+  // Redirect non-admins trying to access /admin
+  useEffect(() => {
+    if (!isLoading && user && !user.isAdmin && location.pathname === '/admin') {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, isLoading, location, navigate])
+
+  // Added: Effect to trigger daily sync
+  useEffect(() => {
+    if (user && user.subscriptionStatus === 'active') {
+      const lastSync = user.lastSyncedAt ? dayjs(user.lastSyncedAt) : null
+      const needsSync = !lastSync || dayjs().diff(lastSync, 'hour') >= 24
+
+      if (needsSync) {
+        syncTransactions({})
+          .then(() => {
+            // Optionally refetch user data if needed, or rely on server update
+          })
+          .catch(() => {
+            toast({
+              variant: 'destructive',
+              title: 'Sync Error',
+              description: 'Failed to sync transactions in the background.',
+            })
+          })
+      }
+    }
+  }, [user, toast]) // Dependency array includes user and the toast function
+
+  // Determine if it's the landing page
+  const isLandingPage = location.pathname === '/'
 
   return (
     <MotionConfig reducedMotion='user' transition={transitions.snappy}>

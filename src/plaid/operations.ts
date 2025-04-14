@@ -26,6 +26,7 @@ import {
 import weekOfYear from 'dayjs/plugin/weekOfYear.js'
 import utc from 'dayjs/plugin/utc.js'
 import isBetween from 'dayjs/plugin/isBetween.js'
+import type { AccountBase } from 'plaid'
 
 // We explicitly use context.entities which are typed, so these aren't strictly needed
 // import type { User, Institution, Account } from '@wasp/entities';
@@ -231,30 +232,19 @@ export const syncTransactions = (async (
     `Syncing transactions for institution ${institutionId} from ${startDate} to ${endDate}`,
   )
 
+  let upsertedCount = 0
+  let plaidAccountsWithBalances: AccountBase[] = [] // Initialize empty
+
   try {
-    // 3. Fetch transactions from Plaid service
+    // 3a. Fetch transactions from Plaid service
     const plaidTransactions = await _internalFetchTransactions(
-      institution.accessToken, // Pass encrypted token
+      institution.accessToken,
       startDate,
       endDate,
     )
 
-    // 3.5 Fetch latest balances
-    const plaidAccountsWithBalances = await _internalFetchBalances(
-      institution.accessToken,
-    )
-
-    if (plaidTransactions.length === 0) {
-      console.log(
-        `No new transactions found for institution ${institutionId} in the date range.`,
-      )
-      // Still update lastSync even if no transactions found
-      await context.entities.Institution.update({
-        where: { id: institutionId },
-        data: { lastSync: new Date() },
-      })
-      return { syncedTransactions: 0, institutionId: institutionId }
-    }
+    if (plaidTransactions.length > 0) {
+      // 4. Prepare data for Prisma upsert
 
     // 4. Prepare data for upsert
     const transactionData = plaidTransactions
@@ -298,40 +288,55 @@ export const syncTransactions = (async (
         // Do not include userId, accountId, or plaidTransactionId here
       }
 
-      return context.entities.Transaction.upsert({
-        where: { plaidTransactionId: txData.plaidTransactionId },
-        create: txData, // Use the full createData object here
-        update: updateData, // Use the specific updateData object here
-      })
-    })
+    // 3b. Fetch balances from Plaid - Separate Try/Catch
+    try {
+      console.log(
+        `Attempting to fetch balances for institution ${institutionId}...`,
+      )
+      plaidAccountsWithBalances = await _internalFetchBalances(
+        institution.accessToken,
+      )
+      console.log(
+        `Successfully fetched balances for ${plaidAccountsWithBalances.length} accounts for institution ${institutionId}.`,
+      )
+    } catch (balanceError: any) {
+      console.error(
+        `Error fetching balances for institution ${institutionId}: ${balanceError.message}. Proceeding with transaction sync only.`,
+      )
+      // Do not re-throw, allow transaction sync to complete
+    }
 
-    // Execute transaction upserts concurrently
-    await Promise.all(upsertTransactionPromises)
-
-    // 6. Update account balances
-    const updateBalancePromises = plaidAccountsWithBalances.map(
-      plaidAccount => {
-        const internalAccountId = accountIdMap.get(plaidAccount.account_id)
-        if (!internalAccountId) {
+    // 6. Update account balances (only if fetched successfully)
+    if (plaidAccountsWithBalances.length > 0) {
+      const balanceUpdates = plaidAccountsWithBalances.map(plaidAcc => {
+        const internalAccountId = accountIdMap.get(plaidAcc.account_id)
+        if (internalAccountId) {
+          return context.entities.Account.update({
+            where: { id: internalAccountId },
+            data: {
+              currentBalance: plaidAcc.balances?.current ?? null,
+              updatedAt: new Date(), // Explicitly update updatedAt
+            },
+          })
+        } else {
           console.warn(
             `Skipping balance update for Plaid account ${plaidAccount.account_id}: Cannot find internal account.`,
           )
           return Promise.resolve() // Skip if account not found in our DB
         }
-        return context.entities.Account.update({
-          where: { id: internalAccountId },
-          data: {
-            currentBalance: plaidAccount.balances.current,
-          },
-        })
-      },
-    )
+      })
+      await Promise.all(balanceUpdates)
+      console.log(
+        `Institution ${institutionId}: Updated balances for ${plaidAccountsWithBalances.length} accounts.`,
+      )
+    } else {
+      console.log(
+        `Institution ${institutionId}: Skipping balance updates (either none found or fetch failed).`,
+      )
+    }
 
-    // Execute balance updates concurrently
-    await Promise.all(updateBalancePromises)
-
-    // 7. Update lastSync timestamp on the institution
-    const updatedInstitution = await context.entities.Institution.update({
+    // 7. Update lastSync timestamp for the institution (regardless of balance success)
+    await context.entities.Institution.update({
       where: { id: institutionId },
       data: { lastSync: new Date() },
     })
@@ -345,14 +350,41 @@ export const syncTransactions = (async (
       institutionId: institutionId,
     }
   } catch (error: any) {
+    // Catch errors specifically from transaction fetching or processing
     console.error(
       `Error syncing transactions for institution ${institutionId}:`,
       error.message,
     )
-    if (error.response?.data?.error_code === 'ITEM_LOGIN_REQUIRED') {
-      // Log or handle specific Plaid errors like login required
-      console.warn(
-        `Plaid item login required for institution ${institutionId}. Sync failed.`,
+    // Re-throw the specific error for the single sync case if transaction part fails
+    throw new HttpError(
+      500,
+      `Failed to sync transactions for institution ${institutionId}.`,
+    )
+  }
+}
+
+/**
+ * Wasp Action: Fetches latest transactions from Plaid for one or all institutions
+ * and upserts them into the database. Updates User.lastSyncedAt on bulk sync.
+ */
+export const syncTransactions = (async (
+  args: SyncTransactionsPayload,
+  context,
+) => {
+  if (!context.user) {
+    throw new HttpError(401)
+  }
+
+  const { institutionId, startDate: forceStartDate } = args
+
+  if (institutionId) {
+    // --- Sync Single Institution --- (Existing logic moved to helper)
+    console.log(`Starting sync for single institution: ${institutionId}`)
+    try {
+      const result = await _syncSingleInstitution(
+        institutionId,
+        forceStartDate,
+        context,
       )
       // Optionally update institution status here
       throw new HttpError(
@@ -360,11 +392,71 @@ export const syncTransactions = (async (
         `Connection requires update for institution ${institution.institutionName}. Please reconnect.`,
       )
     }
-    // Rethrow a generic error
-    throw new HttpError(
-      500,
-      `Failed to sync transactions for institution ${institution.institutionName}.`,
-    )
+  } else {
+    // --- Sync All Institutions for User --- (New logic)
+    console.log(`Starting bulk sync for user: ${context.user.id}`)
+    const institutions = await context.entities.Institution.findMany({
+      where: { userId: context.user.id },
+      select: { id: true, institutionName: true }, // Select necessary fields
+    })
+
+    if (institutions.length === 0) {
+      console.log(`User ${context.user.id} has no institutions to sync.`)
+      // Update user's sync time even if no institutions, indicates attempt
+      await context.entities.User.update({
+        where: { id: context.user.id },
+        data: { lastSyncedAt: new Date() },
+      })
+      return { syncedTransactions: 0 } // Return total count
+    }
+
+    let totalSyncedCount = 0
+    const syncPromises: Promise<{ syncedTransactions: number }>[] = []
+
+    console.log(`Found ${institutions.length} institutions to sync.`) // Log count
+
+    for (const inst of institutions) {
+      console.log(
+        `Queueing sync for institution: ${inst.institutionName} (${inst.id})`,
+      ) // Log each queued institution
+      // Call the helper for each institution. Catch errors individually.
+      syncPromises.push(
+        _syncSingleInstitution(inst.id, forceStartDate, context).catch(
+          error => {
+            // Log individual failures but don't stop the bulk process
+            console.error(
+              `Sync failed for institution ${inst.institutionName} (${inst.id}) during bulk sync: ${error.message}`,
+            )
+            return { syncedTransactions: 0 } // Return 0 count for failed ones
+          },
+        ),
+      )
+    }
+
+    // Wait for all syncs to complete (or fail individually)
+    const results = await Promise.all(syncPromises)
+
+    // Sum up the counts from successful syncs
+    totalSyncedCount = results.reduce((sum, r) => sum + r.syncedTransactions, 0)
+
+    // Update User.lastSyncedAt after attempting all institutions
+    try {
+      await context.entities.User.update({
+        where: { id: context.user.id },
+        data: { lastSyncedAt: new Date() },
+      })
+      console.log(
+        `Bulk sync complete for user ${context.user.id}. Total new transactions: ${totalSyncedCount}. Updated user lastSyncedAt.`,
+      )
+    } catch (updateError) {
+      console.error(
+        `Failed to update User.lastSyncedAt for user ${context.user.id} after bulk sync: ${updateError}`,
+      )
+      // Don't throw here, the sync might have partially succeeded
+    }
+
+    // Result for bulk sync doesn't include institutionId
+    return { syncedTransactions: totalSyncedCount }
   }
 }) satisfies SyncTransactions<SyncTransactionsPayload, SyncTransactionsResult>
 
