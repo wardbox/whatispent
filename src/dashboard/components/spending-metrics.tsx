@@ -62,7 +62,7 @@ export function SpendingMetrics() {
   ]
 
   return (
-    <div className='grid gap-8 md:grid-cols-3'>
+    <div className='grid gap-8 py-4 md:grid-cols-3'>
       {metrics.map((metric, index) => (
         <motion.div
           key={metric.title}

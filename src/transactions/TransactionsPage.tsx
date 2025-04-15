@@ -49,7 +49,8 @@ export default function TransactionsPage() {
     new Set<string>(),
   )
   const [sortCriteria, setSortCriteria] = useState<SortOption>('date-desc')
-  const [selectedTransaction, setSelectedTransaction] = useState<TransactionWithDetails | null>(null)
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<TransactionWithDetails | null>(null)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
 
   const handleCategoryToggle = (category: string) => {
@@ -104,14 +105,14 @@ export default function TransactionsPage() {
 
       <main className='mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6'>
         <div className='flex flex-col gap-6'>
-          <div className='flex flex-col md:flex-row items-stretch md:items-center gap-2 md:justify-end'>
+          <div className='flex flex-col items-stretch gap-2 md:flex-row md:items-center md:justify-end'>
             {/* Filter Dropdown */}
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant='outline'
                   size='sm'
-                  className='h-9 gap-1 rounded-full text-xs w-full md:w-auto'
+                  className='h-9 w-full gap-1 rounded-full text-xs md:w-auto'
                 >
                   <SlidersHorizontal className='h-3.5 w-3.5' />
                   Filter{' '}
@@ -145,7 +146,7 @@ export default function TransactionsPage() {
                 <Button
                   variant='outline'
                   size='sm'
-                  className='h-9 gap-1 rounded-full text-xs w-full md:w-auto'
+                  className='h-9 w-full gap-1 rounded-full text-xs md:w-auto'
                 >
                   <SortAscending className='h-3.5 w-3.5' />
                   {sortLabels[sortCriteria]}{' '}
@@ -154,9 +155,7 @@ export default function TransactionsPage() {
               <DropdownMenuContent align='end'>
                 <DropdownMenuRadioGroup
                   value={sortCriteria}
-                  onValueChange={value =>
-                    setSortCriteria(value as SortOption)
-                  }
+                  onValueChange={value => setSortCriteria(value as SortOption)}
                 >
                   {Object.entries(sortLabels).map(([value, label]) => (
                     <DropdownMenuRadioItem key={value} value={value}>

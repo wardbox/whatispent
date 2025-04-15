@@ -256,20 +256,6 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                 </SheetDescription>
               </SheetHeader>
               <div className='flex flex-col gap-3 space-y-4'>
-                <Link
-                  to='/'
-                  className={cn(
-                    'text-md flex items-center space-x-4 font-medium transition-colors hover:text-primary',
-                    location.pathname === '/' && 'text-primary',
-                  )}
-                  onClick={handleNavigation}
-                  aria-label='Home'
-                >
-                  <Button size='icon' className='rounded-full' iconSize='lg'>
-                    <HouseSimple size={24} weight='fill' />
-                  </Button>
-                  <span className='text-3xl'>Home</span>
-                </Link>
                 {/* Mobile Auth Menu Items */}
                 {userLoading ? (
                   <>
@@ -305,12 +291,17 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                           to='/dashboard'
                           className={cn(
                             'text-md flex items-center space-x-4 font-medium transition-colors hover:text-primary',
-                            location.pathname === '/dashboard' && 'text-primary',
+                            location.pathname === '/dashboard' &&
+                              'text-primary',
                           )}
                           onClick={handleNavigation}
                           onMouseEnter={() => prefetch('/dashboard')}
                         >
-                          <Button size='icon' className='rounded-full' iconSize='lg'>
+                          <Button
+                            size='icon'
+                            className='rounded-full'
+                            iconSize='lg'
+                          >
                             <HouseSimple size={24} weight='fill' />
                           </Button>
                           <span className='text-3xl'>Dashboard</span>
@@ -319,12 +310,17 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                           to='/transactions'
                           className={cn(
                             'text-md flex items-center space-x-4 font-medium transition-colors hover:text-primary',
-                            location.pathname === '/transactions' && 'text-primary',
+                            location.pathname === '/transactions' &&
+                              'text-primary',
                           )}
                           onClick={handleNavigation}
                           onMouseEnter={() => prefetch('/transactions')}
                         >
-                          <Button size='icon' className='rounded-full' iconSize='lg'>
+                          <Button
+                            size='icon'
+                            className='rounded-full'
+                            iconSize='lg'
+                          >
                             <List size={24} weight='fill' />
                           </Button>
                           <span className='text-3xl'>Transactions</span>

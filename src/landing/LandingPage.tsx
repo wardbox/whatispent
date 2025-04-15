@@ -49,7 +49,7 @@ export default function Landing() {
   }, [])
 
   return (
-    <div className='text-center p-8'>
+    <div className='p-8 text-center'>
       <motion.section
         variants={staggerContainer}
         initial='initial'
@@ -89,13 +89,24 @@ export default function Landing() {
             </motion.div>
           ) : (
             <>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <Button asChild size='lg' className='font-light'>
                   <Link to={routes.SignupRoute.to}>Get Started</Link>
                 </Button>
               </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button asChild variant='outline' size='lg' className='font-light'>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  asChild
+                  variant='outline'
+                  size='lg'
+                  className='font-light'
+                >
                   <Link to={routes.LoginRoute.to}>Log In</Link>
                 </Button>
               </motion.div>

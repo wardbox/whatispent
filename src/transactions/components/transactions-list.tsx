@@ -361,10 +361,13 @@ export function TransactionsList({
                         className={`whitespace-nowrap text-sm font-light ${transaction.amount < 0 ? 'text-green-500' : ''}`}
                       >
                         {transaction.amount < 0 ? '+' : '-'}$
-                        {Math.abs(transaction.amount).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
+                        {Math.abs(transaction.amount).toLocaleString(
+                          undefined,
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          },
+                        )}
                       </p>
                       <div className='flex items-center gap-1 text-xs text-muted-foreground'>
                         <span className='hidden sm:inline'>

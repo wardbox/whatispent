@@ -17,14 +17,21 @@ interface TransactionDetailDialogProps {
   onClose: () => void
 }
 
-export function TransactionDetailDialog({ transaction, isOpen, onClose }: TransactionDetailDialogProps) {
+export function TransactionDetailDialog({
+  transaction,
+  isOpen,
+  onClose,
+}: TransactionDetailDialogProps) {
   if (!transaction) return null
 
-  const prettyCategory = getPrettyCategoryName(transaction.category?.[0] ?? 'Uncategorized')
+  const prettyCategory = getPrettyCategoryName(
+    transaction.category?.[0] ?? 'Uncategorized',
+  )
   const TransactionIcon = getCategoryIcon(transaction.category?.[0])
   const formattedDate = dayjs(transaction.date).format('MMMM D, YYYY')
   const formattedTime = dayjs(transaction.date).format('h:mm A')
-  const amountColor = transaction.amount < 0 ? 'text-green-500' : 'text-foreground' // Plaid expenses are positive
+  const amountColor =
+    transaction.amount < 0 ? 'text-green-500' : 'text-foreground' // Plaid expenses are positive
   const amountSign = transaction.amount < 0 ? '+' : '-'
 
   return (
@@ -36,13 +43,16 @@ export function TransactionDetailDialog({ transaction, isOpen, onClose }: Transa
             {transaction.merchantName ?? transaction.name}
           </DialogTitle>
           <DialogDescription>
-            Transaction details for {transaction.merchantName ?? transaction.name}.
+            Transaction details for{' '}
+            {transaction.merchantName ?? transaction.name}.
           </DialogDescription>
         </DialogHeader>
         <div className='space-y-4 py-4'>
           <div className='flex items-center justify-between'>
             <span className='text-sm text-muted-foreground'>Amount</span>
-            <span className={`text-sm font-medium ${amountColor}`}>{`${amountSign}$ ${Math.abs(transaction.amount).toFixed(2)}`}</span>
+            <span
+              className={`text-sm font-medium ${amountColor}`}
+            >{`${amountSign}$ ${Math.abs(transaction.amount).toFixed(2)}`}</span>
           </div>
           <div className='flex items-center justify-between'>
             <span className='text-sm text-muted-foreground'>Date</span>
@@ -65,14 +75,19 @@ export function TransactionDetailDialog({ transaction, isOpen, onClose }: Transa
           </div>
           <div className='flex items-center justify-between'>
             <span className='text-sm text-muted-foreground'>Institution</span>
-            <span className='text-sm'>{transaction.account.institution.institutionName}</span>
+            <span className='text-sm'>
+              {transaction.account.institution.institutionName}
+            </span>
           </div>
-          {transaction.name !== (transaction.merchantName ?? transaction.name) && (
+          {transaction.name !==
+            (transaction.merchantName ?? transaction.name) && (
             <div className='flex flex-col items-start pt-2'>
-              <span className='text-sm text-muted-foreground'>Original Description</span>
+              <span className='text-sm text-muted-foreground'>
+                Original Description
+              </span>
               <span className='mt-1 text-xs'>{transaction.name}</span>
             </div>
-           )}
+          )}
         </div>
         <DialogFooter>
           <Button onClick={onClose}>Close</Button>
@@ -80,4 +95,4 @@ export function TransactionDetailDialog({ transaction, isOpen, onClose }: Transa
       </DialogContent>
     </Dialog>
   )
-} 
+}

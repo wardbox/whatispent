@@ -45,70 +45,68 @@ export default function Dashboard() {
   } = useQuery(getInstitutions)
   const [timeRange, setTimeRange] = useState<TimeRange>('6m')
   return (
-    <>
+    <div className='flex flex-col gap-12 p-4'>
       <SpendingMetrics />
-      <div className='space-y-8'>
-        <Card className='overflow-hidden border-none bg-muted/70'>
-          <CardContent className='p-0'>
-            <div className='flex items-center justify-between p-6 pb-0'>
-              <span className='text-sm font-light'>Monthly Comparison</span>
-              <Tabs
-                defaultValue='6m'
-                value={timeRange}
-                onValueChange={value => setTimeRange(value as TimeRange)}
-              >
-                <TabsList className='h-7 bg-transparent'>
-                  <TabsTrigger value='1m' className='text-xs'>
-                    1M
-                  </TabsTrigger>
-                  <TabsTrigger value='3m' className='text-xs'>
-                    3M
-                  </TabsTrigger>
-                  <TabsTrigger value='6m' className='text-xs'>
-                    6M
-                  </TabsTrigger>
-                  <TabsTrigger value='1y' className='text-xs'>
-                    1Y
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-            <MonthlyComparisonChart timeRange={timeRange} />
-          </CardContent>
-        </Card>
-
-        <div className='grid gap-6 md:grid-cols-3'>
-          <div className='md:col-span-2'>
-            <div className='mb-2 flex items-center justify-between'>
-              <span className='text-sm font-light'>Categories</span>
-              <Link to='/transactions'>
-                <Button variant='ghost' size='sm' className='h-7 gap-1 text-xs'>
-                  All transactions
-                  <ArrowRight className='h-3 w-3' />
-                </Button>
-              </Link>
-            </div>
-            <CategorySummary
-              categories={categories || []}
-              isLoading={isLoading}
-              error={error}
-            />
+      <Card className='overflow-hidden border-none bg-muted/70'>
+        <CardContent className='p-0'>
+          <div className='flex items-center justify-between p-6 pb-0'>
+            <span className='text-sm font-light'>Monthly Comparison</span>
+            <Tabs
+              defaultValue='6m'
+              value={timeRange}
+              onValueChange={value => setTimeRange(value as TimeRange)}
+            >
+              <TabsList className='h-7 bg-transparent'>
+                <TabsTrigger value='1m' className='text-xs'>
+                  1M
+                </TabsTrigger>
+                <TabsTrigger value='3m' className='text-xs'>
+                  3M
+                </TabsTrigger>
+                <TabsTrigger value='6m' className='text-xs'>
+                  6M
+                </TabsTrigger>
+                <TabsTrigger value='1y' className='text-xs'>
+                  1Y
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
+          <MonthlyComparisonChart timeRange={timeRange} />
+        </CardContent>
+      </Card>
 
-          <div>
-            <div className='mb-2'>
-              <span className='text-sm font-light'>Connect Bank</span>
-            </div>
-            <PlaidIntegration
-              institutions={institutions || []}
-              isLoading={isLoadingInstitutions}
-              error={institutionsError}
-              refetch={refetchInstitutions}
-              refetchOnInstitutionAdd={refetchCategorySummary}
-            />
+      <div className='grid gap-6 space-y-4 md:grid-cols-3'>
+        <div className='md:col-span-2'>
+          <div className='mb-2 flex items-center justify-between'>
+            <span className='text-sm font-light'>Categories</span>
+            <Link to='/transactions'>
+              <Button variant='ghost' size='sm' className='h-7 gap-1 text-xs'>
+                All transactions
+                <ArrowRight className='h-3 w-3' />
+              </Button>
+            </Link>
           </div>
+          <CategorySummary
+            categories={categories || []}
+            isLoading={isLoading}
+            error={error}
+          />
+        </div>
+
+        <div>
+          <div className='mb-2'>
+            <span className='text-sm font-light'>Connect Bank</span>
+          </div>
+          <PlaidIntegration
+            institutions={institutions || []}
+            isLoading={isLoadingInstitutions}
+            error={institutionsError}
+            refetch={refetchInstitutions}
+            refetchOnInstitutionAdd={refetchCategorySummary}
+          />
         </div>
       </div>
-    </>
+    </div>
   )
 }
