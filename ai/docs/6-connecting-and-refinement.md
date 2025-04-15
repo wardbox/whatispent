@@ -1,3 +1,4 @@
+# Phase 6: Connecting & Refinement Summary
 
 ## Daily Transaction Sync on Login
 

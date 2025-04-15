@@ -97,6 +97,7 @@ export async function _createStripeCheckoutSession(
       success_url: successUrl,
       cancel_url: cancelUrl,
       automatic_tax: { enabled: true },
+      customer_update: { address: 'auto' },
     })
 
     if (!session.url) {

@@ -6,7 +6,6 @@ import { Footer } from './components/footer'
 import { Nav } from './components/nav'
 import { ScrollToTop } from './components/scroll-to-top'
 import { Toaster } from './components/toaster'
-import { TransitionPlayground } from './components/transition-playground'
 import { transitions } from '../motion/transitionPresets'
 import './Root.css'
 // Supports weights 100-900
@@ -14,6 +13,11 @@ import '@fontsource-variable/inter'
 import { useSubscriptionStatus } from '../hooks/useSubscriptionStatus'
 import { SubscriptionInterstitial } from './components/SubscriptionInterstitial'
 import { Skeleton } from '../client/components/ui/skeleton'
+import { useEffect } from 'react'
+import { syncTransactions } from 'wasp/client/operations'
+import dayjs from 'dayjs'
+import { useToast } from '../hooks/use-toast'
+import { cn } from '../lib/utils'
 
 // Define routes that don't require subscription check
 const PUBLIC_ROUTES = [
@@ -79,7 +83,14 @@ export default function Root() {
             <header>
               <Nav />
             </header>
-            <main className='mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 p-6 py-24'>
+            <main
+              className={cn(
+                'flex flex-1 flex-col',
+                isLandingPage
+                  ? 'items-center justify-center'
+                  : 'mx-auto w-full max-w-5xl gap-8 p-6 py-24',
+              )}
+            >
               {isLoading && isProtectedRoute ? (
                 <div className='flex flex-col gap-8'>
                   <Skeleton className='h-48 w-full' />
@@ -98,7 +109,6 @@ export default function Root() {
                 <Footer />
               </div>
             </footer>
-            <TransitionPlayground />
           </div>
         </MotionProvider>
       </ThemeProvider>

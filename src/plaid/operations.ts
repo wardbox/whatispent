@@ -45,13 +45,13 @@ type ExchangePublicTokenResult = {
 
 // Add types for syncTransactions
 type SyncTransactionsPayload = {
-  institutionId: string
+  institutionId?: string // Made optional
   /** Optional: Force fetch from a specific date YYYY-MM-DD */
   startDate?: string
 }
 type SyncTransactionsResult = {
   syncedTransactions: number
-  institutionId: string
+  institutionId?: string // Make optional here too
 }
 
 // Added types for deleteInstitution
@@ -170,20 +170,16 @@ export const exchangePublicToken = (async (
   ExchangePublicTokenResult
 >
 
-// We will add syncTransactions action later
-/**
- * Wasp Action: Fetches latest transactions from Plaid for a given institution
- * and upserts them into the database.
- */
-export const syncTransactions = (async (
-  args: SyncTransactionsPayload,
-  context,
-) => {
+// Internal helper function to sync a single institution
+async function _syncSingleInstitution(
+  institutionId: string,
+  forceStartDate: string | undefined,
+  context: any,
+): Promise<{ syncedTransactions: number; institutionId: string }> {
   if (!context.user) {
+    // This should be checked before calling, but defensive check here
     throw new HttpError(401)
   }
-
-  const { institutionId, startDate: forceStartDate } = args
 
   // 1. Fetch the institution and its accounts
   const institution = await context.entities.Institution.findUnique({
@@ -194,34 +190,38 @@ export const syncTransactions = (async (
   if (!institution) {
     throw new HttpError(
       404,
-      'Institution not found or does not belong to user.',
+      `Institution ${institutionId} not found or does not belong to user.`,
     )
   }
   if (!institution.accounts || institution.accounts.length === 0) {
     console.warn(
       `No accounts found for institution ${institutionId}. Skipping sync.`,
     )
+    // Update lastSync even if no accounts, means we tried
+    await context.entities.Institution.update({
+      where: { id: institutionId },
+      data: { lastSync: new Date() },
+    })
     return { syncedTransactions: 0, institutionId: institutionId }
   }
 
   // Create a map from plaidAccountId to our internal Account ID
   const accountIdMap = new Map<string, string>(
-    institution.accounts.map(acc => [acc.plaidAccountId, acc.id]),
+    institution.accounts.map((acc: Account) => [acc.plaidAccountId, acc.id]),
   )
 
   // 2. Determine date range
-  // Default: last 30 days or since last sync (whichever is more recent, up to 2 years back for Plaid)
   const twoYearsAgo = dayjs().subtract(2, 'year').format('YYYY-MM-DD')
-  let startDate = forceStartDate
-    ? forceStartDate // Use forced start date if provided
-    : institution.lastSync
-      ? dayjs(institution.lastSync).format('YYYY-MM-DD') // Use last sync date
-      : dayjs().subtract(30, 'days').format('YYYY-MM-DD') // Default to 30 days ago
+  let startDate =
+    forceStartDate
+      ? forceStartDate // Use forced start date if provided
+      : institution.lastSync
+        ? dayjs(institution.lastSync).format('YYYY-MM-DD') // Use last sync date
+        : dayjs().subtract(30, 'days').format('YYYY-MM-DD') // Default to 30 days ago
 
-  // Ensure start date is not more than 2 years ago
   if (dayjs(startDate).isBefore(twoYearsAgo)) {
     console.warn(
-      `Start date ${startDate} is more than 2 years ago. Adjusting to ${twoYearsAgo}.`,
+      `Start date ${startDate} is more than 2 years ago for institution ${institutionId}. Adjusting to ${twoYearsAgo}.`,
     )
     startDate = twoYearsAgo
   }
@@ -236,77 +236,86 @@ export const syncTransactions = (async (
   let plaidAccountsWithBalances: AccountBase[] = [] // Initialize empty
 
   try {
-    // 3a. Fetch transactions from Plaid service
-    const plaidTransactions = await _internalFetchTransactions(
-      institution.accessToken,
-      startDate,
-      endDate,
-    )
+    // 3. Fetch transactions and balances from Plaid service
+    const [plaidTransactions, plaidAccountsWithBalances] = await Promise.all([
+      _internalFetchTransactions(
+        institution.accessToken,
+        startDate,
+        endDate,
+      ),
+      _internalFetchBalances(institution.accessToken),
+    ])
+
+    let upsertedCount = 0
 
     if (plaidTransactions.length > 0) {
       // 4. Prepare data for Prisma upsert
 
-    // 4. Prepare data for upsert
-    const transactionData = plaidTransactions
-      .map(tx => {
-        const internalAccountId = accountIdMap.get(tx.account_id)
-        if (!internalAccountId) {
-          console.warn(
-            `Skipping transaction ${tx.transaction_id}: Cannot find internal account for Plaid account ${tx.account_id}`,
-          )
-          return null // Skip this transaction if account mapping fails
-        }
-        // Data structure for Prisma TransactionUncheckedCreateInput
-        const createData = {
-          userId: institution.userId, // Direct foreign key
-          accountId: internalAccountId, // Direct foreign key
-          plaidTransactionId: tx.transaction_id,
-          amount: tx.amount, // Plaid uses negative for debits
-          date: dayjs(tx.date).toDate(), // Convert string date to Date object
-          merchantName: tx.merchant_name ?? tx.name, // Use merchant_name if available, else name
-          name: tx.name, // Original description
-          category: tx.personal_finance_category?.primary
-            ? [tx.personal_finance_category.primary]
-            : [], // Ensure it's always string[]
-          categoryIconUrl: tx.personal_finance_category_icon_url ?? undefined, // Assuming this field exists in schema
-          pending: tx.pending,
-        }
-        return createData
-      })
-      .filter((tx): tx is NonNullable<typeof tx> => tx !== null)
-
-    // 5. Upsert transactions and update lastSync
-    const upsertTransactionPromises = transactionData.map(txData => {
-      // Data for the update part (fields that can change)
-      const updateData = {
-        amount: txData.amount,
-        date: txData.date,
-        merchantName: txData.merchantName,
-        name: txData.name,
-        category: txData.category, // Already correctly typed as string[] from createData
-        pending: txData.pending,
-        // Do not include userId, accountId, or plaidTransactionId here
+      // Define a local type for the input data structure
+      type TransactionCreateInputData = {
+        plaidTransactionId: string
+        userId: string
+        accountId: string
+        amount: number
+        date: string | Date // Prisma accepts string or Date for DateTime
+        merchantName: string | null | undefined
+        name: string
+        category: string[]
+        categoryIconUrl: string | null | undefined
+        pending: boolean
       }
 
-    // 3b. Fetch balances from Plaid - Separate Try/Catch
-    try {
+      // Initialize with the explicit local type
+      const transactionsToUpsert: TransactionCreateInputData[] = []
+      for (const tx of plaidTransactions) {
+        const internalAccountId = accountIdMap.get(tx.account_id)
+        if (internalAccountId && context.user) {
+          // Map Plaid data to Prisma schema using direct FKs for createMany
+          transactionsToUpsert.push({
+            plaidTransactionId: tx.transaction_id,
+            userId: context.user.id, // Direct FK
+            accountId: internalAccountId, // Direct FK
+            amount: tx.amount,
+            date: dayjs(tx.date).toISOString(), // Ensure stored as DateTime
+            merchantName: tx.merchant_name,
+            name: tx.name,
+            category: tx.personal_finance_category?.primary
+              ? [tx.personal_finance_category.primary]
+              : [],
+            categoryIconUrl: tx.personal_finance_category_icon_url ?? null,
+            pending: tx.pending,
+          })
+        } else {
+          console.warn(
+            `Skipping transaction ${tx.transaction_id}: Could not find matching internal account for plaid account ${tx.account_id}`,
+          )
+        }
+      }
+
+      // 5. Batch upsert transactions
+      // Use createMany + skipDuplicates (more efficient) or loop with upsert
+      if (transactionsToUpsert.length > 0) {
+        // Because we fetch overlapping dates, we expect duplicates, so we ignore them
+        const result = await context.entities.Transaction.createMany({
+          data: transactionsToUpsert, // Should now match expected type
+          skipDuplicates: true, // Important!
+        })
+        upsertedCount = result.count
+        console.log(
+          `Institution ${institutionId}: Synced ${upsertedCount} new transactions.`,
+        )
+      } else {
+        console.log(
+          `Institution ${institutionId}: No valid transactions to sync after mapping.`,
+        )
+      }
+    } else {
       console.log(
-        `Attempting to fetch balances for institution ${institutionId}...`,
+        `Institution ${institutionId}: No new transactions found from Plaid in the date range.`,
       )
-      plaidAccountsWithBalances = await _internalFetchBalances(
-        institution.accessToken,
-      )
-      console.log(
-        `Successfully fetched balances for ${plaidAccountsWithBalances.length} accounts for institution ${institutionId}.`,
-      )
-    } catch (balanceError: any) {
-      console.error(
-        `Error fetching balances for institution ${institutionId}: ${balanceError.message}. Proceeding with transaction sync only.`,
-      )
-      // Do not re-throw, allow transaction sync to complete
     }
 
-    // 6. Update account balances (only if fetched successfully)
+    // 6. Update account balances
     if (plaidAccountsWithBalances.length > 0) {
       const balanceUpdates = plaidAccountsWithBalances.map(plaidAcc => {
         const internalAccountId = accountIdMap.get(plaidAcc.account_id)
@@ -320,46 +329,34 @@ export const syncTransactions = (async (
           })
         } else {
           console.warn(
-            `Skipping balance update for Plaid account ${plaidAccount.account_id}: Cannot find internal account.`,
+            `Skipping balance update: Could not find matching internal account for plaid account ${plaidAcc.account_id}`,
           )
-          return Promise.resolve() // Skip if account not found in our DB
+          return Promise.resolve() // Return resolved promise for Promise.all
         }
       })
       await Promise.all(balanceUpdates)
       console.log(
         `Institution ${institutionId}: Updated balances for ${plaidAccountsWithBalances.length} accounts.`,
       )
-    } else {
-      console.log(
-        `Institution ${institutionId}: Skipping balance updates (either none found or fetch failed).`,
-      )
     }
 
-    // 7. Update lastSync timestamp for the institution (regardless of balance success)
+    // 7. Update lastSync timestamp for the institution
     await context.entities.Institution.update({
       where: { id: institutionId },
       data: { lastSync: new Date() },
     })
 
-    console.log(
-      `Successfully synced ${transactionData.length} transactions for institution ${institutionId}. Last sync updated to ${updatedInstitution.lastSync}`,
-    )
-
-    return {
-      syncedTransactions: transactionData.length,
-      institutionId: institutionId,
-    }
+    return { syncedTransactions: upsertedCount, institutionId: institutionId }
   } catch (error: any) {
     // Catch errors specifically from transaction fetching or processing
     console.error(
       `Error syncing transactions for institution ${institutionId}:`,
       error.message,
     )
-    // Re-throw the specific error for the single sync case if transaction part fails
-    throw new HttpError(
-      500,
-      `Failed to sync transactions for institution ${institutionId}.`,
-    )
+    // Optionally update lastSync attempt time even on failure?
+    // Don't re-throw here, allow bulk sync to continue
+    // Re-throw the specific error for the single sync case
+    throw new HttpError(500, `Failed to sync institution ${institutionId}.`)
   }
 }
 
@@ -386,11 +383,16 @@ export const syncTransactions = (async (
         forceStartDate,
         context,
       )
-      // Optionally update institution status here
-      throw new HttpError(
-        400,
-        `Connection requires update for institution ${institution.institutionName}. Please reconnect.`,
+      // In single mode, we might also update User.lastSyncedAt if desired,
+      // but the primary trigger relies on it, so maybe not necessary here.
+      // await context.entities.User.update({ where: { id: context.user.id }, data: { lastSyncedAt: new Date() } });
+      return result
+    } catch (error) {
+      // Error already logged in helper, re-throw for the client action
+      console.error(
+        `Sync failed for single institution ${institutionId}: re-throwing error.`,
       )
+      throw error // Propagate error back to the client
     }
   } else {
     // --- Sync All Institutions for User --- (New logic)
@@ -416,20 +418,16 @@ export const syncTransactions = (async (
     console.log(`Found ${institutions.length} institutions to sync.`) // Log count
 
     for (const inst of institutions) {
-      console.log(
-        `Queueing sync for institution: ${inst.institutionName} (${inst.id})`,
-      ) // Log each queued institution
+      console.log(`Queueing sync for institution: ${inst.institutionName} (${inst.id})`) // Log each queued institution
       // Call the helper for each institution. Catch errors individually.
       syncPromises.push(
-        _syncSingleInstitution(inst.id, forceStartDate, context).catch(
-          error => {
-            // Log individual failures but don't stop the bulk process
-            console.error(
-              `Sync failed for institution ${inst.institutionName} (${inst.id}) during bulk sync: ${error.message}`,
-            )
-            return { syncedTransactions: 0 } // Return 0 count for failed ones
-          },
-        ),
+        _syncSingleInstitution(inst.id, forceStartDate, context).catch(error => {
+          // Log individual failures but don't stop the bulk process
+          console.error(
+            `Sync failed for institution ${inst.institutionName} (${inst.id}) during bulk sync: ${error.message}`,
+          )
+          return { syncedTransactions: 0 } // Return 0 count for failed ones
+        }),
       )
     }
 
@@ -458,7 +456,10 @@ export const syncTransactions = (async (
     // Result for bulk sync doesn't include institutionId
     return { syncedTransactions: totalSyncedCount }
   }
-}) satisfies SyncTransactions<SyncTransactionsPayload, SyncTransactionsResult>
+}) satisfies SyncTransactions<
+  SyncTransactionsPayload,
+  SyncTransactionsResult
+>
 
 /**
  * Wasp Action: Deletes a specific financial institution and all its associated data

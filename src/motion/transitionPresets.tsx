@@ -163,10 +163,10 @@ export const spinner = {
   },
 }
 
-// Stagger Children - Update to use functions
+// Stagger Children - Update to use functions and standard keys
 export const staggerContainer = {
-  hidden: { opacity: 0 },
-  show: () => ({
+  initial: { opacity: 0 },
+  animate: () => ({
     opacity: 1,
     transition: {
       staggerChildren: 0.07,
@@ -184,11 +184,11 @@ export const staggerContainer = {
 }
 
 export const staggerItem = {
-  hidden: {
+  initial: {
     y: 20,
     opacity: 0,
   },
-  show: () => ({
+  animate: () => ({
     y: 0,
     opacity: 1,
   }),

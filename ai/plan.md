@@ -197,7 +197,7 @@ _(All steps in this phase are deferred until after Phase 4 is complete)_
 
 ## Phase 6: Connecting & Refinement
 
-1.  - [ ] **Connect UI & Logic**: Ensure all `useQuery` and `useAction` hooks
+1.  - [x] **Connect UI & Logic**: Ensure all `useQuery` and `useAction` hooks
           are correctly implemented, handling loading and error states
           gracefully, especially around subscription status checks.
 2.  - [x] **Styling**: Apply CSS/styling to match the mockups (e.g., using

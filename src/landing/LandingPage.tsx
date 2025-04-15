@@ -105,6 +105,7 @@ export default function Landing() {
           </motion.figure>
         )}
       </motion.section>
-    </motion.div>
+    </div>
   )
 }
+

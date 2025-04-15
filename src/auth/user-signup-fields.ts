@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineUserSignupFields } from 'wasp/auth/providers/types'
 import dayjs from 'dayjs'
+import { z } from 'zod'
 
 const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
 
