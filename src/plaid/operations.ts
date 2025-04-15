@@ -231,17 +231,17 @@ async function _syncSingleInstitution(
   )
 
   try {
-    // 3. Fetch transactions and balances from Plaid service
-    const [plaidTransactions, plaidAccountsWithBalances] = await Promise.all([
-      _internalFetchTransactions(institution.accessToken, startDate, endDate),
-      _internalFetchBalances(institution.accessToken),
-    ])
+    // 3. Fetch transactions FIRST
+    const plaidTransactions = await _internalFetchTransactions(
+      institution.accessToken,
+      startDate,
+      endDate,
+    )
 
     let upsertedCount = 0
 
+    // 4. Process and save transactions (moved before balance fetch)
     if (plaidTransactions.length > 0) {
-      // 4. Prepare data for Prisma upsert
-
       // Define a local type for the input data structure
       type TransactionCreateInputData = {
         plaidTransactionId: string
@@ -306,32 +306,44 @@ async function _syncSingleInstitution(
       )
     }
 
-    // 6. Update account balances
-    if (plaidAccountsWithBalances.length > 0) {
-      const balanceUpdates = plaidAccountsWithBalances.map(plaidAcc => {
-        const internalAccountId = accountIdMap.get(plaidAcc.account_id)
-        if (internalAccountId) {
-          return context.entities.Account.update({
-            where: { id: internalAccountId },
-            data: {
-              currentBalance: plaidAcc.balances?.current ?? null,
-              updatedAt: new Date(), // Explicitly update updatedAt
-            },
-          })
-        } else {
-          console.warn(
-            `Skipping balance update: Could not find matching internal account for plaid account ${plaidAcc.account_id}`,
-          )
-          return Promise.resolve() // Return resolved promise for Promise.all
-        }
-      })
-      await Promise.all(balanceUpdates)
-      console.log(
-        `Institution ${institutionId}: Updated balances for ${plaidAccountsWithBalances.length} accounts.`,
+    // 6. Fetch and update account balances (now in separate try/catch)
+    try {
+      const plaidAccountsWithBalances = await _internalFetchBalances(
+        institution.accessToken,
       )
+
+      if (plaidAccountsWithBalances.length > 0) {
+        const balanceUpdates = plaidAccountsWithBalances.map(plaidAcc => {
+          const internalAccountId = accountIdMap.get(plaidAcc.account_id)
+          if (internalAccountId) {
+            return context.entities.Account.update({
+              where: { id: internalAccountId },
+              data: {
+                currentBalance: plaidAcc.balances?.current ?? null,
+                updatedAt: new Date(), // Explicitly update updatedAt
+              },
+            })
+          } else {
+            console.warn(
+              `Skipping balance update: Could not find matching internal account for plaid account ${plaidAcc.account_id}`,
+            )
+            return Promise.resolve() // Return resolved promise for Promise.all
+          }
+        })
+        await Promise.all(balanceUpdates)
+        console.log(
+          `Institution ${institutionId}: Updated balances for ${plaidAccountsWithBalances.length} accounts.`,
+        )
+      }
+    } catch (balanceError: any) {
+      // Log the balance fetch error but DO NOT re-throw
+      console.error(
+        `Error fetching balances for institution ${institutionId}: ${balanceError.message}. Proceeding with transaction sync completion.`,
+      )
+      // We could potentially update the institution's status here if needed
     }
 
-    // 7. Update lastSync timestamp for the institution
+    // 7. Update lastSync timestamp for the institution (always update)
     await context.entities.Institution.update({
       where: { id: institutionId },
       data: { lastSync: new Date() },
@@ -805,6 +817,7 @@ type AllTransactionsArgs = {
 export type TransactionWithDetails = Transaction & {
   account: {
     name: string
+    mask: string | null
     institution: {
       institutionName: string
     }
@@ -827,6 +840,7 @@ export const getAllTransactions = (async (args, context) => {
       account: {
         select: {
           name: true,
+          mask: true,
           institution: {
             select: {
               institutionName: true,
