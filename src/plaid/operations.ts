@@ -225,7 +225,7 @@ async function _syncSingleInstitution(
     ? forceStartDate // Use forced start date if provided
     : institution.lastSync
       ? dayjs(institution.lastSync).format('YYYY-MM-DD') // Use last sync date
-      : dayjs().subtract(30, 'days').format('YYYY-MM-DD') // Default to 30 days ago
+      : dayjs().subtract(6, 'months').format('YYYY-MM-DD') // Default to 6 months ago
 
   if (dayjs(startDate).isBefore(twoYearsAgo)) {
     console.warn(

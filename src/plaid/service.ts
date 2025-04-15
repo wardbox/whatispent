@@ -28,6 +28,10 @@ export async function _internalCreateLinkToken(
     // Specify the countries your users are in
     country_codes: [CountryCode.Us],
     language: 'en', // Specify the language
+    // Request 180 days of initial transaction history
+    transactions: {
+      days_requested: 180,
+    },
     // Optional: webhook configuration if using webhooks
     // webhook: 'https://your-webhook-url.com/plaid',
   }
