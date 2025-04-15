@@ -26,7 +26,6 @@ import {
 import weekOfYear from 'dayjs/plugin/weekOfYear.js'
 import utc from 'dayjs/plugin/utc.js'
 import isBetween from 'dayjs/plugin/isBetween.js'
-import type { AccountBase } from 'plaid'
 
 // We explicitly use context.entities which are typed, so these aren't strictly needed
 // import type { User, Institution, Account } from '@wasp/entities';
@@ -212,12 +211,11 @@ async function _syncSingleInstitution(
 
   // 2. Determine date range
   const twoYearsAgo = dayjs().subtract(2, 'year').format('YYYY-MM-DD')
-  let startDate =
-    forceStartDate
-      ? forceStartDate // Use forced start date if provided
-      : institution.lastSync
-        ? dayjs(institution.lastSync).format('YYYY-MM-DD') // Use last sync date
-        : dayjs().subtract(30, 'days').format('YYYY-MM-DD') // Default to 30 days ago
+  let startDate = forceStartDate
+    ? forceStartDate // Use forced start date if provided
+    : institution.lastSync
+      ? dayjs(institution.lastSync).format('YYYY-MM-DD') // Use last sync date
+      : dayjs().subtract(30, 'days').format('YYYY-MM-DD') // Default to 30 days ago
 
   if (dayjs(startDate).isBefore(twoYearsAgo)) {
     console.warn(
@@ -232,17 +230,10 @@ async function _syncSingleInstitution(
     `Syncing transactions for institution ${institutionId} from ${startDate} to ${endDate}`,
   )
 
-  let upsertedCount = 0
-  let plaidAccountsWithBalances: AccountBase[] = [] // Initialize empty
-
   try {
     // 3. Fetch transactions and balances from Plaid service
     const [plaidTransactions, plaidAccountsWithBalances] = await Promise.all([
-      _internalFetchTransactions(
-        institution.accessToken,
-        startDate,
-        endDate,
-      ),
+      _internalFetchTransactions(institution.accessToken, startDate, endDate),
       _internalFetchBalances(institution.accessToken),
     ])
 
@@ -418,16 +409,20 @@ export const syncTransactions = (async (
     console.log(`Found ${institutions.length} institutions to sync.`) // Log count
 
     for (const inst of institutions) {
-      console.log(`Queueing sync for institution: ${inst.institutionName} (${inst.id})`) // Log each queued institution
+      console.log(
+        `Queueing sync for institution: ${inst.institutionName} (${inst.id})`,
+      ) // Log each queued institution
       // Call the helper for each institution. Catch errors individually.
       syncPromises.push(
-        _syncSingleInstitution(inst.id, forceStartDate, context).catch(error => {
-          // Log individual failures but don't stop the bulk process
-          console.error(
-            `Sync failed for institution ${inst.institutionName} (${inst.id}) during bulk sync: ${error.message}`,
-          )
-          return { syncedTransactions: 0 } // Return 0 count for failed ones
-        }),
+        _syncSingleInstitution(inst.id, forceStartDate, context).catch(
+          error => {
+            // Log individual failures but don't stop the bulk process
+            console.error(
+              `Sync failed for institution ${inst.institutionName} (${inst.id}) during bulk sync: ${error.message}`,
+            )
+            return { syncedTransactions: 0 } // Return 0 count for failed ones
+          },
+        ),
       )
     }
 
@@ -456,10 +451,7 @@ export const syncTransactions = (async (
     // Result for bulk sync doesn't include institutionId
     return { syncedTransactions: totalSyncedCount }
   }
-}) satisfies SyncTransactions<
-  SyncTransactionsPayload,
-  SyncTransactionsResult
->
+}) satisfies SyncTransactions<SyncTransactionsPayload, SyncTransactionsResult>
 
 /**
  * Wasp Action: Deletes a specific financial institution and all its associated data
