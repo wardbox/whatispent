@@ -47,7 +47,7 @@ This starter aims to provide a solid foundation with:
     cd <repository-directory>
     ```
 
-3.  **Install Dependencies**: Run `npm install` (or let `wasp start` handle it).
+3.  **Install Dependencies**: Run `wasp start db` `wasp db migrate-dev` `wasp start`
 
 4.  **Environment Variables (`.env.server`)**:
 
