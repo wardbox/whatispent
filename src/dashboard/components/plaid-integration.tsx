@@ -226,9 +226,17 @@ export function PlaidIntegration({
                   transition={{ delay: 0.1 * index, duration: 0.5 }}
                 >
                   <div className='flex flex-1 items-center gap-3 overflow-hidden pr-2'>
-                    <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted'>
-                      {/* Use a generic bank icon or fetch institution logo if available */}
-                      <CreditCard className='h-4 w-4 text-foreground' />
+                    <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted p-1'>
+                      {/* Use logo if available, otherwise default icon */}
+                      {institution.logo ? (
+                        <img
+                          src={`data:image/png;base64,${institution.logo}`}
+                          alt={`${institution.institutionName} logo`}
+                          className='h-full w-full object-contain'
+                        />
+                      ) : (
+                        <CreditCard className='h-4 w-4 text-foreground' />
+                      )}
                     </div>
                     <div className='flex-1 overflow-hidden'>
                       <p className='truncate text-sm font-light'>

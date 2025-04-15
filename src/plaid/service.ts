@@ -28,6 +28,10 @@ export async function _internalCreateLinkToken(
     // Specify the countries your users are in
     country_codes: [CountryCode.Us],
     language: 'en', // Specify the language
+    // Request 180 days of initial transaction history
+    transactions: {
+      days_requested: 180,
+    },
     // Optional: webhook configuration if using webhooks
     // webhook: 'https://your-webhook-url.com/plaid',
   }
@@ -58,6 +62,7 @@ export async function _internalExchangePublicToken(
   institutionName: string
   institutionId: string
   accounts: AccountBase[]
+  institutionLogo?: string | null
 }> {
   try {
     // Exchange public token for access token and item ID
@@ -88,6 +93,7 @@ export async function _internalExchangePublicToken(
     })
 
     const institutionName = institutionResponse.data.institution.name
+    const institutionLogo = institutionResponse.data.institution.logo
 
     // Fetch accounts associated with the item
     const accountsResponse = await plaidClient.accountsGet({
@@ -104,6 +110,7 @@ export async function _internalExchangePublicToken(
       institutionName: institutionName,
       institutionId: institutionId, // Plaid's ID for the institution
       accounts: accounts,
+      institutionLogo: institutionLogo,
     }
   } catch (error: any) {
     console.error(

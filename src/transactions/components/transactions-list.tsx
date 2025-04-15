@@ -367,13 +367,19 @@ export function TransactionsList({
                           },
                         )}
                       </p>
-                      <p className='text-xs text-muted-foreground'>
-                        {transaction.account.institution.institutionName} •{' '}
-                        {transaction.account.name}
-                        {transaction.account.mask
-                          ? ` (${transaction.account.mask})`
-                          : ''}
-                      </p>
+                      <div className='flex items-center justify-between gap-1 text-xs text-muted-foreground'>
+                        <span>{transaction.account.name}</span>
+                        <span className='flex items-center gap-1'>
+                          {transaction.account.institution.logo && (
+                            <img
+                              src={`data:image/png;base64,${transaction.account.institution.logo}`}
+                              alt=''
+                              className='h-3 w-3 rounded-full object-contain'
+                            />
+                          )}
+                          {transaction.account.institution.institutionName}
+                        </span>
+                      </div>
                     </div>
                   </motion.div>
                 )

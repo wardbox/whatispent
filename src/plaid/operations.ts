@@ -107,6 +107,7 @@ export const exchangePublicToken = (async (
       institutionName,
       institutionId: plaidInstitutionId, // Plaid's ID for the institution
       accounts: plaidAccounts,
+      institutionLogo, // Destructure the logo from the response
     } = await _internalExchangePublicToken(args.publicToken)
 
     // Check if this institution already exists for this user
@@ -134,6 +135,7 @@ export const exchangePublicToken = (async (
         itemId: itemId,
         institutionName: institutionName,
         plaidInstitutionId: plaidInstitutionId, // Store Plaid's ID
+        logo: institutionLogo, // Save the base64 logo string
         accounts: {
           create: plaidAccounts.map(account => ({
             plaidAccountId: account.account_id,
@@ -151,7 +153,15 @@ export const exchangePublicToken = (async (
     // Wait for 3 seconds before syncing transactions
     await new Promise(resolve => setTimeout(resolve, 1000))
 
-    await syncTransactions({ institutionId: newInstitution.id }, context)
+    // Calculate start date for initial 6-month sync
+    const initialSyncStartDate = dayjs()
+      .subtract(6, 'months')
+      .format('YYYY-MM-DD')
+
+    await syncTransactions(
+      { institutionId: newInstitution.id, startDate: initialSyncStartDate },
+      context,
+    )
 
     return {
       institutionId: newInstitution.id,
@@ -215,7 +225,7 @@ async function _syncSingleInstitution(
     ? forceStartDate // Use forced start date if provided
     : institution.lastSync
       ? dayjs(institution.lastSync).format('YYYY-MM-DD') // Use last sync date
-      : dayjs().subtract(30, 'days').format('YYYY-MM-DD') // Default to 30 days ago
+      : dayjs().subtract(6, 'months').format('YYYY-MM-DD') // Default to 6 months ago
 
   if (dayjs(startDate).isBefore(twoYearsAgo)) {
     console.warn(
@@ -820,6 +830,7 @@ export type TransactionWithDetails = Transaction & {
     mask: string | null
     institution: {
       institutionName: string
+      logo: string | null
     }
   }
 }
@@ -844,6 +855,7 @@ export const getAllTransactions = (async (args, context) => {
           institution: {
             select: {
               institutionName: true,
+              logo: true,
             },
           },
         },
@@ -860,10 +872,10 @@ export const getAllTransactions = (async (args, context) => {
   return transactions as TransactionWithDetails[]
 }) satisfies GetAllTransactions<AllTransactionsArgs, TransactionWithDetails[]>
 
-// Update the result type to include accounts
+// Update the result type to include accounts and logo
 type GetInstitutionsResult = (Pick<
   Institution,
-  'id' | 'institutionName' | 'lastSync' | 'plaidInstitutionId'
+  'id' | 'institutionName' | 'lastSync' | 'plaidInstitutionId' | 'logo' // Changed logoUrl to logo
 > & {
   accounts: Pick<
     Account,
@@ -890,6 +902,7 @@ export const getInstitutions: GetInstitutions<
       institutionName: true,
       lastSync: true,
       plaidInstitutionId: true,
+      logo: true, // Select logo
       accounts: {
         // Include accounts
         select: {
