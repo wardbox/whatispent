@@ -368,8 +368,11 @@ export function TransactionsList({
                         )}
                       </p>
                       <p className='text-xs text-muted-foreground'>
-                        {transaction.account.institution.institutionName} • {transaction.account.name}
-                        {transaction.account.mask ? ` (${transaction.account.mask})` : ''}
+                        {transaction.account.institution.institutionName} •{' '}
+                        {transaction.account.name}
+                        {transaction.account.mask
+                          ? ` (${transaction.account.mask})`
+                          : ''}
                       </p>
                     </div>
                   </motion.div>
