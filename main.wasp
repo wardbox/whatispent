@@ -18,27 +18,16 @@ app whatispent {
     "<meta name='twitter:title' content='what i spent: this day. this week. this month.'>",
     "<meta name='twitter:description' content='what i spent helps you understand where your money goes.'>",
     "<meta name='twitter:image' content='https://whatispent.com/og-image.png'>",
-
+    "<script defer data-domain='whatispent.com' src='https://plausible.io/js/script.js'></script>",
     "<script src='https://cdn.plaid.com/link/v2/stable/link-initialize.js'></script>"
   ],
   auth: {
     userEntity: User,
     methods: {
-      email: {
-        fromField: {
-          name: "example.com",
-          email: "wizard@example.com"
-        },
-        emailVerification: {
-          clientRoute: EmailVerificationRoute,
-          getEmailContentFn: import { getVerificationEmailContent } from "@src/auth/email",
-        },
-        passwordReset: {
-          clientRoute: PasswordResetRoute,
-          getEmailContentFn: import { getPasswordResetEmailContent } from "@src/auth/email",
-        },
-        userSignupFields: import { getEmailUserFields } from "@src/auth/user-signup-fields",
-      }
+      google: {
+        configFn: import { getGoogleAuthConfig } from "@src/auth/user-signup-fields",
+        userSignupFields: import { getGoogleUserFields } from "@src/auth/user-signup-fields",
+      },
     },
     onAuthSucceededRedirectTo: "/dashboard",
     onAuthFailedRedirectTo: "/login"
@@ -46,9 +35,6 @@ app whatispent {
   client: {
     rootComponent: import Root from "@src/root/RootPage",
     setupFn: import setupClient from "@src/lib/setup"
-  },
-  emailSender: {
-    provider: Dummy,
   },
 }
 
@@ -58,12 +44,10 @@ route Dashboard { path: "/dashboard", to: DashboardPage }
 route Profile { path: "/profile", to: ProfilePage }
 route LoginRoute { path: "/login", to: LoginPage }
 route SignupRoute { path: "/signup", to: SignupPage }
-route RequestPasswordResetRoute { path: "/request-password-reset", to: RequestPasswordResetPage }
-route PasswordResetRoute { path: "/password-reset", to: PasswordResetPage }
-route EmailVerificationRoute { path: "/email-verification", to: EmailVerificationPage }
 route TransactionsRoute { path: "/transactions", to: TransactionsPage }
 route SubscriptionRoute { path: "/subscription", to: SubscriptionPage }
 route CheckoutResultRoute { path: "/checkout", to: CheckoutResultPage }
+route AdminRoute { path: "/admin", to: AdminPage }
 route NotFoundRoute { path: "*", to: NotFoundPage }
 //#endregion
 
@@ -90,20 +74,14 @@ page SignupPage {
   component: import { Signup } from "@src/auth/auth",
 }
 
-page RequestPasswordResetPage {
-  component: import { RequestPasswordReset } from "@src/auth/auth",
-}
-
-page PasswordResetPage {
-  component: import { PasswordReset } from "@src/auth/auth",
-}
-
-page EmailVerificationPage {
-  component: import { EmailVerification } from "@src/auth/auth",
-}
-
 page TransactionsPage {
-  component: import TransactionsPage from "@src/transactions/TransactionsPage"
+  component: import TransactionsPage from "@src/transactions/TransactionsPage",
+  authRequired: true
+}
+
+page AdminPage {
+  component: import AdminPage from "@src/admin/AdminPage",
+  authRequired: true
 }
 
 page NotFoundPage {
@@ -175,6 +153,15 @@ query getAllTransactions {
 query getInstitutions {
   fn: import { getInstitutions } from "@src/plaid/operations.js",
   entities: [Transaction,Institution]
+}
+
+//#endregion
+
+//#region Admin Queries
+
+query getUsers {
+  fn: import { getUsers } from "@src/admin/operations.ts",
+  entities: [User, Institution, Account]
 }
 
 //#endregion

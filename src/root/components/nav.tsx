@@ -68,8 +68,12 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
     const remainingTotalMinutes = trialEndsAt
       ? dayjs(trialEndsAt).diff(dayjs(), 'minute')
       : 0
-    // Show info only if user is trialing and time > 0
-    const showTrialInfo = user && isTrialing && remainingTotalMinutes > 0
+    // Show info only if user is trialing, not active, and time > 0
+    const showTrialInfo =
+      user &&
+      isTrialing &&
+      user.subscriptionStatus !== 'active' &&
+      remainingTotalMinutes > 0
     const formattedTimeLeft = formatRemainingTime(remainingTotalMinutes)
 
     return (
@@ -90,16 +94,6 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
             <span className='font-light tracking-tighter'>what i spent</span>
           </Link>
           <div className='hidden items-center space-x-4 text-muted-foreground md:flex lg:space-x-6'>
-            <Link
-              to='/'
-              className={cn(
-                'text-md flex items-center space-x-2 font-medium transition-colors hover:text-primary',
-                location.pathname === '/' && 'text-primary',
-              )}
-              onMouseEnter={() => prefetch('/', undefined, { assets: true })}
-            >
-              <span>Home</span>
-            </Link>
             <Link
               to='/dashboard'
               className={cn(
@@ -172,6 +166,16 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                       >
                         <DropdownMenuItem>Subscription</DropdownMenuItem>
                       </Link>
+                      {user?.isAdmin && (
+                        <Link
+                          to='/admin'
+                          onMouseEnter={() => prefetch('/admin')}
+                          onClick={() => setDropdownOpen(false)}
+                          className='cursor-pointer'
+                        >
+                          <DropdownMenuItem>Admin Portal</DropdownMenuItem>
+                        </Link>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className='cursor-pointer text-red-600'
@@ -343,6 +347,16 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                           </Button>
                           <span className='text-3xl'>Subscription</span>
                         </Link>
+                        {user?.isAdmin && (
+                          <Link
+                            to='/admin'
+                            onMouseEnter={() => prefetch('/admin')}
+                            onClick={() => setDropdownOpen(false)}
+                            className='cursor-pointer'
+                          >
+                            <DropdownMenuItem>Admin Portal</DropdownMenuItem>
+                          </Link>
+                        )}
                         <DropdownMenuSeparator />
                         <Button
                           onClick={() => {

@@ -77,11 +77,11 @@ export function PlaidIntegration({
       refetch()
       // Optional: Add a small delay if UI updates seem too fast
       // await new Promise(resolve => setTimeout(resolve, 100));
-    } catch (refetchError) {
-      console.error(
-        'Error refetching institutions after connection success:',
-        refetchError,
-      )
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Error refetching institutions after connection success.',
+      })
       // Handle refetch error if necessary, e.g., show a toast
     } finally {
       // Ensure the spinner for the *specific* institution that was syncing is cleared
@@ -99,24 +99,20 @@ export function PlaidIntegration({
 
   // Error handler for Plaid Link connection
   const handleConnectionError = (error: any) => {
-    console.log('Received connection error:', error) // Log the error structure for debugging
+    toast({
+      title: 'Error',
+      description: 'Received connection error:',
+    })
     // Check for the status code in a potentially nested structure common in Wasp errors
     const statusCode = error?.data?.httpError?.statusCode || error?.statusCode
-    const message =
-      error?.data?.httpError?.message ||
-      error?.message ||
-      'An unknown error occurred.'
 
     if (statusCode === 409) {
       toast({
         title: 'This institution is already linked.',
-        description: message,
       })
     } else {
-      // Handle other potential errors during token exchange
       toast({
         title: 'Connection Failed',
-        description: message,
       })
     }
     // Clear any potential syncing state if an error occurred before success
@@ -133,11 +129,9 @@ export function PlaidIntegration({
       })
       refetch()
       setInstitutionToDelete(null)
-    } catch (error: any) {
-      console.error('Error deleting institution:', error)
+    } catch {
       toast({
         title: 'Failed to delete institution.',
-        description: error.message || 'Failed to delete institution.',
       })
     } finally {
       setIsDeleting(false)

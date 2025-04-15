@@ -15,6 +15,7 @@ model User {
   stripeCustomerId   String?     @unique
   subscriptionStatus String?
   trialEndsAt        DateTime?
+  lastSyncedAt       DateTime?
   institutions       Institution[]
   transactions       Transaction[]
   createdAt          DateTime    @default(now())

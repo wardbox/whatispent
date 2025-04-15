@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react'
 import { getSpendingSummary, useQuery } from 'wasp/client/operations'
 import { useAuth } from 'wasp/client/auth'
+import CountUp from 'react-countup'
 
 export function SpendingMetrics() {
   const { data: user } = useAuth()
@@ -81,10 +82,14 @@ export function SpendingMetrics() {
             >
               <span className='text-5xl font-extralight tracking-tighter text-foreground'>
                 $
-                {metric.amount.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+                <CountUp
+                  end={metric.amount}
+                  duration={1}
+                  decimals={0}
+                  decimal='.'
+                  separator=','
+                  preserveValue={true}
+                />
               </span>
             </motion.div>
             <div
@@ -95,7 +100,14 @@ export function SpendingMetrics() {
               ) : (
                 <ArrowUpIcon className='mr-0.5 h-2.5 w-2.5' />
               )}
-              {Math.abs(metric.change)}%
+              <CountUp
+                end={Math.abs(metric.change)}
+                duration={1}
+                decimals={0}
+                decimal='.'
+                separator=','
+              />
+              %
             </div>
           </div>
         </motion.div>

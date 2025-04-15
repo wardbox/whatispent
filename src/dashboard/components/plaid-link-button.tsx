@@ -63,22 +63,19 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
   // No need for isReady state
 
   const handlePlaidSuccess = useCallback(
-    async (public_token: string, metadata: any) => {
-      console.log('Plaid Link success:', public_token, metadata)
+    async (public_token: string) => {
       setIsLoading(true) // Indicate processing
       try {
         // Capture the result of the exchange action
         const result = await exchangePublicTokenAction({
           publicToken: public_token,
         })
-        console.log('Public token exchanged successfully!', result)
         // Optionally: Trigger UI update or navigation
         if (onSuccess) {
           // Pass the result to the onSuccess callback
           onSuccess(result)
         }
       } catch (err) {
-        console.error('Error exchanging public token:', err)
         // Call the onError callback if provided
         if (onError) {
           onError(err)
@@ -92,7 +89,6 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
 
   const handlePlaidExit = useCallback(
     (err: any, metadata: any) => {
-      console.log('Plaid exited:', err, metadata)
       // Call external onExit if provided
       if (onExit) {
         onExit(err, metadata)
@@ -106,7 +102,6 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
 
   const handleOpen = async () => {
     if (!window.Plaid) {
-      console.error('Plaid.js script not loaded')
       const err = { message: 'Plaid script failed to load.' }
       if (onError) {
         onError(err)
@@ -143,7 +138,6 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
       // No need to call setIsLoading(false) here, as the modal is now open
       // Loading state will be handled by onSuccess or onExit callbacks
     } catch (err) {
-      console.error('Error initiating Plaid Link:', err)
       setIsLoading(false)
 
       // Safely determine the error message
