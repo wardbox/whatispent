@@ -3,7 +3,13 @@ import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { cn, usePrefetch } from '../../lib/utils'
 import { Link } from 'wasp/client/router'
-import { HouseSimple, List, User as UserIcon } from '@phosphor-icons/react'
+import {
+  CreditCard,
+  HouseSimple,
+  List,
+  Shield,
+  User as UserIcon,
+} from '@phosphor-icons/react'
 import { ModeToggle } from '../../client/components/mode-toggle'
 import {
   Sheet,
@@ -296,6 +302,34 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                         )}
                         <DropdownMenuSeparator />
                         <Link
+                          to='/dashboard'
+                          className={cn(
+                            'text-md flex items-center space-x-4 font-medium transition-colors hover:text-primary',
+                            location.pathname === '/dashboard' && 'text-primary',
+                          )}
+                          onClick={handleNavigation}
+                          onMouseEnter={() => prefetch('/dashboard')}
+                        >
+                          <Button size='icon' className='rounded-full' iconSize='lg'>
+                            <HouseSimple size={24} weight='fill' />
+                          </Button>
+                          <span className='text-3xl'>Dashboard</span>
+                        </Link>
+                        <Link
+                          to='/transactions'
+                          className={cn(
+                            'text-md flex items-center space-x-4 font-medium transition-colors hover:text-primary',
+                            location.pathname === '/transactions' && 'text-primary',
+                          )}
+                          onClick={handleNavigation}
+                          onMouseEnter={() => prefetch('/transactions')}
+                        >
+                          <Button size='icon' className='rounded-full' iconSize='lg'>
+                            <List size={24} weight='fill' />
+                          </Button>
+                          <span className='text-3xl'>Transactions</span>
+                        </Link>
+                        <Link
                           to='/profile'
                           className={cn(
                             'text-md flex items-center space-x-4 font-medium transition-colors hover:text-primary',
@@ -329,32 +363,29 @@ const Nav = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
                             className='rounded-full'
                             iconSize='lg'
                           >
-                            <svg
-                              xmlns='http://www.w3.org/2000/svg'
-                              width='24'
-                              height='24'
-                              viewBox='0 0 24 24'
-                              fill='none'
-                              stroke='currentColor'
-                              strokeWidth='2'
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              className='lucide lucide-credit-card'
-                            >
-                              <rect width='20' height='14' x='2' y='5' rx='2' />
-                              <line x1='2' x2='22' y1='10' y2='10' />
-                            </svg>
+                            <CreditCard size={24} weight='fill' />
                           </Button>
                           <span className='text-3xl'>Subscription</span>
                         </Link>
                         {user?.isAdmin && (
                           <Link
                             to='/admin'
+                            className={cn(
+                              'text-md flex items-center space-x-4 font-medium transition-colors hover:text-primary',
+                              location.pathname.startsWith('/admin') &&
+                                'text-primary',
+                            )}
+                            onClick={handleNavigation}
                             onMouseEnter={() => prefetch('/admin')}
-                            onClick={() => setDropdownOpen(false)}
-                            className='cursor-pointer'
                           >
-                            <DropdownMenuItem>Admin Portal</DropdownMenuItem>
+                            <Button
+                              size='icon'
+                              className='rounded-full'
+                              iconSize='lg'
+                            >
+                              <Shield size={24} weight='fill' />
+                            </Button>
+                            <span className='text-3xl'>Admin Portal</span>
                           </Link>
                         )}
                         <DropdownMenuSeparator />

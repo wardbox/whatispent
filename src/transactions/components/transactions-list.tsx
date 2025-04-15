@@ -61,6 +61,7 @@ interface TransactionsListProps {
   searchQuery: string
   selectedCategories: Set<string>
   sortCriteria: SortOption
+  onTransactionClick: (transaction: TransactionWithDetails) => void
   _transactionTypeDummy?: TransactionWithDetails
 }
 
@@ -73,6 +74,7 @@ export function TransactionsList({
   searchQuery,
   selectedCategories,
   sortCriteria,
+  onTransactionClick,
 }: TransactionsListProps) {
   const [expandedGroup, setExpandedGroup] = useState(new Set<string>())
   const [currentPage, setCurrentPage] = useState(1)
@@ -326,59 +328,57 @@ export function TransactionsList({
                 return (
                   <motion.div
                     key={transaction.id}
-                    className='flex items-center justify-between rounded-md p-2 hover:bg-muted'
+                    className='flex cursor-pointer items-center justify-between gap-2 rounded-md p-2 hover:bg-muted'
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 * index, duration: 0.3 }}
+                    onClick={() => onTransactionClick(transaction)}
                   >
-                    <div className='flex items-center gap-3'>
+                    <div className='flex flex-1 items-center gap-3 overflow-hidden'>
                       <div
-                        className='flex h-10 w-10 items-center justify-center rounded-full'
+                        className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full'
                         style={{ backgroundColor: `var(${categoryColorVar})` }}
                       >
                         <TransactionIcon className='h-5 w-5 text-background' />
                       </div>
-                      <div>
-                        <p className='text-sm font-light'>
+                      <div className='flex-1 overflow-hidden'>
+                        <p className='truncate text-sm font-light'>
                           {transaction.merchantName ?? transaction.name}
                         </p>
-                        <div className='flex items-center gap-2'>
-                          <p className='text-xs text-muted-foreground'>
+                        <div className='flex items-center gap-1.5'>
+                          <p className='truncate text-xs text-muted-foreground'>
                             {prettyCategory}
                           </p>
-                          <div className='h-1 w-1 rounded-full bg-muted-foreground'></div>
-                          <p className='text-xs text-muted-foreground'>
+                          <div className='h-1 w-1 flex-shrink-0 rounded-full bg-muted-foreground'></div>
+                          <p className='flex-shrink-0 text-xs text-muted-foreground'>
                             {displayTime}
                           </p>
                         </div>
                       </div>
                     </div>
-                    <div className='text-right'>
+                    <div className='flex flex-col items-end'>
                       <p
-                        className={`text-sm font-light ${transaction.amount > 0 ? '' : 'text-green-500'}`}
+                        className={`whitespace-nowrap text-sm font-light ${transaction.amount < 0 ? 'text-green-500' : ''}`}
                       >
-                        {transaction.amount > 0 ? '-' : '+'}${' '}
-                        {/* Plaid expenses are positive */}
-                        {Math.abs(transaction.amount).toLocaleString(
-                          undefined,
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          },
-                        )}
+                        {transaction.amount < 0 ? '+' : '-'}$
+                        {Math.abs(transaction.amount).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </p>
-                      <div className='flex items-center justify-between gap-1 text-xs text-muted-foreground'>
-                        <span>{transaction.account.name}</span>
-                        <span className='flex items-center gap-1'>
-                          {transaction.account.institution.logo && (
-                            <img
-                              src={`data:image/png;base64,${transaction.account.institution.logo}`}
-                              alt=''
-                              className='h-3 w-3 rounded-full object-contain'
-                            />
-                          )}
+                      <div className='flex items-center gap-1 text-xs text-muted-foreground'>
+                        <span className='hidden sm:inline'>
                           {transaction.account.institution.institutionName}
                         </span>
+                        <span className='hidden sm:inline'>•</span>
+                        <span>{transaction.account.name}</span>
+                        {transaction.account.institution.logo && (
+                          <img
+                            src={`data:image/png;base64,${transaction.account.institution.logo}`}
+                            alt=''
+                            className='ml-1 h-3 w-3 rounded-full object-contain'
+                          />
+                        )}
                       </div>
                     </div>
                   </motion.div>

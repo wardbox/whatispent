@@ -21,6 +21,8 @@ import {
   DropdownMenuRadioItem,
 } from '../client/components/ui/dropdown-menu'
 import { getPrettyCategoryName } from '../utils/categories'
+import type { TransactionWithDetails } from '../plaid/operations'
+import { TransactionDetailDialog } from './components/transaction-detail-dialog'
 
 export type AllTransactions = {
   transactions: Awaited<ReturnType<typeof getAllTransactions>>
@@ -47,6 +49,8 @@ export default function TransactionsPage() {
     new Set<string>(),
   )
   const [sortCriteria, setSortCriteria] = useState<SortOption>('date-desc')
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionWithDetails | null>(null)
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
 
   const handleCategoryToggle = (category: string) => {
     const newSelected = new Set(selectedCategories)
@@ -71,6 +75,17 @@ export default function TransactionsPage() {
     return Array.from(categories).sort()
   }, [transactions])
 
+  const handleOpenDetailDialog = (transaction: TransactionWithDetails) => {
+    setSelectedTransaction(transaction)
+    setIsDetailDialogOpen(true)
+  }
+
+  const handleCloseDetailDialog = () => {
+    setIsDetailDialogOpen(false)
+    // Optionally reset selected transaction after close animation
+    // setTimeout(() => setSelectedTransaction(null), 300)
+  }
+
   return (
     <div className='flex min-h-screen w-full flex-col bg-background'>
       <header className='sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-background/90 px-6 backdrop-blur-md'>
@@ -89,71 +104,68 @@ export default function TransactionsPage() {
 
       <main className='mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6'>
         <div className='flex flex-col gap-6'>
-          <div className='flex items-center justify-between'>
-            <div className='text-2xl font-extralight'>All Transactions</div>
-            <div className='flex items-center gap-2'>
-              {/* Filter Dropdown */}
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    className='h-9 gap-1 rounded-full text-xs'
+          <div className='flex flex-col md:flex-row items-stretch md:items-center gap-2 md:justify-end'>
+            {/* Filter Dropdown */}
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='h-9 gap-1 rounded-full text-xs w-full md:w-auto'
+                >
+                  <SlidersHorizontal className='h-3.5 w-3.5' />
+                  Filter{' '}
+                  {selectedCategories.size > 0 &&
+                    `(${selectedCategories.size})`}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className='w-56' align='end'>
+                <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {availableCategories.map(category => (
+                  <DropdownMenuCheckboxItem
+                    key={category}
+                    checked={selectedCategories.has(category)}
+                    onCheckedChange={() => handleCategoryToggle(category)}
                   >
-                    <SlidersHorizontal className='h-3.5 w-3.5' />
-                    Filter{' '}
-                    {selectedCategories.size > 0 &&
-                      `(${selectedCategories.size})`}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className='w-56' align='end'>
-                  <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {availableCategories.map(category => (
-                    <DropdownMenuCheckboxItem
-                      key={category}
-                      checked={selectedCategories.has(category)}
-                      onCheckedChange={() => handleCategoryToggle(category)}
-                    >
-                      {category}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                  {availableCategories.length === 0 && (
-                    <DropdownMenuLabel className='text-xs font-normal text-muted-foreground'>
-                      No categories found
-                    </DropdownMenuLabel>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    {category}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                {availableCategories.length === 0 && (
+                  <DropdownMenuLabel className='text-xs font-normal text-muted-foreground'>
+                    No categories found
+                  </DropdownMenuLabel>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-              {/* Sort Dropdown Menu */}
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    className='h-9 w-[150px] gap-1 rounded-full text-xs'
-                  >
-                    <SortAscending className='h-3.5 w-3.5' />
-                    {sortLabels[sortCriteria]}{' '}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align='end'>
-                  <DropdownMenuRadioGroup
-                    value={sortCriteria}
-                    onValueChange={value =>
-                      setSortCriteria(value as SortOption)
-                    }
-                  >
-                    {Object.entries(sortLabels).map(([value, label]) => (
-                      <DropdownMenuRadioItem key={value} value={value}>
-                        {label}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            {/* Sort Dropdown Menu */}
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='h-9 gap-1 rounded-full text-xs w-full md:w-auto'
+                >
+                  <SortAscending className='h-3.5 w-3.5' />
+                  {sortLabels[sortCriteria]}{' '}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end'>
+                <DropdownMenuRadioGroup
+                  value={sortCriteria}
+                  onValueChange={value =>
+                    setSortCriteria(value as SortOption)
+                  }
+                >
+                  {Object.entries(sortLabels).map(([value, label]) => (
+                    <DropdownMenuRadioItem key={value} value={value}>
+                      {label}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div className='relative'>
@@ -172,9 +184,15 @@ export default function TransactionsPage() {
             searchQuery={searchQuery}
             selectedCategories={selectedCategories}
             sortCriteria={sortCriteria}
+            onTransactionClick={handleOpenDetailDialog}
           />
         </div>
       </main>
+      <TransactionDetailDialog
+        transaction={selectedTransaction}
+        isOpen={isDetailDialogOpen}
+        onClose={handleCloseDetailDialog}
+      />
     </div>
   )
 }

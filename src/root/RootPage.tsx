@@ -88,7 +88,7 @@ export default function Root() {
                 'flex flex-1 flex-col',
                 isLandingPage
                   ? 'items-center justify-center'
-                  : 'mx-auto w-full max-w-5xl gap-8 p-6 py-24',
+                  : 'mx-auto w-full max-w-5xl gap-8 px-4 sm:py-24',
               )}
             >
               {isLoading && isProtectedRoute ? (
