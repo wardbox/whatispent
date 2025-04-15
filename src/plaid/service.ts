@@ -58,6 +58,7 @@ export async function _internalExchangePublicToken(
   institutionName: string
   institutionId: string
   accounts: AccountBase[]
+  institutionLogo?: string | null
 }> {
   try {
     // Exchange public token for access token and item ID
@@ -88,6 +89,7 @@ export async function _internalExchangePublicToken(
     })
 
     const institutionName = institutionResponse.data.institution.name
+    const institutionLogo = institutionResponse.data.institution.logo
 
     // Fetch accounts associated with the item
     const accountsResponse = await plaidClient.accountsGet({
@@ -104,6 +106,7 @@ export async function _internalExchangePublicToken(
       institutionName: institutionName,
       institutionId: institutionId, // Plaid's ID for the institution
       accounts: accounts,
+      institutionLogo: institutionLogo,
     }
   } catch (error: any) {
     console.error(
