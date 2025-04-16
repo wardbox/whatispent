@@ -1,37 +1,64 @@
-Use the following instructions to generate a plan.md file for building the app we've been discussing.
+Use the following instructions to generate a detailed, step-by-step `plan.md` file with Markdown checkboxes for building the app we've been discussing.
 
-You are an AI tasked with creating a detailed implementation plan for building the app [APP NAME] using Wasp. Generate a plan.md file that includes the following sections:
+You are an AI tasked with creating a detailed implementation plan for building the app [APP NAME] using Wasp. Generate a `plan.md` file that outlines the development phases and specific tasks. **Crucially, format every individual task and sub-task as a standard Markdown checklist item (e.g., `- [ ] Task Description`)** to allow for easy progress tracking.
 
-1. Introduction
-   - Overview of [APP NAME] and key objectives.
+The plan should include the following sections, each broken down into specific, actionable checklist items:
 
-2. Phase 1: Setup & Core Structure
-   - Initialize Wasp Project (e.g., run `wasp new [AppName]` and configure settings).
-   - Implement Authentication (setup email/password or other auth methods, create login/signup pages).
-   - Define Database Schema (`schema.prisma`) (outline User model and other relevant entities with necessary fields).
-   - Run Migrations (e.g., execute `wasp db migrate-dev`).
+1.  **Introduction**
+    -   [ ] Provide a brief overview of [APP NAME] and key objectives.
 
-3. Phase 2: Backend Integrations
-   - Setup External Services (e.g., API keys for Plaid, Stripe; install required libraries).
-   - Create Service Modules (develop service files to handle API interactions and utility functions).
-   - Declare Actions/Queries in `main.wasp` (import and register actions and queries).
+2.  **Phase 1: Setup & Core Structure**
+    -   [ ] Initialize Wasp Project (e.g., `wasp new [AppName]`).
+    -   [ ] Configure basic project settings.
+    -   [ ] Implement Authentication (setup auth methods).
+    -   [ ] Create Login/Signup pages.
+    -   [ ] Define Database Schema (`schema.prisma`) (User model).
+    -   [ ] Define `<Entity 1>` schema.
+    -   [ ] Define `<Entity 2>` schema (add more as needed).
+    -   [ ] Run initial database migrations (`wasp db migrate-dev`).
 
-4. Phase 3: Backend Logic (Data Queries)
-   - Create Wasp Queries (implement data fetching, aggregation, and filtering for authenticated users).
-   - Declare Queries in `main.wasp` linking to operations.
+3.  **Phase 2: Backend Integrations**
+    -   [ ] Setup External Service 1 (e.g., Plaid): Obtain API keys.
+    -   [ ] Install client library for Service 1.
+    -   [ ] Create service module for Service 1 API interactions.
+    -   [ ] Setup External Service 2 (e.g., Stripe): Obtain API keys.
+    -   [ ] Install client library for Service 2.
+    -   [ ] Create service module for Service 2 API interactions.
+    -   [ ] Declare related Wasp Actions in `main.wasp`.
+    -   [ ] Declare related Wasp Queries in `main.wasp`.
 
-5. Phase 4: Frontend Development (React - Core App)
-   - Setup Main Structure (build a main container component and define routing for core pages).
-   - Implement Core Components (develop functional UI components for dashboards, lists, metrics, etc.)
-   - Apply consistent Styling (using preferred CSS frameworks such as Tailwind CSS).
+4.  **Phase 3: Backend Logic (Data Queries)**
+    -   [ ] Create Wasp Query for <Data Feature 1>.
+    -   [ ] Implement logic for fetching/aggregating data for <Data Feature 1>.
+    -   [ ] Ensure query filters data based on authenticated user.
+    -   [ ] Create Wasp Query for <Data Feature 2>.
+    -   [ ] Implement logic for fetching/aggregating data for <Data Feature 2>.
+    -   [ ] Declare new Queries in `main.wasp`.
 
-6. Phase 5: Payment/Subscription Integration (Optional)
-   - Setup Payment Integration (configure payment service like Stripe, secure API keys, develop payment actions).
-   - Implement Frontend Payment Integration (create pages for subscription management and payment processing).
+5.  **Phase 4: Frontend Development (React - Core App)**
+    -   [ ] Create main UI container component (e.g., DashboardPage).
+    -   [ ] Define core routes in `main.wasp`.
+    -   [ ] Implement Component for <UI Feature 1>.
+    -   [ ] Implement Component for <UI Feature 2>.
+    -   [ ] Manage state for interactive UI elements.
+    -   [ ] Apply consistent styling (e.g., using Tailwind CSS).
 
-7. Phase 6: Connecting & Refinement
-   - Connect UI & Backend (ensure smooth integration between frontend components and backend logic).
-   - Testing (thoroughly test authentication, data operations, and third-party integrations).
-   - Deployment (follow Wasp deployment guidelines and configure production environment variables).
+6.  **Phase 5: Payment/Subscription Integration (Optional)**
+    -   [ ] Configure payment provider (e.g., Stripe).
+    -   [ ] Develop Action for creating checkout sessions.
+    -   [ ] Develop Action for managing customer portal.
+    -   [ ] Create frontend page/component for subscription management.
+    -   [ ] Create frontend page/component for payment processing/redirects.
 
-Replace placeholders (e.g., [APP NAME], [AppName]) with project-specific details. Use this template to generate a structured plan.md file for the app we've been discussing.
+7.  **Phase 6: Connecting & Refinement**
+    -   [ ] Integrate frontend hooks (`useQuery`, `useAction`) with backend logic.
+    -   [ ] Implement loading and error states gracefully.
+    -   [ ] Test Authentication flow.
+    -   [ ] Test Core Feature 1.
+    -   [ ] Test Core Feature 2.
+    -   [ ] Test Payment flow (if applicable).
+    -   [ ] Test External Service integrations.
+    -   [ ] Prepare for deployment (check environment variables).
+    -   [ ] Follow Wasp deployment guides.
+
+Replace placeholders (e.g., `[APP NAME]`, `<Entity 1>`) with project-specific details. Ensure every task is a distinct checklist item (`- [ ]`). The goal is a practical, step-by-step checklist.
