@@ -139,6 +139,8 @@ export async function _internalFetchTransactions(
   let hasMore = true
   let offset = 0
   const count = 100 // Fetch 100 transactions per request (max 500)
+  const MAX_RETRIES = 3
+  const RETRY_DELAY_MS = 3000 // 3 seconds
 
   try {
     while (hasMore) {
@@ -152,7 +154,39 @@ export async function _internalFetchTransactions(
         },
       }
 
-      const response = await plaidClient.transactionsGet(request)
+      let response
+      let success = false
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          response = await plaidClient.transactionsGet(request)
+          success = true
+          break // Exit retry loop on success
+        } catch (error: any) {
+          const errorCode = error.response?.data?.error_code
+          if (errorCode === 'PRODUCT_NOT_READY' && attempt < MAX_RETRIES) {
+            console.warn(
+              `Plaid PRODUCT_NOT_READY error (Attempt ${attempt}/${MAX_RETRIES}). Retrying in ${RETRY_DELAY_MS / 1000}s...`,
+              error.response?.data || error.message,
+            )
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS))
+          } else {
+            // If not PRODUCT_NOT_READY or final attempt, re-throw the error
+            console.error(
+              `Failed to fetch Plaid transactions page after ${attempt} attempts. Error:`,
+              error.response?.data || error.message,
+            )
+            throw error // Re-throw to be caught by the outer catch block
+          }
+        }
+      }
+
+      // If the loop finished without success (shouldn't happen due to re-throw, but defensive check)
+      if (!success || !response) {
+        throw new Error(
+          'Transaction fetch failed permanently after multiple retries.',
+        )
+      }
+
       const transactions = response.data.transactions
       const totalTransactions = response.data.total_transactions
 

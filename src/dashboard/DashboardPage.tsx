@@ -28,6 +28,10 @@ export type InstitutionsSummaryProps = {
   error: any
   refetch: () => void
   refetchOnInstitutionAdd: () => void
+  syncingInstitutionId: string | null
+  setSyncingInstitutionId: React.Dispatch<React.SetStateAction<string | null>>
+  isConnectingPlaid: boolean
+  setIsConnectingPlaid: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export default function Dashboard() {
@@ -44,6 +48,11 @@ export default function Dashboard() {
     refetch: refetchInstitutions,
   } = useQuery(getInstitutions)
   const [timeRange, setTimeRange] = useState<TimeRange>('6m')
+  const [syncingInstitutionId, setSyncingInstitutionId] = useState<
+    string | null
+  >(null)
+  const [isConnectingPlaid, setIsConnectingPlaid] = useState<boolean>(false)
+
   return (
     <div className='flex flex-col gap-12 p-4'>
       <SpendingMetrics />
@@ -76,10 +85,10 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      <div className='grid gap-6 space-y-4 md:grid-cols-3'>
+      <div className='grid gap-6 md:grid-cols-3'>
         <div className='md:col-span-2'>
           <div className='mb-2 flex items-center justify-between'>
-            <span className='text-sm font-light'>Categories</span>
+            <span className='font-semibold'>Categories</span>
             <Link to='/transactions'>
               <Button variant='ghost' size='sm' className='h-7 gap-1 text-xs'>
                 All transactions
@@ -89,14 +98,14 @@ export default function Dashboard() {
           </div>
           <CategorySummary
             categories={categories || []}
-            isLoading={isLoading}
+            isLoading={isLoading || !!syncingInstitutionId || isConnectingPlaid}
             error={error}
           />
         </div>
 
         <div>
           <div className='mb-2'>
-            <span className='text-sm font-light'>Connect Bank</span>
+            <span className='font-semibold'>Connect Bank</span>
           </div>
           <PlaidIntegration
             institutions={institutions || []}
@@ -104,6 +113,10 @@ export default function Dashboard() {
             error={institutionsError}
             refetch={refetchInstitutions}
             refetchOnInstitutionAdd={refetchCategorySummary}
+            syncingInstitutionId={syncingInstitutionId}
+            setSyncingInstitutionId={setSyncingInstitutionId}
+            isConnectingPlaid={isConnectingPlaid}
+            setIsConnectingPlaid={setIsConnectingPlaid}
           />
         </div>
       </div>

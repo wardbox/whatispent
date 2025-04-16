@@ -150,8 +150,8 @@ export const exchangePublicToken = (async (
       select: { id: true }, // Only select the ID for the result
     })
 
-    // Wait for 3 seconds before syncing transactions
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Wait for 5 seconds before syncing transactions to allow Plaid time to prepare initial data
+    await new Promise(resolve => setTimeout(resolve, 5000))
 
     // Calculate start date for initial 6-month sync
     const initialSyncStartDate = dayjs()
@@ -250,69 +250,79 @@ async function _syncSingleInstitution(
 
     let upsertedCount = 0
 
-    // 4. Process and save transactions (moved before balance fetch)
-    if (plaidTransactions.length > 0) {
-      // Define a local type for the input data structure
-      type TransactionCreateInputData = {
-        plaidTransactionId: string
-        userId: string
-        accountId: string
-        amount: number
-        date: string | Date // Prisma accepts string or Date for DateTime
-        merchantName: string | null | undefined
-        name: string
-        category: string[]
-        categoryIconUrl: string | null | undefined
-        pending: boolean
-      }
+    // Define the input type for transaction creation
+    type TransactionCreateInputData = {
+      plaidTransactionId: string
+      userId: string
+      accountId: string
+      amount: number
+      date: Date // Ensure this matches the type used below
+      merchantName: string | null | undefined
+      name: string
+      category: string[]
+      pending: boolean
+    }
 
-      // Initialize with the explicit local type
-      const transactionsToUpsert: TransactionCreateInputData[] = []
-      for (const tx of plaidTransactions) {
+    const transactionsToUpsert: TransactionCreateInputData[] = plaidTransactions
+      .map((tx): TransactionCreateInputData | null => {
         const internalAccountId = accountIdMap.get(tx.account_id)
-        if (internalAccountId && context.user) {
-          // Map Plaid data to Prisma schema using direct FKs for createMany
-          transactionsToUpsert.push({
-            plaidTransactionId: tx.transaction_id,
-            userId: context.user.id, // Direct FK
-            accountId: internalAccountId, // Direct FK
-            amount: tx.amount,
-            date: dayjs(tx.date).toISOString(), // Ensure stored as DateTime
-            merchantName: tx.merchant_name,
-            name: tx.name,
-            category: tx.personal_finance_category?.primary
-              ? [tx.personal_finance_category.primary]
-              : [],
-            categoryIconUrl: tx.personal_finance_category_icon_url ?? null,
-            pending: tx.pending,
-          })
-        } else {
+        if (!internalAccountId) {
           console.warn(
-            `Skipping transaction ${tx.transaction_id}: Could not find matching internal account for plaid account ${tx.account_id}`,
+            `Skipping transaction ${tx.transaction_id} because account ${tx.account_id} was not found in the database.`,
           )
+          return null // Skip this transaction if its account isn't found
         }
-      }
 
-      // 5. Batch upsert transactions
-      // Use createMany + skipDuplicates (more efficient) or loop with upsert
-      if (transactionsToUpsert.length > 0) {
-        // Because we fetch overlapping dates, we expect duplicates, so we ignore them
-        const result = await context.entities.Transaction.createMany({
-          data: transactionsToUpsert, // Should now match expected type
-          skipDuplicates: true, // Important!
-        })
-        upsertedCount = result.count
-        console.log(
-          `Institution ${institutionId}: Synced ${upsertedCount} new transactions.`,
-        )
-      } else {
-        console.log(
-          `Institution ${institutionId}: No valid transactions to sync after mapping.`,
-        )
-      }
+        // *** Prioritize datetime over date ***
+        // Prisma expects a Date object or an ISO 8601 string for DateTime fields
+        const transactionDate = tx.datetime
+          ? new Date(tx.datetime)
+          : new Date(tx.date + 'T00:00:00Z') // Use datetime if available, else date (as UTC midnight)
+
+        // Construct the transaction data object
+        const transactionData: TransactionCreateInputData = {
+          plaidTransactionId: tx.transaction_id,
+          userId: context.user.id,
+          accountId: internalAccountId,
+          // Plaid uses positive for deposits, negative for withdrawals.
+          // We store spending as positive, income as negative.
+          // Let's invert the amount to match our convention (spending = positive)
+          // NO - keep plaid convention for now: negative = debit/spending, positive = credit/income
+          amount: tx.amount,
+          date: transactionDate, // Use the determined Date object
+          merchantName: tx.merchant_name,
+          name: tx.name,
+          // Use the primary personal finance category if available
+          category: tx.personal_finance_category?.primary
+            ? [tx.personal_finance_category.primary]
+            : [],
+          // categoryIconUrl: tx.personal_finance_category_icon_url, // Can also store this if needed
+          pending: tx.pending,
+        }
+        return transactionData
+      })
+      .filter((tx): tx is TransactionCreateInputData => tx !== null) // Remove null entries
+
+    // Log the number of transactions prepared for upsert
+    console.log(
+      `Institution ${institutionId}: ${transactionsToUpsert.length} transactions prepared for upsert.`,
+    )
+
+    // 5. Batch upsert transactions
+    // Use createMany + skipDuplicates (more efficient) or loop with upsert
+    if (transactionsToUpsert.length > 0) {
+      // Because we fetch overlapping dates, we expect duplicates, so we ignore them
+      const result = await context.entities.Transaction.createMany({
+        data: transactionsToUpsert, // Should now match expected type
+        skipDuplicates: true, // Important!
+      })
+      upsertedCount = result.count
+      console.log(
+        `Institution ${institutionId}: Synced ${upsertedCount} new transactions.`,
+      )
     } else {
       console.log(
-        `Institution ${institutionId}: No new transactions found from Plaid in the date range.`,
+        `Institution ${institutionId}: No valid transactions to sync after mapping.`,
       )
     }
 
@@ -846,8 +856,21 @@ export const getAllTransactions = (async (args, context) => {
     where: {
       userId: userId,
     },
-    include: {
-      // Use include to fetch related data
+    // Select the fields needed from Transaction and related Account/Institution
+    select: {
+      id: true,
+      plaidTransactionId: true,
+      amount: true,
+      date: true,
+      merchantName: true,
+      name: true,
+      category: true, // <-- Ensure category is selected
+      pending: true,
+      userId: true,
+      accountId: true,
+      createdAt: true,
+      updatedAt: true,
+      // Select related account data directly
       account: {
         select: {
           name: true,

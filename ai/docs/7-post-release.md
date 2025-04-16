@@ -63,18 +63,52 @@
     data constraints, as the code correctly requests a 6-month history on
     initial sync.
 - **Navigation Enhancements:**
-  - Added "Dashboard" and "Transactions" links to the mobile navigation menu for logged-in users (`src/root/components/nav.tsx`).
-  - Modified the landing page (`src/landing/LandingPage.tsx`) to conditionally display a "Go to Dashboard" button for authenticated users, replacing the default "Get Started" and "Log In" buttons.
+  - Added "Dashboard" and "Transactions" links to the mobile navigation menu for
+    logged-in users (`src/root/components/nav.tsx`).
+  - Modified the landing page (`src/landing/LandingPage.tsx`) to conditionally
+    display a "Go to Dashboard" button for authenticated users, replacing the
+    default "Get Started" and "Log In" buttons.
+  - Updated the landing page (`src/landing/LandingPage.tsx`) to hide the main
+    action buttons (Get Started/Log In/Go to Dashboard) until the user's
+    authentication status (`isLoading` from `useAuth`) has finished loading.
 - **Transactions Page UI/UX:**
-  - **Responsiveness:** Adjusted the layout of filter and sort buttons on the Transactions page (`src/transactions/TransactionsPage.tsx`) to stack vertically on small screens for better mobile usability.
-  - **Cleaner Header:** Removed the redundant "All Transactions" title from the main content area of the Transactions page.
-  - **Improved List Item Layout:** Refined the display of individual transaction items (`src/transactions/components/transactions-list.tsx`) on mobile by:
+  - **Responsiveness:** Adjusted the layout of filter and sort buttons on the
+    Transactions page (`src/transactions/TransactionsPage.tsx`) to stack
+    vertically on small screens for better mobile usability.
+  - **Cleaner Header:** Removed the redundant "All Transactions" title from the
+    main content area of the Transactions page.
+  - **Improved List Item Layout:** Refined the display of individual transaction
+    items (`src/transactions/components/transactions-list.tsx`) on mobile by:
     - Stacking amount and account details vertically on the right.
     - Applying text truncation to prevent overflow.
     - Slightly reducing the category icon size.
     - Hiding the bank institution name on extra-small screens.
   - **Transaction Detail Dialog:**
-    - Implemented a dialog (`src/transactions/components/transaction-detail-dialog.tsx`) that appears when a user clicks/taps on a transaction row, displaying detailed information.
-    - Styled the dialog using flexbox and typography consistent with dashboard components for a cohesive look.
+    - Implemented a dialog
+      (`src/transactions/components/transaction-detail-dialog.tsx`) that appears
+      when a user clicks/taps on a transaction row, displaying detailed
+      information.
+    - Styled the dialog using flexbox and typography consistent with dashboard
+      components for a cohesive look.
 - **Subscription Page UI:**
-  - Vertically centered the subscription plan card on the `SubscriptionPage.tsx` for better presentation on various screen heights.
+  - Vertically centered the subscription plan card on the `SubscriptionPage.tsx`
+    for better presentation on various screen heights.
+- **Dashboard UI/UX:**
+  - **Synchronized Loading States:**
+    - Implemented a skeleton loader for the `CategorySummary` component
+      (`src/dashboard/components/category-summary.tsx`) visible during initial
+      data fetching.
+    - Lifted Plaid connection state (`isConnectingPlaid`) and post-connection
+      syncing state (`syncingInstitutionId`) from `PlaidIntegration` and
+      `PlaidLinkButton` up to the `DashboardPage` component
+      (`src/dashboard/DashboardPage.tsx`).
+    - Passed these states down through props (`PlaidIntegration` ->
+      `PlaidLinkButton`) to manage the button's loading spinner.
+    - Combined the initial category loading state, connection state, and syncing
+      state in `DashboardPage` to determine the `isLoading` prop for
+      `CategorySummary`. This ensures the category skeleton is displayed both
+      while the Plaid connection is in progress (button spinner is active) and
+      during the subsequent data refetch/sync.
+  - **Layout Adjustment:** Removed `space-y-4` from the main grid in
+    `DashboardPage.tsx` to eliminate unwanted top margin on the "Connect Bank"
+    section when items stack vertically.

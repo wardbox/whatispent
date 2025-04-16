@@ -41,7 +41,7 @@ export default function Landing() {
     quote: string
     author: string
   } | null>(null)
-  const { data: user } = useAuth()
+  const { data: user, isLoading } = useAuth()
 
   useEffect(() => {
     const dayOfWeek = new Date().getDay()
@@ -77,42 +77,47 @@ export default function Landing() {
           your transactions, and gain clear insights into your daily, weekly,
           and monthly spending habits.
         </motion.p>
-        <motion.div
-          variants={slideInUp}
-          className='flex justify-center space-x-4'
-        >
-          {user ? (
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button asChild size='lg' className='font-light'>
-                <Link to={routes.Dashboard.to}>Go to Dashboard</Link>
-              </Button>
-            </motion.div>
-          ) : (
-            <>
+        {!isLoading && (
+          <motion.div
+            variants={slideInUp}
+            className='flex justify-center space-x-4'
+          >
+            {user ? (
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Button asChild size='lg' className='font-light'>
-                  <Link to={routes.SignupRoute.to}>Get Started</Link>
+                  <Link to={routes.Dashboard.to}>Go to Dashboard</Link>
                 </Button>
               </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  asChild
-                  variant='outline'
-                  size='lg'
-                  className='font-light'
+            ) : (
+              <>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <Link to={routes.LoginRoute.to}>Log In</Link>
-                </Button>
-              </motion.div>
-            </>
-          )}
-        </motion.div>
+                  <Button asChild size='lg' className='font-light'>
+                    <Link to={routes.SignupRoute.to}>Get Started</Link>
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    asChild
+                    variant='outline'
+                    size='lg'
+                    className='font-light'
+                  >
+                    <Link to={routes.LoginRoute.to}>Log In</Link>
+                  </Button>
+                </motion.div>
+              </>
+            )}
+          </motion.div>
+        )}
         {dailyQuote && (
           <motion.figure
             variants={slideInUp}

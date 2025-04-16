@@ -43,6 +43,10 @@ export function PlaidIntegration({
   isLoading,
   error,
   refetch,
+  syncingInstitutionId,
+  setSyncingInstitutionId,
+  isConnectingPlaid,
+  setIsConnectingPlaid,
 }: InstitutionsSummaryProps) {
   const { toast } = useToast()
   const deleteInstitutionAction = useAction(deleteInstitution)
@@ -50,10 +54,6 @@ export function PlaidIntegration({
     null,
   )
   const [isDeleting, setIsDeleting] = useState(false)
-  // State to track the ID of the institution currently syncing after being added
-  const [syncingInstitutionId, setSyncingInstitutionId] = useState<
-    string | null
-  >(null)
 
   // Determine connection status based on whether we have institutions
   const isConnected = institutions && institutions.length > 0
@@ -189,6 +189,8 @@ export function PlaidIntegration({
               exchangePublicTokenAction={exchangePublicToken}
               onSuccess={handleConnectionSuccess}
               onError={handleConnectionError}
+              isLoading={isConnectingPlaid}
+              setIsLoading={setIsConnectingPlaid}
             />
           </motion.div>
         )}
@@ -212,6 +214,8 @@ export function PlaidIntegration({
                 exchangePublicTokenAction={exchangePublicToken}
                 onSuccess={handleConnectionSuccess}
                 onError={handleConnectionError}
+                isLoading={isConnectingPlaid}
+                setIsLoading={setIsConnectingPlaid}
               />
             </div>
 
