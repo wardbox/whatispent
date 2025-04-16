@@ -52,11 +52,15 @@ export default function Root() {
 
   // Added: Effect to trigger daily sync
   useEffect(() => {
-    if (user && user.subscriptionStatus === 'active') {
+    const isTrialActive = user?.trialEndsAt && dayjs().isBefore(dayjs(user.trialEndsAt))
+    const isActiveSubscriber = user?.subscriptionStatus === 'active'
+
+    if (user && (isActiveSubscriber || isTrialActive)) {
       const lastSync = user.lastSyncedAt ? dayjs(user.lastSyncedAt) : null
-      const needsSync = !lastSync || dayjs().diff(lastSync, 'hour') >= 24
+      const needsSync = !lastSync || !dayjs().isSame(lastSync, 'day')
 
       if (needsSync) {
+        console.log('Syncing transactions in the background...')
         syncTransactions({})
           .then(() => {
             // Optionally refetch user data if needed, or rely on server update
@@ -68,6 +72,8 @@ export default function Root() {
               description: 'Failed to sync transactions in the background.',
             })
           })
+      } else {
+        console.log(`No sync needed today. Last sync: ${lastSync}`)
       }
     }
   }, [user, toast]) // Dependency array includes user and the toast function

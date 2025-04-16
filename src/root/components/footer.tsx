@@ -61,7 +61,7 @@ export function Footer() {
     >
       <div className='px-6 py-4'>
         {/* Mobile Layout */}
-        <div className='flex flex-col space-y-4 md:hidden'>
+        <div className='flex flex-col space-y-4 lg:hidden'>
           {/* Logo & Social */}
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
@@ -107,7 +107,7 @@ export function Footer() {
         </div>
 
         {/* Desktop Layout */}
-        <div className='hidden md:flex md:items-center md:justify-between'>
+        <div className='hidden lg:flex lg:items-center lg:justify-between'>
           <div className='flex items-center space-x-8'>
             {/* Logo & Title */}
             <div className='flex items-center space-x-3'>

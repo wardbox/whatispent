@@ -273,11 +273,17 @@ async function _syncSingleInstitution(
           return null // Skip this transaction if its account isn't found
         }
 
-        // *** Prioritize datetime over date ***
+        // *** Prioritize authorized_datetime, then datetime, then date ***
         // Prisma expects a Date object or an ISO 8601 string for DateTime fields
-        const transactionDate = tx.datetime
-          ? new Date(tx.datetime)
-          : new Date(tx.date + 'T00:00:00Z') // Use datetime if available, else date (as UTC midnight)
+        let transactionDate: Date
+        if (tx.authorized_datetime) {
+          transactionDate = new Date(tx.authorized_datetime)
+        } else if (tx.datetime) {
+          transactionDate = new Date(tx.datetime)
+        } else {
+          // Use date (as UTC midnight) if neither datetime field is available
+          transactionDate = new Date(tx.date + 'T00:00:00Z')
+        }
 
         // Construct the transaction data object
         const transactionData: TransactionCreateInputData = {

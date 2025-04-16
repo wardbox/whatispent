@@ -1,10 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import dayjs from 'dayjs'
-import isBetween from 'dayjs/plugin/isBetween'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import updateLocale from 'dayjs/plugin/updateLocale'
-import weekOfYear from 'dayjs/plugin/weekOfYear'
+import { motion } from 'framer-motion'
 import {
   getPrettyCategoryName,
   getCategoryIcon,
@@ -19,31 +15,12 @@ import {
   PaginationNext,
 } from '../../client/components/ui/pagination'
 import { cn } from '../../lib/utils'
-
-dayjs.extend(isBetween)
-dayjs.extend(relativeTime)
-dayjs.extend(updateLocale)
-dayjs.extend(weekOfYear)
-
-dayjs.updateLocale('en', {
-  relativeTime: {
-    future: 'in %s',
-    past: '%s ago',
-    s: 'a few seconds',
-    m: 'a minute',
-    mm: '%d minutes',
-    h: 'an hour',
-    hh: '%d hours',
-    d: 'a day',
-    dd: '%d days',
-    w: 'a week',
-    ww: '%d weeks',
-    M: 'a month',
-    MM: '%d months',
-    y: 'a year',
-    yy: '%d years',
-  },
-})
+import {
+  formatTransactionDisplayDate,
+  getTransactionGroupKeyUTC,
+  getTransactionGroupDisplayInfo,
+  parseDateUTC,
+} from '../../utils/dateUtils'
 
 interface TransactionGroup {
   id: string
@@ -144,26 +121,9 @@ export function TransactionsList({
     if (paginatedTransactions.length === 0) return []
 
     const groups: { [key: string]: TransactionWithDetails[] } = {}
-    const now = dayjs()
-    const today = now.startOf('day')
-    const yesterday = today.subtract(1, 'day')
-    const startOfWeek = now.startOf('week')
-    const startOfLastWeek = startOfWeek.subtract(1, 'week')
 
     paginatedTransactions.forEach((tx: TransactionWithDetails) => {
-      const txDate = dayjs(tx.date)
-      let groupKey: string
-      if (txDate.isSame(today, 'day')) {
-        groupKey = 'today'
-      } else if (txDate.isSame(yesterday, 'day')) {
-        groupKey = 'yesterday'
-      } else if (txDate.isBetween(startOfWeek, today, 'day', '[)')) {
-        groupKey = 'thisWeek'
-      } else if (txDate.isBetween(startOfLastWeek, startOfWeek, 'day', '[)')) {
-        groupKey = 'lastWeek'
-      } else {
-        groupKey = txDate.format('MMMM YYYY')
-      }
+      const groupKey = getTransactionGroupKeyUTC(tx.date)
 
       if (!groups[groupKey]) {
         groups[groupKey] = []
@@ -173,27 +133,7 @@ export function TransactionsList({
 
     const sortedGroups: TransactionGroup[] = Object.entries(groups)
       .map(([key, txs]: [string, TransactionWithDetails[]]) => {
-        const firstTxDate = dayjs(txs[0].date)
-        let title = key
-        let dateRange = ''
-        if (key === 'today') {
-          title = 'Today'
-          dateRange = firstTxDate.format('MMM D, YYYY')
-        } else if (key === 'yesterday') {
-          title = 'Yesterday'
-          dateRange = firstTxDate.format('MMM D, YYYY')
-        } else if (key === 'thisWeek') {
-          title = 'This Week'
-          const endOfWeek = startOfWeek.add(6, 'day')
-          dateRange = `${startOfWeek.format('MMM D')} - ${endOfWeek.format('MMM D, YYYY')}`
-        } else if (key === 'lastWeek') {
-          title = 'Last Week'
-          const endOfLastWeek = startOfLastWeek.add(6, 'day')
-          dateRange = `${startOfLastWeek.format('MMM D')} - ${endOfLastWeek.format('MMM D, YYYY')}`
-        } else {
-          title = key
-          dateRange = firstTxDate.format('MMMM YYYY')
-        }
+        const { title, date: dateRange } = getTransactionGroupDisplayInfo(key)
 
         return {
           id: key,
@@ -203,16 +143,9 @@ export function TransactionsList({
         }
       })
       .sort((a, b) => {
-        const order = ['today', 'yesterday', 'thisWeek', 'lastWeek']
-        const aIndex = order.indexOf(a.id)
-        const bIndex = order.indexOf(b.id)
-        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
-        if (aIndex !== -1) return -1
-        if (bIndex !== -1) return 1
-        return (
-          dayjs(b.transactions[0].date).valueOf() -
-          dayjs(a.transactions[0].date).valueOf()
-        )
+        const dateA = parseDateUTC(a.transactions[0].date).valueOf()
+        const dateB = parseDateUTC(b.transactions[0].date).valueOf()
+        return dateB - dateA
       })
 
     return sortedGroups
@@ -318,12 +251,10 @@ export function TransactionsList({
                   transaction.category?.[0] ?? 'Uncategorized',
                 )
                 const categoryColorVar = getCategoryCssVariable(prettyCategory)
-                const transactionTime = dayjs(transaction.date).format('h:mm A')
-                const transactionDay = dayjs(transaction.date).format('MMM D')
-                const displayTime =
-                  group.id === 'today' || group.id === 'yesterday'
-                    ? transactionTime
-                    : transactionDay
+
+                const displayTime = formatTransactionDisplayDate(
+                  transaction.date,
+                )
 
                 return (
                   <motion.div

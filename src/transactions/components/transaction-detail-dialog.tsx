@@ -9,7 +9,7 @@ import {
 import { Button } from '../../client/components/ui/button'
 import type { TransactionWithDetails } from '../../plaid/operations'
 import { getPrettyCategoryName, getCategoryIcon } from '../../utils/categories'
-import dayjs from 'dayjs'
+import { formatDateUTC, formatTimeLocal } from '../../utils/dateUtils'
 
 interface TransactionDetailDialogProps {
   transaction: TransactionWithDetails | null
@@ -28,14 +28,14 @@ export function TransactionDetailDialog({
     transaction.category?.[0] ?? 'Uncategorized',
   )
   const TransactionIcon = getCategoryIcon(transaction.category?.[0])
-  const formattedDate = dayjs(transaction.date).format('MMMM D, YYYY')
-  const formattedTime = dayjs(transaction.date).format('h:mm A')
+  const formattedDate = formatDateUTC(transaction.date)
+  const formattedTime = formatTimeLocal(transaction.date)
   const amountColor =
     transaction.amount < 0 ? 'text-green-500' : 'text-foreground' // Plaid expenses are positive
   const amountSign = transaction.amount < 0 ? '+' : '-'
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose} modal={false}>
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
