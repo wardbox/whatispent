@@ -63,9 +63,14 @@
     data constraints, as the code correctly requests a 6-month history on
     initial sync.
 - **Background Sync Logic:**
-  - Modified the daily background transaction sync trigger in `src/root/RootPage.tsx`:
-    - Changed the trigger condition from a strict 24-hour interval to once per calendar day. Sync now occurs if the current day is different from the last sync day.
-    - Expanded sync eligibility to include users with an active trial period (`trialEndsAt` is in the future), in addition to users with an active subscription status.
+  - Modified the daily background transaction sync trigger in
+    `src/root/RootPage.tsx`:
+    - Changed the trigger condition from a strict 24-hour interval to once per
+      calendar day. Sync now occurs if the current day is different from the
+      last sync day.
+    - Expanded sync eligibility to include users with an active trial period
+      (`trialEndsAt` is in the future), in addition to users with an active
+      subscription status.
 - **Navigation Enhancements:**
   - Added "Dashboard" and "Transactions" links to the mobile navigation menu for
     logged-in users (`src/root/components/nav.tsx`).

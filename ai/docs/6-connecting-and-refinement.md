@@ -8,13 +8,11 @@ upon login to minimize Plaid API costs while keeping data reasonably fresh.
 **Changes:**
 
 1.  **Schema Update (`schema.prisma`):**
-
     - Added an optional `lastSyncedAt` field (`DateTime?`) to the `User` model
       to track the timestamp of the last successful bulk sync triggered for the
       user.
 
 2.  **Backend Action Modification (`src/plaid/operations.ts`):**
-
     - Modified the `syncTransactions` Wasp Action.
     - Made the `institutionId` parameter optional in the action's payload
       (`SyncTransactionsPayload`).
@@ -63,7 +61,6 @@ using Framer Motion for a more polished look.
 **Changes:**
 
 1.  **Variant Consistency (`src/motion/transitionPresets.tsx`):**
-
     - Standardized the main animation state keys in `staggerContainer` and
       `staggerItem` variants to use `initial` and `animate` (instead of `hidden`
       and `show`) for better consistency with other variants like `fadeIn` and

@@ -52,7 +52,8 @@ export default function Root() {
 
   // Added: Effect to trigger daily sync
   useEffect(() => {
-    const isTrialActive = user?.trialEndsAt && dayjs().isBefore(dayjs(user.trialEndsAt))
+    const isTrialActive =
+      user?.trialEndsAt && dayjs().isBefore(dayjs(user.trialEndsAt))
     const isActiveSubscriber = user?.subscriptionStatus === 'active'
 
     if (user && (isActiveSubscriber || isTrialActive)) {

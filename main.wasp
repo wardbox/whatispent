@@ -1,6 +1,6 @@
 app whatispent {
   wasp: {
-    version: "^0.16.3"
+    version: "^0.18.2"
   },
   title: "what i spent: this day. this week. this month.",
   head: [
@@ -102,23 +102,28 @@ page CheckoutResultPage {
 //#region Plaid Actions
 
 action createLinkToken {
-  fn: import { createLinkToken } from "@src/plaid/operations.ts",
+  fn: import { createLinkToken } from "@src/plaid/operations",
   entities: [User, Institution, Account, Transaction]
 }
 
 action exchangePublicToken {
-  fn: import { exchangePublicToken } from "@src/plaid/operations.ts",
+  fn: import { exchangePublicToken } from "@src/plaid/operations",
   entities: [User, Institution, Account, Transaction]
 }
 
 action syncTransactions {
-  fn: import { syncTransactions } from "@src/plaid/operations.ts",
+  fn: import { syncTransactions } from "@src/plaid/operations",
   entities: [User, Institution, Account, Transaction]
 }
 
 action deleteInstitution {
-  fn: import { deleteInstitution } from "@src/plaid/operations.ts",
+  fn: import { deleteInstitution } from "@src/plaid/operations",
   entities: [User, Institution, Account, Transaction]
+}
+
+action toggleAccountTracking {
+  fn: import { toggleAccountTracking } from "@src/plaid/operations",
+  entities: [Account, Institution]
 }
 
 //#endregion
@@ -126,32 +131,32 @@ action deleteInstitution {
 //#region General Queries
 
 query getUserSubscriptionStatus {
-  fn: import { getUserSubscriptionStatus } from "@src/queries.ts",
+  fn: import { getUserSubscriptionStatus } from "@src/queries",
   entities: [User]
 }
 
 query getSpendingSummary {
-  fn: import { getSpendingSummary } from "@src/plaid/operations.ts",
+  fn: import { getSpendingSummary } from "@src/plaid/operations",
   entities: [Account, Institution, Transaction]
 }
 
 query getMonthlySpending {
-  fn: import { getMonthlySpending } from "@src/plaid/operations.ts",
+  fn: import { getMonthlySpending } from "@src/plaid/operations",
   entities: [Transaction]
 }
 
 query getCategorySpending {
-  fn: import { getCategorySpending } from "@src/plaid/operations.ts",
+  fn: import { getCategorySpending } from "@src/plaid/operations",
   entities: [Account, Institution,Transaction]
 }
 
 query getAllTransactions {
-  fn: import { getAllTransactions } from "@src/plaid/operations.ts",
+  fn: import { getAllTransactions } from "@src/plaid/operations",
   entities: [Account, Institution, Transaction]
 }
 
 query getInstitutions {
-  fn: import { getInstitutions } from "@src/plaid/operations.js",
+  fn: import { getInstitutions } from "@src/plaid/operations",
   entities: [Transaction,Institution]
 }
 
@@ -160,7 +165,7 @@ query getInstitutions {
 //#region Admin Queries
 
 query getUsers {
-  fn: import { getUsers } from "@src/admin/operations.ts",
+  fn: import { getUsers } from "@src/admin/operations",
   entities: [User, Institution, Account]
 }
 
@@ -169,12 +174,12 @@ query getUsers {
 //#region Stripe Actions
 
 action createCheckoutSession {
-  fn: import { createCheckoutSession } from "@src/stripe/operations.ts",
+  fn: import { createCheckoutSession } from "@src/stripe/operations",
   entities: [User]
 }
 
 action createCustomerPortalSession {
-  fn: import { createCustomerPortalSession } from "@src/stripe/operations.ts",
+  fn: import { createCustomerPortalSession } from "@src/stripe/operations",
   entities: [User]
 }
 
@@ -183,10 +188,21 @@ action createCustomerPortalSession {
 //#region Stripe API
 
 api stripeWebhook {
-  fn: import { handleStripeWebhook } from "@src/stripe/webhooks.ts",
+  fn: import { handleStripeWebhook } from "@src/stripe/webhooks",
   middlewareConfigFn: import { stripeWebhookMiddlewareConfigFn } from "@src/stripe/webhooks",
   httpRoute: (POST, "/stripe-webhooks"),
   entities: [User]
+}
+
+//#endregion
+
+//#region Plaid API
+
+api plaidWebhook {
+  fn: import { handlePlaidWebhook } from "@src/plaid/webhooks",
+  middlewareConfigFn: import { plaidWebhookMiddlewareConfigFn } from "@src/plaid/webhooks",
+  httpRoute: (POST, "/plaid-webhooks"),
+  entities: [Institution, User]
 }
 
 //#endregion

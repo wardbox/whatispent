@@ -50,7 +50,6 @@ This starter aims to provide a solid foundation with:
 3.  **Install Dependencies**: Run `wasp start db` `wasp db migrate-dev`
 
 4.  **Environment Variables (`.env.server`)**:
-
     - Create a `.env.server` file in the project root.
     - **Plaid**: Add your Plaid API keys (use **Sandbox** keys for local
       development, obtainable from
@@ -94,7 +93,6 @@ This starter aims to provide a solid foundation with:
       ```
 
 5.  **Database Setup**:
-
     - Run migrations:
       ```bash
       wasp db migrate-dev
@@ -104,7 +102,6 @@ This starter aims to provide a solid foundation with:
       needed if you let `wasp start` manage it or use SQLite/external DB.
 
 6.  **Stripe Webhook (Local Testing)**:
-
     - Install the [Stripe CLI](https://stripe.com/docs/stripe-cli).
     - Run the following command in a separate terminal to forward webhooks to
       your local Wasp app (adjust port/path if your Wasp setup differs):

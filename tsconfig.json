@@ -9,6 +9,8 @@
     "target": "esnext",
     "composite": true,
     "skipLibCheck": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
     // We're bundling all code in the end so this is the most appropriate option,
     // it's also important for autocomplete to work properly.
     "moduleResolution": "bundler",
