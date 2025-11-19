@@ -104,9 +104,9 @@ This starter aims to provide a solid foundation with:
 6.  **Stripe Webhook (Local Testing)**:
     - Install the [Stripe CLI](https://stripe.com/docs/stripe-cli).
     - Run the following command in a separate terminal to forward webhooks to
-      your local Wasp app (adjust port/path if your Wasp setup differs):
+      your local Wasp app:
       ```bash
-      stripe listen --forward-to http://localhost:3001/api/stripe-webhooks
+      stripe listen --forward-to http://localhost:3001/stripe-webhooks
       ```
     - The command will output a webhook signing secret (looks like `whsec_xxx`).
       Add this to your `.env.server`:
@@ -114,12 +114,44 @@ This starter aims to provide a solid foundation with:
       STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret
       ```
 
-7.  **Run the App**:
+7.  **Plaid Webhook (Local Testing)**:
+    - Install [ngrok](https://ngrok.com/download) to expose your local server:
+      ```bash
+      brew install ngrok  # macOS
+      # or download from https://ngrok.com/download
+      ```
+    - Run ngrok in a separate terminal:
+      ```bash
+      ngrok http 3001
+      ```
+    - Copy the HTTPS forwarding URL (e.g., `https://abc123.ngrok.io`)
+    - Update `.env.server` with the webhook URL:
+      ```env
+      PLAID_WEBHOOK_URL=https://abc123.ngrok.io/plaid-webhooks
+      ```
+    - Restart your Wasp server to pick up the new webhook URL
+
+8.  **Run the App**:
     ```bash
     wasp start
     ```
 
 Visit the running application (usually `http://localhost:3000`).
+
+## Local Development - Quick Reference
+
+Run these commands in separate terminals:
+
+```bash
+# Terminal 1 - Main app
+wasp start
+
+# Terminal 2 - Stripe webhooks
+stripe listen --forward-to http://localhost:3001/stripe-webhooks
+
+# Terminal 3 - Plaid webhooks (copy the ngrok URL to .env.server)
+ngrok http 3001
+```
 
 ## Contributing
 

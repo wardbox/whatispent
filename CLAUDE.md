@@ -17,6 +17,7 @@ management.
 - `wasp start db` - Start the PostgreSQL database (requires Docker)
 - `wasp db migrate-dev` - Run database migrations
 - `wasp db studio` - Open Prisma Studio to view/edit database
+- `wasp build` - Build the project for production
 
 ### Code Quality
 
@@ -30,10 +31,47 @@ management.
 - `npm run fix-shadcn` - Fix shadcn component imports
 - `npm run create-page` - Create a new page with boilerplate
 
-### Stripe Webhooks (Local Development)
+### Local Development Setup
+
+Run these commands in **separate terminals** for full local development:
 
 ```bash
-stripe listen --forward-to http://localhost:3001/api/stripe-webhooks
+# Terminal 1 - Main application
+wasp start
+
+# Terminal 2 - Stripe webhooks (for subscription events)
+stripe listen --forward-to http://localhost:3001/stripe-webhooks
+
+# Terminal 3 - Plaid webhooks (for transaction sync events)
+ngrok http 3001
+# Copy the HTTPS URL (e.g., https://abc123.ngrok.io) and update .env.server:
+# PLAID_WEBHOOK_URL=https://abc123.ngrok.io/plaid-webhooks
+# Then restart wasp start to pick up the new URL
+```
+
+**Note**: The Stripe webhook secret (`whsec_xxx`) is provided by `stripe listen`
+and must be added to `.env.server` as `STRIPE_WEBHOOK_SECRET`.
+
+### Testing Webhooks
+
+**Stripe webhook (subscription events):**
+
+```bash
+# Test with Stripe CLI
+stripe trigger checkout.session.completed
+```
+
+**Plaid webhook (transaction updates):**
+
+```bash
+# Simulate webhook with curl (replace ITEM_ID with your institution's itemId)
+curl -X POST https://your-ngrok-url.ngrok.io/plaid-webhooks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "webhook_type": "TRANSACTIONS",
+    "webhook_code": "SYNC_UPDATES_AVAILABLE",
+    "item_id": "YOUR_ITEM_ID"
+  }'
 ```
 
 ## Architecture
