@@ -48,6 +48,8 @@ route TransactionsRoute { path: "/transactions", to: TransactionsPage }
 route SubscriptionRoute { path: "/subscription", to: SubscriptionPage }
 route CheckoutResultRoute { path: "/checkout", to: CheckoutResultPage }
 route AdminRoute { path: "/admin", to: AdminPage }
+route PrivacyRoute { path: "/privacy", to: PrivacyPolicyPage }
+route TermsRoute { path: "/terms", to: TermsOfServicePage }
 route NotFoundRoute { path: "*", to: NotFoundPage }
 //#endregion
 
@@ -97,6 +99,14 @@ page CheckoutResultPage {
   component: import CheckoutResult from "@src/CheckoutResultPage.tsx"
 }
 
+page PrivacyPolicyPage {
+  component: import PrivacyPolicyPage from "@src/legal/PrivacyPolicyPage"
+}
+
+page TermsOfServicePage {
+  component: import TermsOfServicePage from "@src/legal/TermsOfServicePage"
+}
+
 //#endregion
 
 //#region Plaid Actions
@@ -106,8 +116,18 @@ action createLinkToken {
   entities: [User, Institution, Account, Transaction]
 }
 
+action createUpdateModeLinkToken {
+  fn: import { createUpdateModeLinkToken } from "@src/plaid/operations",
+  entities: [User, Institution, Account, Transaction]
+}
+
 action exchangePublicToken {
   fn: import { exchangePublicToken } from "@src/plaid/operations",
+  entities: [User, Institution, Account, Transaction]
+}
+
+action exchangeUpdateModeToken {
+  fn: import { exchangeUpdateModeToken } from "@src/plaid/operations",
   entities: [User, Institution, Account, Transaction]
 }
 
@@ -181,6 +201,24 @@ action createCheckoutSession {
 action createCustomerPortalSession {
   fn: import { createCustomerPortalSession } from "@src/stripe/operations",
   entities: [User]
+}
+
+//#endregion
+
+//#region User Actions
+
+action deleteUserAccount {
+  fn: import { deleteUserAccount } from "@src/user/operations",
+  entities: [User, Institution, Account, Transaction]
+}
+
+//#endregion
+
+//#region User Queries
+
+query exportUserData {
+  fn: import { exportUserData } from "@src/user/operations",
+  entities: [User, Institution, Account, Transaction]
 }
 
 //#endregion

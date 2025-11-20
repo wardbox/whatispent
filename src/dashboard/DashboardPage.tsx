@@ -48,7 +48,7 @@ export default function Dashboard() {
     error: institutionsError,
     refetch: refetchInstitutions,
   } = useQuery(getInstitutions)
-  const [timeRange, setTimeRange] = useState<TimeRange>('6m')
+  const [timeRange, setTimeRange] = useState<TimeRange>('1m')
   const [syncingInstitutionId, setSyncingInstitutionId] = useState<
     string | null
   >(null)
@@ -62,7 +62,6 @@ export default function Dashboard() {
           <div className='flex items-center justify-between p-6 pb-0'>
             <span className='text-sm font-light'>Monthly Comparison</span>
             <Tabs
-              defaultValue='6m'
               value={timeRange}
               onValueChange={value => setTimeRange(value as TimeRange)}
             >

@@ -15,9 +15,13 @@ import { encrypt, decrypt } from './utils/encryption'
 /**
  * Creates a Plaid Link token for a given user.
  * This token is used by the frontend Plaid Link component.
+ *
+ * @param userId - The user's internal ID
+ * @param accessToken - Optional access token for Update Mode (re-authentication)
  */
 export async function _internalCreateLinkToken(
   userId: string,
+  accessToken?: string,
 ): Promise<string> {
   const webhookUrl = process.env.PLAID_WEBHOOK_URL
 
@@ -27,17 +31,24 @@ export async function _internalCreateLinkToken(
       client_user_id: userId, // Associate the token with your internal user ID
     },
     client_name: 'What I Spent',
-    // Specify the products you want to use (e.g., 'transactions', 'auth')
-    products: [Products.Transactions],
     // Specify the countries your users are in
     country_codes: [CountryCode.Us],
     language: 'en', // Specify the language
-    // Request 180 days of initial transaction history
-    transactions: {
-      days_requested: 180,
-    },
     // Configure webhook for automatic transaction updates
     webhook: webhookUrl,
+  }
+
+  // If accessToken provided, enable Update Mode (re-authentication)
+  // Otherwise, use standard new connection mode
+  if (accessToken) {
+    // Update Mode: re-authenticate existing connection
+    request.access_token = accessToken
+  } else {
+    // New connection mode: specify products and transaction history
+    request.products = [Products.Transactions]
+    request.transactions = {
+      days_requested: 180,
+    }
   }
 
   try {

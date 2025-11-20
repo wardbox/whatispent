@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 // Remove react-plaid-link imports
 // import {
 //   usePlaidLink,
@@ -9,6 +9,7 @@ import { Button } from '../../client/components/ui/button'
 // Import the toast function
 import { toast } from '../../hooks/use-toast'
 import { CircleNotch } from '@phosphor-icons/react' // Import the spinner icon
+import { PlaidConsentDialog } from '../../plaid/components/plaid-consent-dialog'
 
 // Define type for the Plaid Link handler
 declare global {
@@ -51,6 +52,10 @@ interface PlaidLinkButtonProps {
   // Add loading state props
   isLoading: boolean
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+  // Add prop to control whether consent is required
+  requireConsent?: boolean
+  // Add prop to indicate if this is update mode
+  isUpdateMode?: boolean
 }
 
 export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
@@ -64,9 +69,12 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
   // Destructure loading state props
   isLoading,
   setIsLoading,
+  // Destructure new props with defaults
+  requireConsent = true,
+  isUpdateMode = false,
 }) => {
-  // No need for handler state here, create it on click
-  // No need for isReady state
+  // Add state for consent dialog
+  const [showConsentDialog, setShowConsentDialog] = useState(false)
 
   const handlePlaidSuccess = useCallback(
     async (public_token: string) => {
@@ -106,7 +114,28 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
 
   // Remove the useEffect that depended on the token prop
 
-  const handleOpen = async () => {
+  // Handle consent dialog accept
+  const handleConsentAccept = useCallback(() => {
+    setShowConsentDialog(false)
+    openPlaidLink()
+  }, [])
+
+  // Handle consent dialog decline
+  const handleConsentDecline = useCallback(() => {
+    setShowConsentDialog(false)
+  }, [])
+
+  // Handle button click
+  const handleOpen = () => {
+    if (requireConsent) {
+      setShowConsentDialog(true)
+    } else {
+      openPlaidLink()
+    }
+  }
+
+  // Actual Plaid Link opening logic
+  const openPlaidLink = async () => {
     if (!window.Plaid) {
       const err = { message: 'Plaid script failed to load.' }
       if (onError) {
@@ -182,24 +211,29 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
   }
 
   return (
-    <Button
-      variant='outline'
-      size='sm'
-      className='h-7 text-xs'
-      onClick={handleOpen}
-      disabled={isButtonDisabled}
-    >
-      {isLoading ? (
-        <>
-          <CircleNotch
-            className='h-4 w-4 animate-spin'
-            aria-hidden='true'
-          />
-          <span className='sr-only'>{buttonText}</span>
-        </>
-      ) : (
-        buttonText // Show original text otherwise
-      )}
-    </Button>
+    <>
+      <PlaidConsentDialog
+        isOpen={showConsentDialog}
+        onAccept={handleConsentAccept}
+        onDecline={handleConsentDecline}
+        isUpdateMode={isUpdateMode}
+      />
+      <Button
+        variant='outline'
+        size='sm'
+        className='h-7 text-xs'
+        onClick={handleOpen}
+        disabled={isButtonDisabled}
+      >
+        {isLoading ? (
+          <>
+            <CircleNotch className='h-4 w-4 animate-spin' aria-hidden='true' />
+            <span className='sr-only'>{buttonText}</span>
+          </>
+        ) : (
+          buttonText // Show original text otherwise
+        )}
+      </Button>
+    </>
   )
 }
