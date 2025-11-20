@@ -6,6 +6,7 @@ import { Button } from '../client/components/ui/button'
 import { MonthlyComparisonChart } from './components/monthly-comparison-chart'
 import { CategorySummary } from './components/category-summary'
 import { useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import { PlaidIntegration } from './components/plaid-integration'
 import { Link } from 'wasp/client/router'
 import {
@@ -29,9 +30,9 @@ export type InstitutionsSummaryProps = {
   refetch: () => void
   refetchOnInstitutionAdd: () => void
   syncingInstitutionId: string | null
-  setSyncingInstitutionId: React.Dispatch<React.SetStateAction<string | null>>
+  setSyncingInstitutionId: Dispatch<SetStateAction<string | null>>
   isConnectingPlaid: boolean
-  setIsConnectingPlaid: React.Dispatch<React.SetStateAction<boolean>>
+  setIsConnectingPlaid: Dispatch<SetStateAction<boolean>>
 }
 
 export default function Dashboard() {

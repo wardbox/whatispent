@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import dayjs from 'dayjs'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import {
   getPrettyCategoryName,
   getCategoryIcon,
@@ -288,18 +288,32 @@ export function TransactionsList({
                       </div>
                     </div>
                     <div className='flex flex-col items-end'>
-                      <p
-                        className={`whitespace-nowrap text-sm font-light ${transaction.amount < 0 ? 'text-green-500' : ''}`}
-                      >
-                        {transaction.amount < 0 ? '+' : '-'}$
-                        {Math.abs(transaction.amount).toLocaleString(
-                          undefined,
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          },
-                        )}
-                      </p>
+                      {(() => {
+                        const isExpense = transaction.amount < 0
+                        const sign = isExpense ? '-' : '+'
+                        const amountClass = isExpense
+                          ? 'text-red-500'
+                          : 'text-green-500'
+
+                        return (
+                          <p
+                            className={cn(
+                              'whitespace-nowrap text-sm font-light',
+                              amountClass,
+                            )}
+                          >
+                            {sign}$
+                            {Math.abs(transaction.amount).toLocaleString(
+                              undefined,
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              },
+                            )}
+                          </p>
+                        )
+                      })()}
+
                       <div className='flex items-center gap-1 text-xs text-muted-foreground'>
                         <span className='hidden sm:inline'>
                           {transaction.account.institution.institutionName}

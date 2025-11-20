@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react'
 import { getSpendingSummary, useQuery } from 'wasp/client/operations'
 import { useAuth } from 'wasp/client/auth'
