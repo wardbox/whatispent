@@ -91,7 +91,7 @@ export function PlaidIntegration({
     }
 
     try {
-      refetch()
+      await refetch()
       // Optional: Add a small delay if UI updates seem too fast
       // await new Promise(resolve => setTimeout(resolve, 100));
     } catch {
@@ -144,7 +144,7 @@ export function PlaidIntegration({
       toast({
         title: 'Institution deleted successfully.',
       })
-      refetch()
+      await refetch()
       setInstitutionToDelete(null)
     } catch {
       toast({
@@ -164,7 +164,7 @@ export function PlaidIntegration({
         accountId,
         isTracked: !currentlyTracked,
       })
-      refetch() // Refresh to show updated state
+      await refetch() // Refresh to show updated state
       toast({
         title: currentlyTracked
           ? 'Account excluded from spending'

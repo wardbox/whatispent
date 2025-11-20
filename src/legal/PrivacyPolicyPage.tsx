@@ -1,6 +1,8 @@
 import { motion } from 'motion/react'
 import { fadeIn } from '../motion/transitionPresets'
 
+const LAST_UPDATED = 'January 1, 2025'
+
 export default function PrivacyPolicyPage() {
   return (
     <motion.div
@@ -10,19 +12,16 @@ export default function PrivacyPolicyPage() {
       variants={fadeIn}
       className='mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8'
     >
-      <h1 className='mb-8 text-4xl font-thin tracking-tight'>Privacy Policy</h1>
+      <h1 className='mb-8 text-4xl font-light tracking-tight'>
+        Privacy Policy
+      </h1>
       <p className='mb-8 text-sm text-muted-foreground'>
-        Last Updated:{' '}
-        {new Date().toLocaleDateString('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-        })}
+        Last Updated: {LAST_UPDATED}
       </p>
 
       <div className='prose prose-slate max-w-none space-y-8 dark:prose-invert'>
         <section>
-          <h2 className='text-2xl font-thin'>1. Introduction</h2>
+          <h2 className='text-2xl font-light'>1. Introduction</h2>
           <p>
             Welcome to What I Spent ("we," "our," or "us"). We are committed to
             protecting your privacy and handling your data in an open and
@@ -37,9 +36,9 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>2. Information We Collect</h2>
+          <h2 className='text-2xl font-light'>2. Information We Collect</h2>
 
-          <h3 className='text-xl font-thin'>2.1 Information You Provide</h3>
+          <h3 className='text-xl font-light'>2.1 Information You Provide</h3>
           <ul>
             <li>
               <strong>Account Information:</strong> When you create an account
@@ -53,7 +52,7 @@ export default function PrivacyPolicyPage() {
             </li>
           </ul>
 
-          <h3 className='text-xl font-thin'>2.2 Financial Data via Plaid</h3>
+          <h3 className='text-xl font-light'>2.2 Financial Data via Plaid</h3>
           <ul>
             <li>
               <strong>Bank Account Information:</strong> When you connect your
@@ -73,7 +72,7 @@ export default function PrivacyPolicyPage() {
             </li>
           </ul>
 
-          <h3 className='text-xl font-thin'>
+          <h3 className='text-xl font-light'>
             2.3 Automatically Collected Information
           </h3>
           <ul>
@@ -92,7 +91,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>3. How We Use Your Information</h2>
+          <h2 className='text-2xl font-light'>3. How We Use Your Information</h2>
           <p>We use the collected information for the following purposes:</p>
           <ul>
             <li>
@@ -123,7 +122,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>
+          <h2 className='text-2xl font-light'>
             4. How We Share Your Information
           </h2>
           <p>
@@ -131,7 +130,7 @@ export default function PrivacyPolicyPage() {
             in the following circumstances:
           </p>
 
-          <h3 className='text-xl font-thin'>
+          <h3 className='text-xl font-light'>
             4.1 Third-Party Service Providers
           </h3>
           <ul>
@@ -157,7 +156,7 @@ export default function PrivacyPolicyPage() {
             </li>
           </ul>
 
-          <h3 className='text-xl font-thin'>4.2 Legal Requirements</h3>
+          <h3 className='text-xl font-light'>4.2 Legal Requirements</h3>
           <p>
             We may disclose your information if required to do so by law or in
             response to valid requests by public authorities (e.g., a court or
@@ -166,7 +165,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>5. Data Security</h2>
+          <h2 className='text-2xl font-light'>5. Data Security</h2>
           <p>
             We implement industry-standard security measures to protect your
             information:
@@ -197,7 +196,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>6. Your Data Rights</h2>
+          <h2 className='text-2xl font-light'>6. Your Data Rights</h2>
           <p>You have the following rights regarding your personal data:</p>
           <ul>
             <li>
@@ -227,7 +226,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>7. Data Retention</h2>
+          <h2 className='text-2xl font-light'>7. Data Retention</h2>
           <ul>
             <li>
               <strong>Active Accounts:</strong> We retain your data for as long
@@ -235,19 +234,55 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               <strong>Deleted Accounts:</strong> When you delete your account,
-              all personal data, financial connections, and transactions are
-              immediately and permanently deleted from our systems.
+              your personal data, financial connections, and transactions are
+              immediately deleted from our primary database. However, complete
+              deletion from all systems is subject to the retention periods
+              described below.
             </li>
             <li>
-              <strong>Legal Obligations:</strong> We may retain certain
-              information to comply with legal obligations, resolve disputes, or
-              enforce our agreements.
+              <strong>Backup Retention:</strong> Database backups are retained
+              for disaster recovery purposes and are purged within 30 days of
+              account deletion. During this period, your data may exist in
+              encrypted backups but cannot be accessed or restored.
+            </li>
+            <li>
+              <strong>Server Logs:</strong> Access logs and error logs are
+              retained for security and diagnostic purposes for up to 90 days,
+              after which they are anonymized (personally identifiable
+              information is removed) or permanently deleted.
+            </li>
+            <li>
+              <strong>Analytics Data:</strong> Website analytics data collected
+              through Plausible Analytics is retained for 30 days. Plausible
+              does not collect personally identifiable information and operates
+              in a privacy-first manner without cookies or user tracking.
+            </li>
+            <li>
+              <strong>Legal Holds and Compliance:</strong> We may retain data
+              beyond the standard retention periods when necessary to comply
+              with legal obligations, court orders, regulatory requirements, or
+              to resolve disputes. Such retention typically does not exceed 90
+              days unless specifically required by law or ongoing legal
+              proceedings.
+            </li>
+            <li>
+              <strong>Grace Period:</strong> A 30-day grace period applies to
+              account deletions to allow for recovery in case of accidental
+              deletion requests. During this period, your account can be
+              restored upon request. After 30 days, deletion becomes permanent
+              and cannot be reversed.
             </li>
           </ul>
+          <p className='mt-4 text-sm text-muted-foreground'>
+            <strong>Important:</strong> While we strive to delete your data as
+            quickly as possible, complete removal from all systems (including
+            backups and logs) may take up to 90 days from the date of account
+            deletion, except where longer retention is required by law.
+          </p>
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>8. Children's Privacy</h2>
+          <h2 className='text-2xl font-light'>8. Children's Privacy</h2>
           <p>
             Our service is not intended for individuals under the age of 18. We
             do not knowingly collect personal information from children. If you
@@ -258,7 +293,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>
+          <h2 className='text-2xl font-light'>
             9. International Data Transfers
           </h2>
           <p>
@@ -272,7 +307,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>
+          <h2 className='text-2xl font-light'>
             10. Changes to This Privacy Policy
           </h2>
           <p>
@@ -284,7 +319,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>11. Contact Us</h2>
+          <h2 className='text-2xl font-light'>11. Contact Us</h2>
           <p>
             If you have any questions about this Privacy Policy or our data
             practices, please contact us at:
@@ -295,7 +330,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className='rounded-lg border bg-muted/50 p-6'>
-          <h2 className='text-2xl font-thin'>
+          <h2 className='text-2xl font-light'>
             Your Rights Under GDPR (for EU Users)
           </h2>
           <p>If you are in the European Union, you have additional rights:</p>
@@ -328,7 +363,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className='rounded-lg border bg-muted/50 p-6'>
-          <h2 className='text-2xl font-thin'>
+          <h2 className='text-2xl font-light'>
             Your Rights Under CCPA (for California Users)
           </h2>
           <p>

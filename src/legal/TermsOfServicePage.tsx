@@ -2,6 +2,8 @@ import { motion } from 'motion/react'
 import { fadeIn } from '../motion/transitionPresets'
 import { Link } from 'wasp/client/router'
 
+const LAST_UPDATED = 'January 1, 2025'
+
 export default function TermsOfServicePage() {
   return (
     <motion.div
@@ -11,21 +13,16 @@ export default function TermsOfServicePage() {
       variants={fadeIn}
       className='mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8'
     >
-      <h1 className='mb-8 text-4xl font-thin tracking-tight'>
+      <h1 className='mb-8 text-4xl font-light tracking-tight'>
         Terms of Service
       </h1>
       <p className='mb-8 text-sm text-muted-foreground'>
-        Last Updated:{' '}
-        {new Date().toLocaleDateString('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-        })}
+        Last Updated: {LAST_UPDATED}
       </p>
 
       <div className='prose prose-slate max-w-none space-y-8 dark:prose-invert'>
         <section>
-          <h2 className='text-2xl font-thin'>1. Agreement to Terms</h2>
+          <h2 className='text-2xl font-light'>1. Agreement to Terms</h2>
           <p>
             By accessing or using What I Spent ("the Service"), you agree to be
             bound by these Terms of Service ("Terms"). If you do not agree to
@@ -40,7 +37,7 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>2. Description of Service</h2>
+          <h2 className='text-2xl font-light'>2. Description of Service</h2>
           <p>
             What I Spent is a personal finance tracking application that helps
             you understand your spending habits by:
@@ -60,7 +57,7 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>3. Account Registration</h2>
+          <h2 className='text-2xl font-light'>3. Account Registration</h2>
           <ul>
             <li>
               <strong>Eligibility:</strong> You must be at least 18 years old to
@@ -88,9 +85,9 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>4. Subscription and Payment</h2>
+          <h2 className='text-2xl font-light'>4. Subscription and Payment</h2>
 
-          <h3 className='text-xl font-thin'>4.1 Subscription Plans</h3>
+          <h3 className='text-xl font-light'>4.1 Subscription Plans</h3>
           <ul>
             <li>
               <strong>Free Trial:</strong> New users may receive a free trial
@@ -106,7 +103,7 @@ export default function TermsOfServicePage() {
             </li>
           </ul>
 
-          <h3 className='text-xl font-thin'>4.2 Payment Terms</h3>
+          <h3 className='text-xl font-light'>4.2 Payment Terms</h3>
           <ul>
             <li>
               <strong>Payment Processing:</strong> All payments are processed
@@ -131,7 +128,7 @@ export default function TermsOfServicePage() {
             </li>
           </ul>
 
-          <h3 className='text-xl font-thin'>4.3 Cancellation and Refunds</h3>
+          <h3 className='text-xl font-light'>4.3 Cancellation and Refunds</h3>
           <ul>
             <li>
               <strong>Cancellation:</strong> You may cancel your subscription at
@@ -156,9 +153,9 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>5. Bank Account Connections</h2>
+          <h2 className='text-2xl font-light'>5. Bank Account Connections</h2>
 
-          <h3 className='text-xl font-thin'>5.1 Plaid Integration</h3>
+          <h3 className='text-xl font-light'>5.1 Plaid Integration</h3>
           <p>
             Our Service uses Plaid to connect to your financial institutions.
             When you connect a bank account:
@@ -174,7 +171,7 @@ export default function TermsOfServicePage() {
             </li>
           </ul>
 
-          <h3 className='text-xl font-thin'>5.2 Your Responsibilities</h3>
+          <h3 className='text-xl font-light'>5.2 Your Responsibilities</h3>
           <ul>
             <li>
               You are responsible for ensuring you have authorization to connect
@@ -189,7 +186,7 @@ export default function TermsOfServicePage() {
             </li>
           </ul>
 
-          <h3 className='text-xl font-thin'>5.3 Data Accuracy</h3>
+          <h3 className='text-xl font-light'>5.3 Data Accuracy</h3>
           <p>
             While we strive to provide accurate financial data, we rely on data
             from third-party financial institutions via Plaid. We do not
@@ -200,7 +197,7 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>6. Acceptable Use</h2>
+          <h2 className='text-2xl font-light'>6. Acceptable Use</h2>
           <p>You agree NOT to:</p>
           <ul>
             <li>
@@ -232,7 +229,7 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>7. Intellectual Property</h2>
+          <h2 className='text-2xl font-light'>7. Intellectual Property</h2>
           <ul>
             <li>
               <strong>Service Ownership:</strong> The Service, including all
@@ -258,7 +255,7 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>8. Privacy and Data Protection</h2>
+          <h2 className='text-2xl font-light'>8. Privacy and Data Protection</h2>
           <p>
             Your privacy is important to us. Our collection and use of your
             information is governed by our{' '}
@@ -281,9 +278,9 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>9. Disclaimers and Limitations</h2>
+          <h2 className='text-2xl font-light'>9. Disclaimers and Limitations</h2>
 
-          <h3 className='text-xl font-thin'>9.1 No Financial Advice</h3>
+          <h3 className='text-xl font-light'>9.1 No Financial Advice</h3>
           <p>
             <strong>
               The Service is for informational purposes only and does not
@@ -294,7 +291,7 @@ export default function TermsOfServicePage() {
             decisions.
           </p>
 
-          <h3 className='text-xl font-thin'>9.2 Service Availability</h3>
+          <h3 className='text-xl font-light'>9.2 Service Availability</h3>
           <p>
             We provide the Service on an "AS IS" and "AS AVAILABLE" basis. We
             make no warranties or representations about:
@@ -309,7 +306,7 @@ export default function TermsOfServicePage() {
             </li>
           </ul>
 
-          <h3 className='text-xl font-thin'>9.3 Third-Party Services</h3>
+          <h3 className='text-xl font-light'>9.3 Third-Party Services</h3>
           <p>
             We integrate with third-party services (Plaid, Stripe, Google). We
             are not responsible for:
@@ -322,7 +319,7 @@ export default function TermsOfServicePage() {
             <li>Actions or omissions of these third-party providers</li>
           </ul>
 
-          <h3 className='text-xl font-thin'>9.4 Limitation of Liability</h3>
+          <h3 className='text-xl font-light'>9.4 Limitation of Liability</h3>
           <p>
             TO THE MAXIMUM EXTENT PERMITTED BY LAW, WHAT I SPENT SHALL NOT BE
             LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR
@@ -338,7 +335,7 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>10. Indemnification</h2>
+          <h2 className='text-2xl font-light'>10. Indemnification</h2>
           <p>
             You agree to indemnify and hold harmless What I Spent, its officers,
             directors, employees, and agents from any claims, damages, losses,
@@ -353,16 +350,16 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>11. Termination</h2>
+          <h2 className='text-2xl font-light'>11. Termination</h2>
 
-          <h3 className='text-xl font-thin'>11.1 By You</h3>
+          <h3 className='text-xl font-light'>11.1 By You</h3>
           <p>
             You may terminate your account at any time by using the account
             deletion feature in your Profile settings. This will permanently
             delete all your data.
           </p>
 
-          <h3 className='text-xl font-thin'>11.2 By Us</h3>
+          <h3 className='text-xl font-light'>11.2 By Us</h3>
           <p>
             We may suspend or terminate your access to the Service immediately,
             without notice, if:
@@ -377,7 +374,7 @@ export default function TermsOfServicePage() {
             <li>We discontinue the Service (with reasonable notice)</li>
           </ul>
 
-          <h3 className='text-xl font-thin'>11.3 Effect of Termination</h3>
+          <h3 className='text-xl font-light'>11.3 Effect of Termination</h3>
           <p>Upon termination:</p>
           <ul>
             <li>Your right to use the Service immediately ceases</li>
@@ -393,22 +390,22 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>12. Dispute Resolution</h2>
+          <h2 className='text-2xl font-light'>12. Dispute Resolution</h2>
 
-          <h3 className='text-xl font-thin'>12.1 Governing Law</h3>
+          <h3 className='text-xl font-light'>12.1 Governing Law</h3>
           <p>
             These Terms are governed by and construed in accordance with the
             laws of Washington, USA, without regard to conflict of law
             principles.
           </p>
 
-          <h3 className='text-xl font-thin'>12.2 Informal Resolution</h3>
+          <h3 className='text-xl font-light'>12.2 Informal Resolution</h3>
           <p>
             Before filing a claim, you agree to try to resolve the dispute
             informally by contacting us at support@whatispent.com.
           </p>
 
-          <h3 className='text-xl font-thin'>12.3 Arbitration</h3>
+          <h3 className='text-xl font-light'>12.3 Arbitration</h3>
           <p>
             Any dispute arising from these Terms or the Service shall be
             resolved through binding arbitration in accordance with the rules of
@@ -416,7 +413,7 @@ export default function TermsOfServicePage() {
             law.
           </p>
 
-          <h3 className='text-xl font-thin'>12.4 Class Action Waiver</h3>
+          <h3 className='text-xl font-light'>12.4 Class Action Waiver</h3>
           <p>
             You agree to resolve disputes with us on an individual basis and
             waive your right to participate in class actions or class-wide
@@ -425,7 +422,7 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>13. General Provisions</h2>
+          <h2 className='text-2xl font-light'>13. General Provisions</h2>
           <ul>
             <li>
               <strong>Entire Agreement:</strong> These Terms constitute the
@@ -455,7 +452,7 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-thin'>14. Contact Information</h2>
+          <h2 className='text-2xl font-light'>14. Contact Information</h2>
           <p>If you have questions about these Terms, please contact us at:</p>
           <p>
             <strong>Email:</strong> support@whatispent.com
@@ -466,7 +463,7 @@ export default function TermsOfServicePage() {
         </section>
 
         <section className='rounded-lg border bg-muted/50 p-6'>
-          <h2 className='text-2xl font-thin'>Acknowledgment</h2>
+          <h2 className='text-2xl font-light'>Acknowledgment</h2>
           <p>
             BY USING THE SERVICE, YOU ACKNOWLEDGE THAT YOU HAVE READ THESE TERMS
             OF SERVICE AND AGREE TO BE BOUND BY THEM.
