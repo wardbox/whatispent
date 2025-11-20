@@ -138,6 +138,11 @@ export const createUpdateModeLinkToken = (async (
       throw new HttpError(403, 'You do not have permission to access this institution')
     }
 
+    // Verify accessToken exists before attempting to decrypt
+    if (!institution.accessToken) {
+      throw new HttpError(404, 'Institution access token not found')
+    }
+
     // Decrypt the access token
     const decryptedAccessToken = decrypt(institution.accessToken)
 
@@ -312,6 +317,15 @@ export const exchangeUpdateModeToken = (async (
     })
 
     console.log(`Successfully re-authenticated institution ${institution.institutionName}`)
+
+    // 4. Trigger immediate sync to refresh data after re-authentication
+    try {
+      await syncTransactions({ institutionId: args.institutionId }, context)
+      console.log(`Triggered immediate sync after re-authentication for institution ${institution.institutionName}`)
+    } catch (syncError: any) {
+      // Log sync error but don't fail the re-authentication
+      console.error(`Failed to sync after re-authentication for institution ${args.institutionId}:`, syncError.message)
+    }
 
     return {
       institutionId: args.institutionId,
@@ -556,9 +570,9 @@ async function _syncSingleInstitution(
       'INSUFFICIENT_CREDENTIALS',
       'MFA_NOT_SUPPORTED',
       'NO_ACCOUNTS',
-      'INSTITUTION_DOWN',
-      'INSTITUTION_NOT_RESPONDING',
       'INSTITUTION_NO_LONGER_SUPPORTED',
+      // Note: INSTITUTION_DOWN and INSTITUTION_NOT_RESPONDING are transient errors
+      // and should be treated as 'error' status rather than requiring re-auth
     ].includes(errorCode)
 
     if (requiresReauth) {
@@ -732,23 +746,29 @@ export const deleteInstitution = (async (
   )
 
   // Call Plaid /item/remove to deactivate the item (Plaid requirement)
-  try {
-    const decryptedAccessToken = decrypt(institution.accessToken)
-    await plaidClient.itemRemove({
-      access_token: decryptedAccessToken,
-    })
-    console.log(
-      `Successfully removed Plaid item for institution ${institution.institutionName}`,
-    )
-  } catch (plaidError: any) {
-    // Log the error but continue with deletion - don't block user from deleting
-    console.error(
-      `Failed to remove Plaid item for institution ${institutionId}:`,
-      plaidError.response?.data || plaidError.message,
-    )
+  if (!institution.accessToken) {
     console.warn(
-      'Continuing with database deletion despite Plaid API error',
+      `Institution ${institutionId} has no accessToken, skipping Plaid item removal`,
     )
+  } else {
+    try {
+      const decryptedAccessToken = decrypt(institution.accessToken)
+      await plaidClient.itemRemove({
+        access_token: decryptedAccessToken,
+      })
+      console.log(
+        `Successfully removed Plaid item for institution ${institution.institutionName}`,
+      )
+    } catch (plaidError: any) {
+      // Log the error but continue with deletion - don't block user from deleting
+      console.error(
+        `Failed to remove Plaid item for institution ${institutionId}:`,
+        plaidError.response?.data || plaidError.message,
+      )
+      console.warn(
+        'Continuing with database deletion despite Plaid API error',
+      )
+    }
   }
 
   // Delete from database (cascade deletes accounts and transactions)
@@ -1142,10 +1162,10 @@ export const getAllTransactions = (async (args, context) => {
   return transactions as TransactionWithDetails[]
 }) satisfies GetAllTransactions<AllTransactionsArgs, TransactionWithDetails[]>
 
-// Update the result type to include accounts and logo
+// Update the result type to include accounts, logo, status, and errorCode
 type GetInstitutionsResult = (Pick<
   Institution,
-  'id' | 'institutionName' | 'lastSync' | 'plaidInstitutionId' | 'logo' // Changed logoUrl to logo
+  'id' | 'institutionName' | 'lastSync' | 'plaidInstitutionId' | 'logo' | 'status' | 'errorCode'
 > & {
   accounts: Pick<
     Account,

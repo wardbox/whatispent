@@ -299,7 +299,7 @@ export function PlaidIntegration({
                     transition={{ delay: 0.1 * index, duration: 0.5 }}
                   >
                     {/* Show alert if institution needs re-authentication */}
-                    {(institution as any)?.status === 'needs_reauth' && (
+                    {institution.status === 'needs_reauth' && (
                       <Alert variant='destructive' className='mb-3'>
                         <Terminal className='h-4 w-4' />
                         <AlertTitle className='text-sm'>
