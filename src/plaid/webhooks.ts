@@ -6,7 +6,7 @@ import crypto from 'crypto'
 import { jwtVerify, importJWK } from 'jose'
 import { plaidClient } from './client.js'
 
-const NODE_ENV = process.env.NODE_ENV || 'development'
+const NODE_ENV = process.env.NODE_ENV
 
 // Middleware to capture raw body before parsing (needed for webhook signature verification)
 export const plaidWebhookMiddlewareConfigFn: MiddlewareConfigFn =
