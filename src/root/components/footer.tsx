@@ -32,14 +32,13 @@ const ScrollToTopLink = ({
 
 const navigation = {
   main: [
-    { name: 'Home', href: '/' },
     { name: 'Dashboard', href: '/dashboard' },
     { name: 'Transactions', href: '/transactions' },
     { name: 'Subscription', href: '/subscription' },
   ],
   legal: [
-    { name: 'Privacy Policy', href: '/privacy' },
-    { name: 'Terms of Service', href: '/terms' },
+    { name: 'Privacy', href: '/privacy' },
+    { name: 'Terms', href: '/terms' },
   ],
   social: [
     {
@@ -131,8 +130,9 @@ export function Footer() {
         </div>
 
         {/* Desktop Layout */}
-        <div className='hidden lg:flex lg:items-center lg:justify-between'>
-          <div className='flex items-center space-x-8'>
+        <div className='hidden lg:block'>
+          {/* Main Row */}
+          <div className='flex items-center justify-between border-b border-border pb-4'>
             {/* Logo & Title */}
             <div className='flex items-center space-x-3'>
               <h2 className='flex items-center gap-2 text-lg font-light tracking-tighter'>
@@ -145,7 +145,7 @@ export function Footer() {
             </div>
 
             {/* Navigation */}
-            <nav className='flex gap-x-6' aria-label='Footer'>
+            <nav className='flex gap-x-8' aria-label='Footer'>
               {navigation.main.map(item => (
                 <ScrollToTopLink
                   key={item.name}
@@ -158,11 +158,11 @@ export function Footer() {
             </nav>
           </div>
 
-          {/* Social, Legal & Copyright */}
-          <div className='flex items-center gap-6'>
-            {/* Legal Links */}
-            <nav className='flex gap-3 text-xs' aria-label='Legal'>
-              {navigation.legal.map(item => (
+          {/* Bottom Row */}
+          <div className='flex items-center justify-between pt-4'>
+            {/* Legal & Support */}
+            <nav className='flex items-center gap-3 text-xs' aria-label='Legal'>
+              {navigation.legal.map((item, index) => (
                 <ScrollToTopLink
                   key={item.name}
                   to={item.href}
@@ -171,7 +171,6 @@ export function Footer() {
                   {item.name}
                 </ScrollToTopLink>
               ))}
-              <span className='text-muted-foreground'>•</span>
               <a
                 href='mailto:support@whatispent.com'
                 className='text-muted-foreground transition-colors hover:text-foreground'
@@ -180,8 +179,9 @@ export function Footer() {
               </a>
             </nav>
 
-            {/* Social Icons */}
-            <div className='flex gap-4'>
+            {/* Social & Copyright */}
+            <div className='flex items-center gap-4'>
+              {/* Social Icons */}
               {navigation.social.map(item => (
                 <a
                   key={item.name}
@@ -192,18 +192,18 @@ export function Footer() {
                   aria-label={item.name}
                 >
                   {item.icon === 'GithubLogo' ? (
-                    <GithubLogo size={20} weight='fill' />
+                    <GithubLogo size={18} weight='fill' />
                   ) : (
-                    <TwitterLogo size={20} weight='fill' />
+                    <TwitterLogo size={18} weight='fill' />
                   )}
                 </a>
               ))}
-            </div>
 
-            {/* Copyright */}
-            <p className='text-xs text-muted-foreground'>
-              &copy; {new Date().getFullYear()} what i spent
-            </p>
+              {/* Copyright */}
+              <p className='text-xs text-muted-foreground'>
+                © {new Date().getFullYear()}
+              </p>
+            </div>
           </div>
         </div>
       </div>
