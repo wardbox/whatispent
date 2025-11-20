@@ -8,10 +8,18 @@ import { plaidClient } from './client.js'
 
 const NODE_ENV = process.env.NODE_ENV || 'development'
 
-// Middleware to parse JSON body for Plaid webhooks
+// Middleware to capture raw body before parsing (needed for webhook signature verification)
 export const plaidWebhookMiddlewareConfigFn: MiddlewareConfigFn =
   middlewareConfig => {
-    middlewareConfig.set('express.json', express.json())
+    middlewareConfig.set(
+      'express.json',
+      express.json({
+        verify: (req: any, _res, buf) => {
+          // Store raw body buffer for signature verification
+          req.rawBody = buf.toString('utf8')
+        },
+      }),
+    )
     return middlewareConfig
   }
 
@@ -116,7 +124,7 @@ export async function handlePlaidWebhook(
 
   // Verify webhook JWT signature
   const jwtToken = req.headers['plaid-verification'] as string
-  const rawBody = JSON.stringify(req.body)
+  const rawBody = (req as any).rawBody || JSON.stringify(req.body)
 
   if (!jwtToken) {
     console.error('Missing Plaid-Verification header')
@@ -138,7 +146,12 @@ export async function handlePlaidWebhook(
   try {
     switch (webhook_type) {
       case 'TRANSACTIONS': {
-        if (webhook_code === 'SYNC_UPDATES_AVAILABLE') {
+        // Handle transaction-related webhooks that require syncing
+        if (
+          webhook_code === 'SYNC_UPDATES_AVAILABLE' ||
+          webhook_code === 'INITIAL_UPDATE' ||
+          webhook_code === 'HISTORICAL_UPDATE'
+        ) {
           // Find the institution by itemId
           const institution = await prisma.institution.findUnique({
             where: { itemId: item_id },
@@ -153,7 +166,7 @@ export async function handlePlaidWebhook(
           }
 
           console.log(
-            `Triggering sync for institution ${institution.id} (user: ${institution.userId})`,
+            `Triggering sync for institution ${institution.id} (user: ${institution.userId}) - webhook: ${webhook_code}`,
           )
 
           // Trigger async sync - don't await to avoid webhook timeout

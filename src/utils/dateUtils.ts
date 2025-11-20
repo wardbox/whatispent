@@ -47,30 +47,33 @@ export const parseDateUTC = (dateString: string | Date): dayjs.Dayjs => {
 
 /**
  * Formats a transaction date for display in the list.
- * Shows the local date ('MMM D') if the original UTC time was midnight
- * (indicating Plaid likely didn't provide a specific time).
- * Shows the local time ('h:mm A') otherwise.
+ * Shows the date ('MMM D') if the time appears to be a default value (midnight or other common defaults).
+ * Shows the time ('h:mm A') otherwise in UTC to preserve the original transaction time.
  * @param dateString ISO 8601 string or Date object from DB
  * @returns Formatted string (e.g., "Apr 14" or "10:32 AM")
  */
 export const formatTransactionDisplayDate = (
   dateString: string | Date,
 ): string => {
-  const txDateTimeUTC = parseDateUTC(dateString) // Keep UTC for the check
-  const isMidnightUTC =
-    txDateTimeUTC.hour() === 0 &&
-    txDateTimeUTC.minute() === 0 &&
-    txDateTimeUTC.second() === 0
+  const txDateTimeUTC = parseDateUTC(dateString)
 
-  // Always use local time for formatting the output
-  // const txDateTimeLocal = dayjs(dateString); <-- No longer needed here
+  // Check if this looks like a default time value (midnight or common institution defaults)
+  const hour = txDateTimeUTC.hour()
+  const minute = txDateTimeUTC.minute()
+  const second = txDateTimeUTC.second()
 
-  if (isMidnightUTC) {
-    // It was midnight UTC, show the UTC date part
-    return txDateTimeUTC.format('MMM D') // Use UTC object
+  const isDefaultTime =
+    (hour === 0 && minute === 0 && second === 0) || // Midnight UTC
+    (hour === 4 && minute === 0 && second === 0) || // Common default: 4 AM UTC
+    (hour === 5 && minute === 0 && second === 0)    // Common default: 5 AM UTC
+
+  if (isDefaultTime) {
+    // Likely a default time value, show just the date
+    return txDateTimeUTC.format('MMM D')
   } else {
-    // It has a specific time, show local time part
-    return dayjs(dateString).format('h:mm A') // Use local conversion for time
+    // Has a specific time - show it in UTC to preserve the original time
+    // (Plaid may store local transaction times in UTC format)
+    return txDateTimeUTC.format('h:mm A')
   }
 }
 
