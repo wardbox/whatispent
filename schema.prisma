@@ -31,6 +31,7 @@ model Institution {
   plaidInstitutionId String?
   institutionName String
   lastSync        DateTime?
+  cursor          String?
   accounts        Account[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -49,6 +50,7 @@ model Account {
   subtype        String
   transactions   Transaction[]
   currentBalance Float?
+  isTracked      Boolean       @default(true)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   @@index([institutionId])
@@ -66,7 +68,6 @@ model Transaction {
   merchantName       String?
   name               String
   category           String[]
-  categoryIconUrl    String?
   pending            Boolean
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt

@@ -1,9 +1,10 @@
 import { staggerContainer, slideInUp } from '../motion/transitionPresets'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Button } from '../client/components/ui/button'
 import { Link } from 'react-router-dom'
 import { routes } from 'wasp/client/router'
 import { useState, useEffect } from 'react'
+import { useAuth } from 'wasp/client/auth'
 
 const quotes = [
   {
@@ -40,6 +41,7 @@ export default function Landing() {
     quote: string
     author: string
   } | null>(null)
+  const { data: user, isLoading } = useAuth()
 
   useEffect(() => {
     const dayOfWeek = new Date().getDay()
@@ -47,7 +49,7 @@ export default function Landing() {
   }, [])
 
   return (
-    <div className='text-center'>
+    <div className='p-8 text-center'>
       <motion.section
         variants={staggerContainer}
         initial='initial'
@@ -75,21 +77,47 @@ export default function Landing() {
           your transactions, and gain clear insights into your daily, weekly,
           and monthly spending habits.
         </motion.p>
-        <motion.div
-          variants={slideInUp}
-          className='flex justify-center space-x-4'
-        >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button asChild size='lg' className='font-light'>
-              <Link to={routes.SignupRoute.to}>Get Started</Link>
-            </Button>
+        {!isLoading && (
+          <motion.div
+            variants={slideInUp}
+            className='flex justify-center space-x-4'
+          >
+            {user ? (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button asChild size='lg' className='font-light'>
+                  <Link to={routes.Dashboard.to}>Go to Dashboard</Link>
+                </Button>
+              </motion.div>
+            ) : (
+              <>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button asChild size='lg' className='font-light'>
+                    <Link to={routes.SignupRoute.to}>Get Started</Link>
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    asChild
+                    variant='outline'
+                    size='lg'
+                    className='font-light'
+                  >
+                    <Link to={routes.LoginRoute.to}>Log In</Link>
+                  </Button>
+                </motion.div>
+              </>
+            )}
           </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button asChild variant='outline' size='lg' className='font-light'>
-              <Link to={routes.LoginRoute.to}>Log In</Link>
-            </Button>
-          </motion.div>
-        </motion.div>
+        )}
         {dailyQuote && (
           <motion.figure
             variants={slideInUp}

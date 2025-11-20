@@ -114,7 +114,9 @@ export function MonthlyComparisonChart({
             content={
               <ChartTooltipContent
                 indicator='dot'
-                formatter={value => `$${Number(value).toLocaleString()}`}
+                formatter={value =>
+                  `$${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                }
                 labelFormatter={label => label}
               />
             }

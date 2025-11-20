@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { fadeIn } from '../../motion/transitionPresets'
-import { Mountains, GithubLogo, TwitterLogo } from '@phosphor-icons/react'
+import { GithubLogo, TwitterLogo, MoneyWavy } from '@phosphor-icons/react'
 import { usePrefetch } from '../../lib/utils'
 
 const ScrollToTopLink = ({
@@ -61,11 +61,11 @@ export function Footer() {
     >
       <div className='px-6 py-4'>
         {/* Mobile Layout */}
-        <div className='flex flex-col space-y-2 md:hidden'>
+        <div className='flex flex-col space-y-4 lg:hidden'>
           {/* Logo & Social */}
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
-              <Mountains size={20} weight='fill' />
+              <MoneyWavy size={20} weight='fill' />
               <span className='text-sm text-muted-foreground'>
                 &copy; {new Date().getFullYear()} what i spent
               </span>
@@ -107,7 +107,7 @@ export function Footer() {
         </div>
 
         {/* Desktop Layout */}
-        <div className='hidden md:flex md:items-center md:justify-between'>
+        <div className='hidden lg:flex lg:items-center lg:justify-between'>
           <div className='flex items-center space-x-8'>
             {/* Logo & Title */}
             <div className='flex items-center space-x-3'>

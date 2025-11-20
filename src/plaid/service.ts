@@ -4,9 +4,11 @@ import {
   LinkTokenCreateRequest,
   Products,
   TransactionsGetRequest,
+  TransactionsSyncRequest,
   AccountsBalanceGetRequest,
   Transaction as PlaidTransaction,
   AccountBase,
+  RemovedTransaction,
 } from 'plaid'
 import { encrypt, decrypt } from './utils/encryption'
 
@@ -17,6 +19,8 @@ import { encrypt, decrypt } from './utils/encryption'
 export async function _internalCreateLinkToken(
   userId: string,
 ): Promise<string> {
+  const webhookUrl = process.env.PLAID_WEBHOOK_URL
+
   // Define the Plaid Link configuration
   const request: LinkTokenCreateRequest = {
     user: {
@@ -32,8 +36,8 @@ export async function _internalCreateLinkToken(
     transactions: {
       days_requested: 180,
     },
-    // Optional: webhook configuration if using webhooks
-    // webhook: 'https://your-webhook-url.com/plaid',
+    // Configure webhook for automatic transaction updates
+    webhook: webhookUrl,
   }
 
   try {
@@ -139,6 +143,8 @@ export async function _internalFetchTransactions(
   let hasMore = true
   let offset = 0
   const count = 100 // Fetch 100 transactions per request (max 500)
+  const MAX_RETRIES = 3
+  const RETRY_DELAY_MS = 3000 // 3 seconds
 
   try {
     while (hasMore) {
@@ -152,7 +158,39 @@ export async function _internalFetchTransactions(
         },
       }
 
-      const response = await plaidClient.transactionsGet(request)
+      let response
+      let success = false
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          response = await plaidClient.transactionsGet(request)
+          success = true
+          break // Exit retry loop on success
+        } catch (error: any) {
+          const errorCode = error.response?.data?.error_code
+          if (errorCode === 'PRODUCT_NOT_READY' && attempt < MAX_RETRIES) {
+            console.warn(
+              `Plaid PRODUCT_NOT_READY error (Attempt ${attempt}/${MAX_RETRIES}). Retrying in ${RETRY_DELAY_MS / 1000}s...`,
+              error.response?.data || error.message,
+            )
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS))
+          } else {
+            // If not PRODUCT_NOT_READY or final attempt, re-throw the error
+            console.error(
+              `Failed to fetch Plaid transactions page after ${attempt} attempts. Error:`,
+              error.response?.data || error.message,
+            )
+            throw error // Re-throw to be caught by the outer catch block
+          }
+        }
+      }
+
+      // If the loop finished without success (shouldn't happen due to re-throw, but defensive check)
+      if (!success || !response) {
+        throw new Error(
+          'Transaction fetch failed permanently after multiple retries.',
+        )
+      }
+
       const transactions = response.data.transactions
       const totalTransactions = response.data.total_transactions
 
@@ -217,5 +255,74 @@ export async function _internalFetchBalances(
       )
     }
     throw new Error('Could not fetch Plaid account balances.')
+  }
+}
+
+/**
+ * Syncs transactions using the modern /transactions/sync endpoint.
+ * Handles cursor-based pagination and returns added, modified, and removed transactions.
+ * Decrypts the provided access token before use.
+ */
+export async function _internalSyncTransactions(
+  encryptedAccessToken: string,
+  cursor?: string,
+): Promise<{
+  added: PlaidTransaction[]
+  modified: PlaidTransaction[]
+  removed: RemovedTransaction[]
+  nextCursor: string
+  hasMore: boolean
+}> {
+  const accessToken = decrypt(encryptedAccessToken)
+  let allAdded: PlaidTransaction[] = []
+  let allModified: PlaidTransaction[] = []
+  let allRemoved: RemovedTransaction[] = []
+  let hasMore = true
+  let nextCursor: string | undefined = cursor
+
+  try {
+    while (hasMore) {
+      const request: TransactionsSyncRequest = {
+        access_token: accessToken,
+        cursor: nextCursor,
+        count: 500,
+      }
+
+      const response = await plaidClient.transactionsSync(request)
+
+      allAdded = allAdded.concat(response.data.added)
+      allModified = allModified.concat(response.data.modified)
+      allRemoved = allRemoved.concat(response.data.removed)
+
+      hasMore = response.data.has_more
+      nextCursor = response.data.next_cursor
+
+      console.log(
+        `Fetched sync batch: ${response.data.added.length} added, ${response.data.modified.length} modified, ${response.data.removed.length} removed. Has more: ${hasMore}`,
+      )
+    }
+
+    if (!nextCursor) {
+      throw new Error('Plaid did not return a next_cursor')
+    }
+
+    return {
+      added: allAdded,
+      modified: allModified,
+      removed: allRemoved,
+      nextCursor: nextCursor,
+      hasMore: false,
+    }
+  } catch (error: any) {
+    console.error(
+      'Error syncing Plaid transactions:',
+      error.response?.data || error.message,
+    )
+    if (error.response?.data?.error_code === 'ITEM_LOGIN_REQUIRED') {
+      console.warn(
+        `Item login required for token associated with sync attempt.`,
+      )
+    }
+    throw new Error('Could not sync Plaid transactions.')
   }
 }

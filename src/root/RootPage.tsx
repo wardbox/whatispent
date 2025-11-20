@@ -52,11 +52,16 @@ export default function Root() {
 
   // Added: Effect to trigger daily sync
   useEffect(() => {
-    if (user && user.subscriptionStatus === 'active') {
+    const isTrialActive =
+      user?.trialEndsAt && dayjs().isBefore(dayjs(user.trialEndsAt))
+    const isActiveSubscriber = user?.subscriptionStatus === 'active'
+
+    if (user && (isActiveSubscriber || isTrialActive)) {
       const lastSync = user.lastSyncedAt ? dayjs(user.lastSyncedAt) : null
-      const needsSync = !lastSync || dayjs().diff(lastSync, 'hour') >= 24
+      const needsSync = !lastSync || !dayjs().isSame(lastSync, 'day')
 
       if (needsSync) {
+        console.log('Syncing transactions in the background...')
         syncTransactions({})
           .then(() => {
             // Optionally refetch user data if needed, or rely on server update
@@ -68,6 +73,8 @@ export default function Root() {
               description: 'Failed to sync transactions in the background.',
             })
           })
+      } else {
+        console.log(`No sync needed today. Last sync: ${lastSync}`)
       }
     }
   }, [user, toast]) // Dependency array includes user and the toast function
@@ -88,7 +95,7 @@ export default function Root() {
                 'flex flex-1 flex-col',
                 isLandingPage
                   ? 'items-center justify-center'
-                  : 'mx-auto w-full max-w-5xl gap-8 p-6 py-24',
+                  : 'mx-auto w-full max-w-5xl gap-8 px-4 sm:py-24',
               )}
             >
               {isLoading && isProtectedRoute ? (

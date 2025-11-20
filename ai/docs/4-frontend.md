@@ -5,7 +5,6 @@
 ### Dashboard Core Components
 
 - **`DashboardPage.tsx` Created:**
-
   - Established the main entry point for the authenticated user dashboard at
     `src/dashboard/DashboardPage.tsx`.
   - Renders `SpendingMetrics` and `MonthlyComparisonChart` components.
@@ -15,7 +14,6 @@
 
 - **`SpendingMetrics` Component
   (`src/dashboard/components/spending-metrics.tsx`):**
-
   - Fetches spending summary data using the `getSpendingSummary` query
     (`useQuery` hook).
   - Displays spending totals for "Today", "This Week", and "This Month".
@@ -28,7 +26,6 @@
 
 - **`MonthlyComparisonChart` Component
   (`src/dashboard/components/monthly-comparison-chart.tsx`):**
-
   - Fetches monthly or daily spending data using the `getMonthlySpending` query.
   - Accepts a `timeRange` prop from `DashboardPage.tsx`.
   - Dynamically adjusts the query parameters (`months`, `granularity`) based on
@@ -59,7 +56,6 @@
 ### Plaid Integration (`src/dashboard/components/plaid-integration.tsx`)
 
 - **Component Created & Wired:**
-
   - Replaced placeholder/mock data with live data fetching.
   - Uses the `getInstitutions` query to fetch connected bank institutions.
   - Displays a loading state while fetching institutions.
@@ -79,7 +75,6 @@
     updating the list.
 
 - **Delete Institution Functionality:**
-
   - Added a delete button (using `@phosphor-icons/react`) next to each
     institution.
   - Implemented a `shadcn/ui AlertDialog` to confirm the deletion action.
@@ -107,7 +102,6 @@
 ### Transactions Page & List (`src/transactions/`)
 
 - **`TransactionsPage.tsx`:**
-
   - Fetches all transactions using the `getAllTransactions` query (`useQuery`).
   - Manages state for `searchQuery`, `selectedCategories` (using `Set<string>`),
     and `sortCriteria` (using `useState`).

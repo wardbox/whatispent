@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useCallback } from 'react'
 // Remove react-plaid-link imports
 // import {
 //   usePlaidLink,
@@ -8,6 +8,7 @@ import React, { useState, useCallback } from 'react'
 import { Button } from '../../client/components/ui/button'
 // Import the toast function
 import { toast } from '../../hooks/use-toast'
+import { CircleNotch } from '@phosphor-icons/react' // Import the spinner icon
 
 // Define type for the Plaid Link handler
 declare global {
@@ -47,6 +48,9 @@ interface PlaidLinkButtonProps {
   onError?: (error: any) => void
   onExit?: (err: any, metadata: any) => void
   onEvent?: (eventName: string, metadata: any) => void
+  // Add loading state props
+  isLoading: boolean
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
@@ -57,8 +61,10 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
   onError,
   onExit,
   onEvent,
+  // Destructure loading state props
+  isLoading,
+  setIsLoading,
 }) => {
-  const [isLoading, setIsLoading] = useState(false)
   // No need for handler state here, create it on click
   // No need for isReady state
 
@@ -84,7 +90,7 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
         setIsLoading(false)
       }
     },
-    [exchangePublicTokenAction, onSuccess, onError],
+    [exchangePublicTokenAction, onSuccess, onError, setIsLoading],
   )
 
   const handlePlaidExit = useCallback(
@@ -95,7 +101,7 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
       }
       setIsLoading(false) // Ensure loading is stopped on exit
     },
-    [onExit],
+    [onExit, setIsLoading],
   )
 
   // Remove the useEffect that depended on the token prop
@@ -183,7 +189,17 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
       onClick={handleOpen}
       disabled={isButtonDisabled}
     >
-      {buttonText}
+      {isLoading ? (
+        <>
+          <CircleNotch
+            className='h-4 w-4 animate-spin'
+            aria-hidden='true'
+          />
+          <span className='sr-only'>{buttonText}</span>
+        </>
+      ) : (
+        buttonText // Show original text otherwise
+      )}
     </Button>
   )
 }

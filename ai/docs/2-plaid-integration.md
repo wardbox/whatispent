@@ -6,7 +6,6 @@ the "What I Spent" Wasp application.
 ## Goals Achieved:
 
 1.  **Established Plaid Backend Structure:**
-
     - Created a dedicated `src/plaid/` directory.
     - Implemented `src/plaid/client.ts` to initialize the Plaid API client using
       environment variables (`PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV`).
@@ -28,7 +27,6 @@ the "What I Spent" Wasp application.
     - Added `dayjs` dependency for date manipulation in `syncTransactions`.
 
 2.  **Implemented Core Plaid Actions:**
-
     - `createLinkToken`: A Wasp Action (requires auth, takes no args) that calls
       the service to get a `link_token` from Plaid.
     - `exchangePublicToken`: A Wasp Action (requires auth, takes
@@ -43,7 +41,6 @@ the "What I Spent" Wasp application.
       `Institution`.
 
 3.  **Declared Wasp Components:**
-
     - Declared the `createLinkToken`, `exchangePublicToken`, and
       `syncTransactions` actions in `main.wasp`, linking them to their
       implementations and specifying necessary entity access

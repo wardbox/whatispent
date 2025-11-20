@@ -4,19 +4,38 @@ import {
   getCategoryCssVariable,
 } from '../../utils/categories' // Import both helper functions
 import { type CategorySummaryProps } from '../DashboardPage'
+import { Skeleton } from '../../client/components/ui/skeleton'
 
 export function CategorySummary({
   categories,
   isLoading,
   error,
 }: CategorySummaryProps) {
-  if (isLoading)
+  if (isLoading) {
     return (
-      <div className='text-sm text-muted-foreground'>Loading categories...</div>
+      <div className='space-y-4'>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div key={index} className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <Skeleton className='h-4 w-1/3' />
+              <div className='flex items-center gap-2'>
+                <Skeleton className='h-4 w-12' />
+                <Skeleton className='h-3 w-8' />
+              </div>
+            </div>
+            <Skeleton className='h-[3px] w-full' />
+          </div>
+        ))}
+      </div>
     )
+  }
   if (error) return <div>Error loading categories: {error.message}</div>
   if (!categories || categories.length === 0)
-    return <div>No category data available for this month.</div>
+    return (
+      <div className='text-sm font-light'>
+        No category data available for this month.
+      </div>
+    )
 
   // Calculate total spending for the month
   const totalSpending = categories.reduce((sum, cat) => sum + cat.total, 0)

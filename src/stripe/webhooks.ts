@@ -45,7 +45,12 @@ function mapStripeStatusToUserStatus(
   }
 }
 
-export async function handleStripeWebhook(req: Request, res: Response) {
+export async function handleStripeWebhook(
+  req: Request,
+  res: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _context: any,
+) {
   // --- DEBUGGING ---
   console.debug('[handleStripeWebhook] Entering function.')
   console.debug(

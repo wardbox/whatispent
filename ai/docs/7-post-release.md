@@ -37,3 +37,87 @@
     only if it exists (is not null or empty).
   - Added and then removed a `console.log` statement during debugging to inspect
     the `transaction.account` data received by the component.
+
+## Feature Updates & Fixes (Post-Release)
+
+- **Plaid Integration Enhancements:**
+  - **Extended Initial Sync:** Changed the initial transaction sync period upon
+    linking a new institution from the default 30 days to 6 months to provide
+    more historical context immediately.
+  - **Institution Logos:**
+    - Added support for fetching and storing institution logos (as base64
+      strings) obtained from Plaid.
+    - The logo is now displayed next to the institution name in the "Connected
+      Accounts" section on the dashboard.
+    - A small version of the institution logo is displayed next to the
+      institution name within the transaction list items.
+  - **Transaction List UI Refinements:**
+    - The main icon for each transaction row now consistently displays the
+      relevant _category_ icon.
+    - Removed the account mask (e.g., `(1234)`) from the transaction details
+      line for a cleaner look.
+    - Rearranged the transaction details line: Account name is now displayed on
+      the left, and the institution logo/name is grouped on the right.
+  - **Sandbox Data:** Investigated transaction history limits; concluded that
+    restricted history (e.g., only back to March) is likely due to Plaid Sandbox
+    data constraints, as the code correctly requests a 6-month history on
+    initial sync.
+- **Background Sync Logic:**
+  - Modified the daily background transaction sync trigger in
+    `src/root/RootPage.tsx`:
+    - Changed the trigger condition from a strict 24-hour interval to once per
+      calendar day. Sync now occurs if the current day is different from the
+      last sync day.
+    - Expanded sync eligibility to include users with an active trial period
+      (`trialEndsAt` is in the future), in addition to users with an active
+      subscription status.
+- **Navigation Enhancements:**
+  - Added "Dashboard" and "Transactions" links to the mobile navigation menu for
+    logged-in users (`src/root/components/nav.tsx`).
+  - Modified the landing page (`src/landing/LandingPage.tsx`) to conditionally
+    display a "Go to Dashboard" button for authenticated users, replacing the
+    default "Get Started" and "Log In" buttons.
+  - Updated the landing page (`src/landing/LandingPage.tsx`) to hide the main
+    action buttons (Get Started/Log In/Go to Dashboard) until the user's
+    authentication status (`isLoading` from `useAuth`) has finished loading.
+- **Transactions Page UI/UX:**
+  - **Responsiveness:** Adjusted the layout of filter and sort buttons on the
+    Transactions page (`src/transactions/TransactionsPage.tsx`) to stack
+    vertically on small screens for better mobile usability.
+  - **Cleaner Header:** Removed the redundant "All Transactions" title from the
+    main content area of the Transactions page.
+  - **Improved List Item Layout:** Refined the display of individual transaction
+    items (`src/transactions/components/transactions-list.tsx`) on mobile by:
+    - Stacking amount and account details vertically on the right.
+    - Applying text truncation to prevent overflow.
+    - Slightly reducing the category icon size.
+    - Hiding the bank institution name on extra-small screens.
+  - **Transaction Detail Dialog:**
+    - Implemented a dialog
+      (`src/transactions/components/transaction-detail-dialog.tsx`) that appears
+      when a user clicks/taps on a transaction row, displaying detailed
+      information.
+    - Styled the dialog using flexbox and typography consistent with dashboard
+      components for a cohesive look.
+- **Subscription Page UI:**
+  - Vertically centered the subscription plan card on the `SubscriptionPage.tsx`
+    for better presentation on various screen heights.
+- **Dashboard UI/UX:**
+  - **Synchronized Loading States:**
+    - Implemented a skeleton loader for the `CategorySummary` component
+      (`src/dashboard/components/category-summary.tsx`) visible during initial
+      data fetching.
+    - Lifted Plaid connection state (`isConnectingPlaid`) and post-connection
+      syncing state (`syncingInstitutionId`) from `PlaidIntegration` and
+      `PlaidLinkButton` up to the `DashboardPage` component
+      (`src/dashboard/DashboardPage.tsx`).
+    - Passed these states down through props (`PlaidIntegration` ->
+      `PlaidLinkButton`) to manage the button's loading spinner.
+    - Combined the initial category loading state, connection state, and syncing
+      state in `DashboardPage` to determine the `isLoading` prop for
+      `CategorySummary`. This ensures the category skeleton is displayed both
+      while the Plaid connection is in progress (button spinner is active) and
+      during the subsequent data refetch/sync.
+  - **Layout Adjustment:** Removed `space-y-4` from the main grid in
+    `DashboardPage.tsx` to eliminate unwanted top margin on the "Connect Bank"
+    section when items stack vertically.

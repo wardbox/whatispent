@@ -120,7 +120,7 @@ export default function SubscriptionPage() {
   const isSubscribed = user?.subscriptionStatus === 'active'
 
   return (
-    <div className='flex w-full flex-col'>
+    <div className='flex min-h-[calc(100vh-theme(spacing.16))] w-full flex-col justify-center'>
       <div className='mx-auto w-full max-w-md'>
         <Card className={cn(isSubscribed ? 'border-2 border-primary' : '')}>
           <CardHeader>
