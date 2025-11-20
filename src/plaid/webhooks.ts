@@ -70,15 +70,23 @@ async function verifyPlaidWebhook(
 
     const { payload } = await jwtVerify(jwtToken, publicKey, {
       algorithms: ['ES256'],
+      maxTokenAge: '5m', // Built-in 5-minute freshness check
     })
 
-    // Step 5: Check timestamp (not more than 5 minutes old)
-    const currentTime = Math.floor(Date.now() / 1000)
-    const issuedAt = payload.iat as number
+    // Step 5: Validate iat claim is present and valid (defense in depth)
+    const issuedAt = payload.iat
 
-    if (currentTime - issuedAt > 300) {
-      // 5 minutes
-      console.error('Webhook JWT is too old (>5 minutes)')
+    if (typeof issuedAt !== 'number' || !Number.isFinite(issuedAt)) {
+      console.error('Webhook JWT missing or invalid iat claim')
+      return false
+    }
+
+    // Additional check: verify absolute age doesn't exceed 5 minutes
+    const currentTime = Math.floor(Date.now() / 1000)
+    const age = Math.abs(currentTime - issuedAt)
+
+    if (age > 300) {
+      console.error(`Webhook JWT age (${age}s) exceeds 5 minutes`)
       return false
     }
 

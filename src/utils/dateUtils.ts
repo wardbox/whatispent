@@ -36,6 +36,21 @@ dayjs.updateLocale('en', {
 // --- End Configuration ---
 
 /**
+ * Default time values that Plaid uses when institutions don't provide specific transaction times.
+ * These are treated as "date-only" values and displayed without the time component.
+ *
+ * Based on observed behavior:
+ * - Midnight (00:00:00 UTC): Most common default
+ * - 4:00 AM UTC: Common default for some institutions
+ * - 5:00 AM UTC: Common default for some institutions
+ */
+const PLAID_DEFAULT_TIMES = [
+  { hour: 0, minute: 0, second: 0 }, // Midnight UTC
+  { hour: 4, minute: 0, second: 0 }, // 4 AM UTC
+  { hour: 5, minute: 0, second: 0 }, // 5 AM UTC
+] as const
+
+/**
  * Parses a date string as UTC.
  * Ensures consistent handling of timestamps from the database.
  * @param dateString ISO 8601 string or Date object
@@ -48,32 +63,33 @@ export const parseDateUTC = (dateString: string | Date): dayjs.Dayjs => {
 /**
  * Formats a transaction date for display in the list.
  * Shows the date ('MMM D') if the time appears to be a default value (midnight or other common defaults).
- * Shows the time ('h:mm A') otherwise in UTC to preserve the original transaction time.
+ * Shows the time ('h:mm A UTC') otherwise to preserve and make explicit the original UTC transaction time.
  * @param dateString ISO 8601 string or Date object from DB
- * @returns Formatted string (e.g., "Apr 14" or "10:32 AM")
+ * @returns Formatted string (e.g., "Apr 14" or "10:32 AM UTC")
  */
 export const formatTransactionDisplayDate = (
   dateString: string | Date,
 ): string => {
   const txDateTimeUTC = parseDateUTC(dateString)
 
-  // Check if this looks like a default time value (midnight or common institution defaults)
+  // Check if this looks like a default time value from Plaid
   const hour = txDateTimeUTC.hour()
   const minute = txDateTimeUTC.minute()
   const second = txDateTimeUTC.second()
 
-  const isDefaultTime =
-    (hour === 0 && minute === 0 && second === 0) || // Midnight UTC
-    (hour === 4 && minute === 0 && second === 0) || // Common default: 4 AM UTC
-    (hour === 5 && minute === 0 && second === 0)    // Common default: 5 AM UTC
+  const isDefaultTime = PLAID_DEFAULT_TIMES.some(
+    defaultTime =>
+      hour === defaultTime.hour &&
+      minute === defaultTime.minute &&
+      second === defaultTime.second,
+  )
 
   if (isDefaultTime) {
     // Likely a default time value, show just the date
     return txDateTimeUTC.format('MMM D')
   } else {
-    // Has a specific time - show it in UTC to preserve the original time
-    // (Plaid may store local transaction times in UTC format)
-    return txDateTimeUTC.format('h:mm A')
+    // Has a specific time - show it with UTC indicator to make timezone explicit
+    return txDateTimeUTC.format('h:mm A') + ' UTC'
   }
 }
 
