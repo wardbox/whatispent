@@ -3,9 +3,10 @@ import { type Request, type Response } from 'express'
 import express from 'express'
 import { prisma } from 'wasp/server'
 import crypto from 'crypto'
+import { jwtVerify, importJWK } from 'jose'
+import { plaidClient } from './client.js'
 
-const PLAID_WEBHOOK_VERIFICATION_KEY =
-  process.env.PLAID_WEBHOOK_VERIFICATION_KEY
+const NODE_ENV = process.env.NODE_ENV || 'development'
 
 // Middleware to parse JSON body for Plaid webhooks
 export const plaidWebhookMiddlewareConfigFn: MiddlewareConfigFn =
@@ -15,20 +16,78 @@ export const plaidWebhookMiddlewareConfigFn: MiddlewareConfigFn =
   }
 
 /**
- * Verifies Plaid webhook signature
+ * Verifies Plaid webhook JWT signature
+ * Reference: https://plaid.com/docs/api/webhooks/webhook-verification/
  */
-function verifyPlaidWebhook(body: string, signature: string): boolean {
-  if (!PLAID_WEBHOOK_VERIFICATION_KEY) {
-    console.warn('PLAID_WEBHOOK_VERIFICATION_KEY not configured')
-    return false
+async function verifyPlaidWebhook(
+  body: string,
+  jwtToken: string,
+): Promise<boolean> {
+  // In development, skip verification with warning
+  if (NODE_ENV === 'development') {
+    console.warn('⚠️  Development mode - skipping Plaid webhook verification')
+    return true
   }
 
-  const hash = crypto
-    .createHmac('sha256', PLAID_WEBHOOK_VERIFICATION_KEY)
-    .update(body)
-    .digest('hex')
+  try {
+    // Step 1: Decode JWT header without verification to get kid (key ID)
+    const [headerB64] = jwtToken.split('.')
+    const header = JSON.parse(Buffer.from(headerB64, 'base64').toString())
 
-  return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(signature))
+    // Step 2: Verify algorithm is ES256
+    if (header.alg !== 'ES256') {
+      console.error(`Invalid JWT algorithm: ${header.alg}, expected ES256`)
+      return false
+    }
+
+    // Step 3: Get verification key from Plaid using the kid
+    const keyResponse = await plaidClient.webhookVerificationKeyGet({
+      key_id: header.kid,
+    })
+
+    const key = keyResponse.data.key
+
+    // Step 4: Convert JWK to crypto key and verify JWT
+    const publicKey = await importJWK(
+      {
+        kty: 'EC',
+        use: 'sig',
+        crv: key.crv,
+        x: key.x,
+        y: key.y,
+        alg: 'ES256',
+      },
+      'ES256',
+    )
+
+    const { payload } = await jwtVerify(jwtToken, publicKey, {
+      algorithms: ['ES256'],
+    })
+
+    // Step 5: Check timestamp (not more than 5 minutes old)
+    const currentTime = Math.floor(Date.now() / 1000)
+    const issuedAt = payload.iat as number
+
+    if (currentTime - issuedAt > 300) {
+      // 5 minutes
+      console.error('Webhook JWT is too old (>5 minutes)')
+      return false
+    }
+
+    // Step 6: Verify body hash matches
+    const bodyHash = crypto.createHash('sha256').update(body).digest('hex')
+    const claimedHash = payload.request_body_sha256 as string
+
+    if (bodyHash !== claimedHash) {
+      console.error('Webhook body hash mismatch')
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Plaid webhook verification error:', error)
+    return false
+  }
 }
 
 /**
@@ -42,11 +101,17 @@ export async function handlePlaidWebhook(
 ) {
   console.log('[handlePlaidWebhook] Received webhook')
 
-  // Verify webhook signature
-  const signature = req.headers['plaid-verification'] as string
+  // Verify webhook JWT signature
+  const jwtToken = req.headers['plaid-verification'] as string
   const rawBody = JSON.stringify(req.body)
 
-  if (!signature || !verifyPlaidWebhook(rawBody, signature)) {
+  if (!jwtToken) {
+    console.error('Missing Plaid-Verification header')
+    return res.status(401).send('Unauthorized')
+  }
+
+  const isValid = await verifyPlaidWebhook(rawBody, jwtToken)
+  if (!isValid) {
     console.error('Invalid Plaid webhook signature')
     return res.status(401).send('Unauthorized')
   }

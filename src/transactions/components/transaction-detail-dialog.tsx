@@ -37,7 +37,7 @@ export function TransactionDetailDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} modal={false}>
-      <DialogContent className='sm:max-w-[425px]'>
+      <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-[425px]'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <TransactionIcon className='h-5 w-5' />

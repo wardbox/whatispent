@@ -116,8 +116,18 @@ action createLinkToken {
   entities: [User, Institution, Account, Transaction]
 }
 
+action createUpdateModeLinkToken {
+  fn: import { createUpdateModeLinkToken } from "@src/plaid/operations",
+  entities: [User, Institution, Account, Transaction]
+}
+
 action exchangePublicToken {
   fn: import { exchangePublicToken } from "@src/plaid/operations",
+  entities: [User, Institution, Account, Transaction]
+}
+
+action exchangeUpdateModeToken {
+  fn: import { exchangeUpdateModeToken } from "@src/plaid/operations",
   entities: [User, Institution, Account, Transaction]
 }
 

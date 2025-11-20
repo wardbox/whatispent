@@ -1,7 +1,9 @@
 import { HttpError } from 'wasp/server'
 import type {
   CreateLinkToken,
+  CreateUpdateModeLinkToken,
   ExchangePublicToken,
+  ExchangeUpdateModeToken,
   SyncTransactions,
   GetSpendingSummary,
   GetMonthlySpending,
@@ -18,6 +20,8 @@ import {
   _internalFetchBalances,
   _internalSyncTransactions,
 } from './service'
+import { decrypt } from './utils/encryption.js'
+import { plaidClient } from './client.js'
 import dayjs from 'dayjs'
 import {
   type Transaction,
@@ -95,6 +99,64 @@ export const createLinkToken = (async (
     throw new HttpError(500, 'Failed to create Plaid Link token.')
   }
 }) satisfies CreateLinkToken<CreateLinkTokenPayload, CreateLinkTokenResult>
+
+type CreateUpdateModeLinkTokenPayload = {
+  institutionId: string
+}
+type CreateUpdateModeLinkTokenResult = {
+  linkToken: string
+}
+
+/**
+ * Wasp Action: Creates a Plaid Link token in Update Mode for re-authentication.
+ * Used when an institution needs user to re-authenticate their credentials.
+ */
+export const createUpdateModeLinkToken = (async (
+  args: CreateUpdateModeLinkTokenPayload,
+  context,
+) => {
+  if (!context.user) {
+    throw new HttpError(401, 'You must be logged in')
+  }
+
+  if (!args.institutionId) {
+    throw new HttpError(400, 'Institution ID is required')
+  }
+
+  try {
+    // Fetch the institution and verify ownership
+    const institution = await context.entities.Institution.findUnique({
+      where: { id: args.institutionId },
+      select: { id: true, userId: true, accessToken: true, institutionName: true },
+    })
+
+    if (!institution) {
+      throw new HttpError(404, 'Institution not found')
+    }
+
+    if (institution.userId !== context.user.id) {
+      throw new HttpError(403, 'You do not have permission to access this institution')
+    }
+
+    // Decrypt the access token
+    const decryptedAccessToken = decrypt(institution.accessToken)
+
+    // Create link token in Update Mode
+    const linkToken = await _internalCreateLinkToken(context.user.id, decryptedAccessToken)
+
+    console.log(`Created Update Mode link token for institution ${institution.institutionName}`)
+
+    return { linkToken }
+  } catch (error: any) {
+    console.error('Error creating Update Mode link token:', error.message)
+
+    if (error instanceof HttpError) {
+      throw error
+    }
+
+    throw new HttpError(500, 'Failed to create Update Mode link token')
+  }
+}) satisfies CreateUpdateModeLinkToken<CreateUpdateModeLinkTokenPayload, CreateUpdateModeLinkTokenResult>
 
 /**
  * Wasp Action: Exchanges a Plaid public token for an access token,
@@ -189,6 +251,86 @@ export const exchangePublicToken = (async (
 }) satisfies ExchangePublicToken<
   ExchangePublicTokenPayload,
   ExchangePublicTokenResult
+>
+
+type ExchangeUpdateModeTokenPayload = {
+  publicToken: string
+  institutionId: string
+}
+type ExchangeUpdateModeTokenResult = {
+  institutionId: string
+}
+
+/**
+ * Wasp Action: Exchanges a public token from Update Mode (re-authentication)
+ * and updates the existing institution's access token.
+ */
+export const exchangeUpdateModeToken = (async (
+  args: ExchangeUpdateModeTokenPayload,
+  context,
+) => {
+  if (!context.user) {
+    throw new HttpError(401, 'You must be logged in')
+  }
+  if (!args.publicToken) {
+    throw new HttpError(400, 'Public token is required')
+  }
+  if (!args.institutionId) {
+    throw new HttpError(400, 'Institution ID is required')
+  }
+
+  try {
+    // 1. Verify the institution exists and belongs to the user
+    const institution = await context.entities.Institution.findUnique({
+      where: { id: args.institutionId },
+      select: { id: true, userId: true, institutionName: true },
+    })
+
+    if (!institution) {
+      throw new HttpError(404, 'Institution not found')
+    }
+
+    if (institution.userId !== context.user.id) {
+      throw new HttpError(403, 'You do not have permission to update this institution')
+    }
+
+    // 2. Exchange the public token for a new access token
+    const {
+      accessToken, // Encrypted
+      itemId,
+    } = await _internalExchangePublicToken(args.publicToken)
+
+    // 3. Update the institution with the new access token and reset status
+    await context.entities.Institution.update({
+      where: { id: args.institutionId },
+      data: {
+        accessToken: accessToken, // Update with new encrypted token
+        itemId: itemId, // Update item ID (should be same, but update to be safe)
+        status: 'active', // Reset status to active
+        errorCode: null, // Clear any error codes
+      },
+    })
+
+    console.log(`Successfully re-authenticated institution ${institution.institutionName}`)
+
+    return {
+      institutionId: args.institutionId,
+    }
+  } catch (error: any) {
+    console.error('Error in exchangeUpdateModeToken action:', error.message)
+
+    if (error instanceof HttpError) {
+      throw error
+    }
+
+    throw new HttpError(
+      500,
+      'Failed to update institution credentials',
+    )
+  }
+}) satisfies ExchangeUpdateModeToken<
+  ExchangeUpdateModeTokenPayload,
+  ExchangeUpdateModeTokenResult
 >
 
 // Internal helper function to sync a single institution using modern /transactions/sync
@@ -386,12 +528,71 @@ async function _syncSingleInstitution(
       },
     })
 
+    // Mark institution as active on successful sync
+    if (institution.status !== 'active') {
+      await context.entities.Institution.update({
+        where: { id: institutionId },
+        data: {
+          status: 'active',
+          errorCode: null,
+        },
+      })
+    }
+
     return { syncedTransactions: totalProcessed, institutionId: institutionId }
   } catch (error: any) {
     console.error(
       `Error syncing transactions for institution ${institutionId}:`,
       error.message,
     )
+
+    // Check if this is a Plaid error requiring re-authentication
+    const errorCode = error.response?.data?.error_code || error.error_code
+    const requiresReauth = [
+      'ITEM_LOGIN_REQUIRED',
+      'ITEM_LOCKED',
+      'ITEM_NOT_SUPPORTED',
+      'INVALID_CREDENTIALS',
+      'INSUFFICIENT_CREDENTIALS',
+      'MFA_NOT_SUPPORTED',
+      'NO_ACCOUNTS',
+      'INSTITUTION_DOWN',
+      'INSTITUTION_NOT_RESPONDING',
+      'INSTITUTION_NO_LONGER_SUPPORTED',
+    ].includes(errorCode)
+
+    if (requiresReauth) {
+      console.warn(
+        `Institution ${institutionId} requires re-authentication. Error code: ${errorCode}`,
+      )
+
+      // Mark institution as needing re-authentication
+      await context.entities.Institution.update({
+        where: { id: institutionId },
+        data: {
+          status: 'needs_reauth',
+          errorCode: errorCode,
+          lastSync: new Date(), // Update lastSync to prevent continuous retry
+        },
+      })
+
+      throw new HttpError(
+        400,
+        `Institution requires re-authentication. Please reconnect your account.`,
+      )
+    }
+
+    // For other errors, mark as error status
+    if (errorCode) {
+      await context.entities.Institution.update({
+        where: { id: institutionId },
+        data: {
+          status: 'error',
+          errorCode: errorCode,
+        },
+      })
+    }
+
     throw new HttpError(500, `Failed to sync institution ${institutionId}.`)
   }
 }
@@ -519,7 +720,7 @@ export const deleteInstitution = (async (
   // Verify the institution belongs to the user before deleting
   const institution = await context.entities.Institution.findUnique({
     where: { id: institutionId, userId: context.user.id },
-    select: { id: true, institutionName: true }, // Select minimal fields needed
+    select: { id: true, institutionName: true, accessToken: true },
   })
 
   if (!institution) {
@@ -530,6 +731,27 @@ export const deleteInstitution = (async (
     `Attempting to delete institution ${institution.institutionName} (ID: ${institutionId}) for user ${context.user.id}`,
   )
 
+  // Call Plaid /item/remove to deactivate the item (Plaid requirement)
+  try {
+    const decryptedAccessToken = decrypt(institution.accessToken)
+    await plaidClient.itemRemove({
+      access_token: decryptedAccessToken,
+    })
+    console.log(
+      `Successfully removed Plaid item for institution ${institution.institutionName}`,
+    )
+  } catch (plaidError: any) {
+    // Log the error but continue with deletion - don't block user from deleting
+    console.error(
+      `Failed to remove Plaid item for institution ${institutionId}:`,
+      plaidError.response?.data || plaidError.message,
+    )
+    console.warn(
+      'Continuing with database deletion despite Plaid API error',
+    )
+  }
+
+  // Delete from database (cascade deletes accounts and transactions)
   try {
     await context.entities.Institution.delete({
       where: { id: institutionId },
@@ -951,6 +1173,8 @@ export const getInstitutions: GetInstitutions<
       lastSync: true,
       plaidInstitutionId: true,
       logo: true, // Select logo
+      status: true, // Select status for re-auth handling
+      errorCode: true, // Select error code for debugging
       accounts: {
         // Include accounts
         select: {

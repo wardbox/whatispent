@@ -32,6 +32,8 @@ model Institution {
   institutionName String
   lastSync        DateTime?
   cursor          String?
+  status          String      @default("active") // active | needs_reauth | error
+  errorCode       String?     // Plaid error code (e.g., ITEM_LOGIN_REQUIRED)
   accounts        Account[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt

@@ -1,6 +1,8 @@
 import { HttpError } from 'wasp/server'
 import type { DeleteUserAccount, ExportUserData } from 'wasp/server/operations'
 import stripe from '../stripe/client.js'
+import { plaidClient } from '../plaid/client.js'
+import { decrypt } from '../plaid/utils/encryption.js'
 
 export const deleteUserAccount = (async (_args, context) => {
   if (!context.user) {
@@ -45,7 +47,36 @@ export const deleteUserAccount = (async (_args, context) => {
       }
     }
 
-    // Step 3: Delete all user data
+    // Step 3: Remove all Plaid items (required by Plaid data retention policy)
+    try {
+      const institutions = await context.entities.Institution.findMany({
+        where: { userId },
+        select: { id: true, institutionName: true, accessToken: true },
+      })
+
+      for (const institution of institutions) {
+        try {
+          const decryptedAccessToken = decrypt(institution.accessToken)
+          await plaidClient.itemRemove({
+            access_token: decryptedAccessToken,
+          })
+          console.log(
+            `Removed Plaid item for institution ${institution.institutionName} (user ${userId})`,
+          )
+        } catch (plaidError: any) {
+          console.error(
+            `Failed to remove Plaid item for institution ${institution.id}:`,
+            plaidError.response?.data || plaidError.message,
+          )
+          // Continue with next institution
+        }
+      }
+    } catch (error: any) {
+      console.error('Error removing Plaid items:', error)
+      // Continue with account deletion even if Plaid cleanup fails
+    }
+
+    // Step 4: Delete all user data
     // Thanks to cascade deletes in Prisma schema:
     // - Deleting User will cascade delete all Institutions
     // - Deleting Institutions will cascade delete all Accounts
