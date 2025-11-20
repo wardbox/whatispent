@@ -62,7 +62,6 @@ export default function Dashboard() {
           <div className='flex items-center justify-between p-6 pb-0'>
             <span className='text-sm font-light'>Monthly Comparison</span>
             <Tabs
-              defaultValue='1m'
               value={timeRange}
               onValueChange={value => setTimeRange(value as TimeRange)}
             >

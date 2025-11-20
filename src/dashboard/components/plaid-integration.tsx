@@ -69,8 +69,12 @@ export function PlaidIntegration({
   const [isDeleting, setIsDeleting] = useState(false)
   const [manageAccountsInstitutionId, setManageAccountsInstitutionId] =
     useState<string | null>(null)
-  const [reconnectingInstitutionId, setReconnectingInstitutionId] =
-    useState<string | null>(null)
+  const [reconnectingInstitutionId, setReconnectingInstitutionId] = useState<
+    string | null
+  >(null)
+  const [togglingAccountId, setTogglingAccountId] = useState<string | null>(
+    null,
+  )
 
   // Determine connection status based on whether we have institutions
   const isConnected = institutions && institutions.length > 0
@@ -157,29 +161,33 @@ export function PlaidIntegration({
 
   const handleToggleAccount = async (
     accountId: string,
-    currentlyTracked: boolean,
+    nextTracked: boolean,
   ) => {
+    setTogglingAccountId(accountId)
     try {
       await toggleAccountTrackingAction({
         accountId,
-        isTracked: !currentlyTracked,
+        isTracked: nextTracked,
       })
       await refetch() // Refresh to show updated state
       toast({
-        title: currentlyTracked
-          ? 'Account excluded from spending'
-          : 'Account included in spending',
+        title: nextTracked
+          ? 'Account included in spending'
+          : 'Account excluded from spending',
       })
     } catch {
       toast({
         title: 'Failed to update account',
         variant: 'destructive',
       })
+    } finally {
+      setTogglingAccountId(null)
     }
   }
 
   // Handle successful reconnection
-  const handleReconnectSuccess = async (result: ExchangeResult | undefined) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleReconnectSuccess = async (_result: ExchangeResult | undefined) => {
     setReconnectingInstitutionId(null)
     try {
       await refetch()
@@ -197,7 +205,8 @@ export function PlaidIntegration({
   }
 
   // Handle reconnection error
-  const handleReconnectError = (error: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleReconnectError = (_error: any) => {
     setReconnectingInstitutionId(null)
     toast({
       title: 'Reconnection Failed',
@@ -290,119 +299,131 @@ export function PlaidIntegration({
 
               <div className='space-y-3 pt-3'>
                 {/* Map over institutions instead of accounts */}
-                {institutions?.map((institution, index) => (
-                  <motion.div
-                    key={institution.id}
-                    className='flex flex-col border-b border-border pb-3 last:border-0'
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index, duration: 0.5 }}
-                  >
-                    {/* Show alert if institution needs re-authentication */}
-                    {institution.status === 'needs_reauth' && (
-                      <Alert variant='destructive' className='mb-3'>
-                        <Terminal className='h-4 w-4' />
-                        <AlertTitle className='text-sm'>
-                          Reconnection Required
-                        </AlertTitle>
-                        <AlertDescription className='text-xs'>
-                          <p className='mb-3'>
-                            Your bank connection has expired. Please reconnect
-                            to continue syncing transactions.
-                          </p>
-                          <PlaidLinkButton
-                            createLinkTokenAction={async () => {
-                              const result = await createUpdateModeLinkToken({
-                                institutionId: institution.id,
-                              })
-                              return result.linkToken
-                            }}
-                            exchangePublicTokenAction={async (args) => {
-                              return await exchangeUpdateModeToken({
-                                publicToken: args.publicToken,
-                                institutionId: institution.id,
-                              })
-                            }}
-                            onSuccess={handleReconnectSuccess}
-                            onError={handleReconnectError}
-                            isLoading={
-                              reconnectingInstitutionId === institution.id
-                            }
-                            setIsLoading={(loading) =>
-                              setReconnectingInstitutionId(
-                                loading ? institution.id : null,
-                              )
-                            }
-                            isUpdateMode={true}
-                          />
-                        </AlertDescription>
-                      </Alert>
-                    )}
+                {institutions?.map((institution, index) => {
+                  const isBusy =
+                    syncingInstitutionId === institution.id ||
+                    reconnectingInstitutionId === institution.id
 
-                    <div className='flex items-center justify-between'>
-                      <div className='flex flex-1 items-center gap-3 overflow-hidden pr-2'>
-                        <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted p-1'>
-                          {/* Use logo if available, otherwise default icon */}
-                          {institution.logo ? (
-                            <img
-                              src={`data:image/png;base64,${institution.logo}`}
-                              alt={`${institution.institutionName} logo`}
-                              className='h-full w-full object-contain'
+                  return (
+                    <motion.div
+                      key={institution.id}
+                      className='flex flex-col border-b border-border pb-3 last:border-0'
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 * index, duration: 0.5 }}
+                    >
+                      {/* Show alert if institution needs re-authentication */}
+                      {institution.status === 'needs_reauth' && (
+                        <Alert variant='destructive' className='mb-3'>
+                          <Terminal className='h-4 w-4' />
+                          <AlertTitle className='text-sm'>
+                            Reconnection Required
+                          </AlertTitle>
+                          <AlertDescription className='text-xs'>
+                            <p className='mb-3'>
+                              Your bank connection has expired. Please reconnect
+                              to continue syncing transactions.
+                            </p>
+                            <PlaidLinkButton
+                              createLinkTokenAction={async () => {
+                                const result = await createUpdateModeLinkToken({
+                                  institutionId: institution.id,
+                                })
+                                return result.linkToken
+                              }}
+                              exchangePublicTokenAction={async args => {
+                                return await exchangeUpdateModeToken({
+                                  publicToken: args.publicToken,
+                                  institutionId: institution.id,
+                                })
+                              }}
+                              onSuccess={handleReconnectSuccess}
+                              onError={handleReconnectError}
+                              isLoading={
+                                reconnectingInstitutionId === institution.id
+                              }
+                              setIsLoading={loading =>
+                                setReconnectingInstitutionId(
+                                  loading ? institution.id : null,
+                                )
+                              }
+                              isUpdateMode={true}
                             />
-                          ) : (
-                            <CreditCard className='h-4 w-4 text-foreground' />
-                          )}
-                        </div>
-                        <div className='flex-1 overflow-hidden'>
-                          <p className='truncate text-sm font-light'>
-                            {institution.institutionName}
-                            {/* Show spinner if this institution is the one being synced */}
-                            {syncingInstitutionId === institution.id && (
-                              <CircleNotch
-                                className='ml-2 inline h-4 w-4 animate-spin text-muted-foreground'
-                                aria-label='Syncing...'
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      <div className='flex items-center justify-between'>
+                        <div className='flex flex-1 items-center gap-3 overflow-hidden pr-2'>
+                          <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted p-1'>
+                            {/* Use logo if available, otherwise default icon */}
+                            {institution.logo ? (
+                              <img
+                                src={`data:image/png;base64,${institution.logo}`}
+                                alt={`${institution.institutionName} logo`}
+                                className='h-full w-full object-contain'
                               />
+                            ) : (
+                              <CreditCard className='h-4 w-4 text-foreground' />
                             )}
-                          </p>
-                          <p className='text-xs text-zinc-400'>
-                            {institution.accounts.length} account(s) linked
-                          </p>
+                          </div>
+                          <div className='flex-1 overflow-hidden'>
+                            <p className='truncate text-sm font-light'>
+                              {institution.institutionName}
+                              {/* Show spinner if this institution is busy (syncing or reconnecting) */}
+                              {isBusy && (
+                                <CircleNotch
+                                  className='ml-2 inline h-4 w-4 animate-spin text-muted-foreground'
+                                  aria-label='Processing...'
+                                />
+                              )}
+                            </p>
+                            <p className='text-xs text-zinc-400'>
+                              {institution.accounts.length} account(s) linked
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      {/* Action Buttons - Hide if syncing */}
-                      {syncingInstitutionId !== institution.id && (
-                        <div className='flex gap-1'>
-                          {/* Manage Accounts Button */}
-                          <Button
-                            variant='ghost'
-                            size='icon'
-                            className='flex-shrink-0 text-muted-foreground hover:bg-muted hover:text-foreground'
-                            onClick={() =>
-                              setManageAccountsInstitutionId(institution.id)
-                            }
-                            disabled={!!syncingInstitutionId}
-                          >
-                            <Gear />
-                          </Button>
-                          {/* Delete Button Trigger */}
-                          <AlertDialogTrigger asChild>
+                        {/* Action Buttons - Hide if busy (syncing or reconnecting) */}
+                        {!isBusy && (
+                          <div className='flex gap-1'>
+                            {/* Manage Accounts Button */}
                             <Button
                               variant='ghost'
                               size='icon'
-                              className='flex-shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive'
+                              className='flex-shrink-0 text-muted-foreground hover:bg-muted hover:text-foreground'
                               onClick={() =>
-                                setInstitutionToDelete(institution.id)
+                                setManageAccountsInstitutionId(institution.id)
                               }
-                              disabled={!!syncingInstitutionId} // Also disable if any sync is happening
+                              disabled={
+                                !!syncingInstitutionId ||
+                                !!reconnectingInstitutionId
+                              }
                             >
-                              <X />
+                              <Gear />
                             </Button>
-                          </AlertDialogTrigger>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
+                            {/* Delete Button Trigger */}
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant='ghost'
+                                size='icon'
+                                className='flex-shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive'
+                                onClick={() =>
+                                  setInstitutionToDelete(institution.id)
+                                }
+                                disabled={
+                                  !!syncingInstitutionId ||
+                                  !!reconnectingInstitutionId
+                                }
+                              >
+                                <X />
+                              </Button>
+                            </AlertDialogTrigger>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )
+                })}
               </div>
 
               {/* Remove Manage accounts button for now, can be added later */}
@@ -475,9 +496,10 @@ export function PlaidIntegration({
                 </div>
                 <Switch
                   checked={account.isTracked}
-                  onCheckedChange={() =>
-                    handleToggleAccount(account.id, account.isTracked)
+                  onCheckedChange={checked =>
+                    handleToggleAccount(account.id, checked)
                   }
+                  disabled={!!togglingAccountId}
                 />
               </div>
             ))}

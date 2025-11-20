@@ -248,97 +248,100 @@ export function TransactionsList({
                 }}
                 style={{
                   willChange: 'height, opacity',
-                  transform: 'translateZ(0)'
+                  transform: 'translateZ(0)',
                 }}
               >
                 <div className='space-y-2 p-1'>
-              {group.transactions.map((transaction, index) => {
-                const TransactionIcon = getCategoryIcon(
-                  transaction.category?.[0],
-                )
-                const prettyCategory = getPrettyCategoryName(
-                  transaction.category?.[0] ?? 'Uncategorized',
-                )
-                const categoryColorVar = getCategoryCssVariable(prettyCategory)
+                  {group.transactions.map((transaction, index) => {
+                    const TransactionIcon = getCategoryIcon(
+                      transaction.category?.[0],
+                    )
+                    const prettyCategory = getPrettyCategoryName(
+                      transaction.category?.[0] ?? 'Uncategorized',
+                    )
+                    const categoryColorVar =
+                      getCategoryCssVariable(prettyCategory)
 
-                const displayTime = formatTransactionDisplayDate(
-                  transaction.date,
-                )
+                    const displayTime = formatTransactionDisplayDate(
+                      transaction.date,
+                    )
 
-                return (
-                  <div
-                    key={transaction.id}
-                    className='flex cursor-pointer items-center justify-between gap-2 rounded-md p-2 hover:bg-muted'
-                    onClick={() => onTransactionClick(transaction)}
-                  >
-                    <div className='flex flex-1 items-center gap-3 overflow-hidden'>
+                    return (
                       <div
-                        className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full'
-                        style={{ backgroundColor: `var(${categoryColorVar})` }}
+                        key={transaction.id}
+                        className='flex cursor-pointer items-center justify-between gap-2 rounded-md p-2 hover:bg-muted'
+                        onClick={() => onTransactionClick(transaction)}
                       >
-                        <TransactionIcon className='h-5 w-5 text-background' />
-                      </div>
-                      <div className='flex-1 overflow-hidden'>
-                        <p className='truncate text-sm font-light'>
-                          {transaction.merchantName ?? transaction.name}
-                        </p>
-                        <div className='flex items-center gap-1.5'>
-                          <p className='truncate text-xs text-muted-foreground'>
-                            {prettyCategory}
-                          </p>
-                          <div className='h-1 w-1 flex-shrink-0 rounded-full bg-muted-foreground'></div>
-                          <p className='flex-shrink-0 text-xs text-muted-foreground'>
-                            {displayTime}
-                          </p>
+                        <div className='flex flex-1 items-center gap-3 overflow-hidden'>
+                          <div
+                            className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full'
+                            style={{
+                              backgroundColor: `var(${categoryColorVar})`,
+                            }}
+                          >
+                            <TransactionIcon className='h-5 w-5 text-background' />
+                          </div>
+                          <div className='flex-1 overflow-hidden'>
+                            <p className='truncate text-sm font-light'>
+                              {transaction.merchantName ?? transaction.name}
+                            </p>
+                            <div className='flex items-center gap-1.5'>
+                              <p className='truncate text-xs text-muted-foreground'>
+                                {prettyCategory}
+                              </p>
+                              <div className='h-1 w-1 flex-shrink-0 rounded-full bg-muted-foreground'></div>
+                              <p className='flex-shrink-0 text-xs text-muted-foreground'>
+                                {displayTime}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className='flex flex-col items-end'>
+                          {(() => {
+                            // Plaid convention: positive = expense (OUT), negative = income (IN)
+                            const isExpense = transaction.amount > 0
+                            const sign = isExpense ? '-' : '+'
+                            const amountClass = isExpense
+                              ? 'text-red-500'
+                              : 'text-green-500'
+
+                            return (
+                              <p
+                                className={cn(
+                                  'whitespace-nowrap text-sm font-light',
+                                  amountClass,
+                                )}
+                              >
+                                {sign}$
+                                {Math.abs(transaction.amount).toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  },
+                                )}
+                              </p>
+                            )
+                          })()}
+
+                          <div className='flex items-center gap-1 text-xs text-muted-foreground'>
+                            <span className='hidden sm:inline'>
+                              {transaction.account.institution.institutionName}
+                            </span>
+                            <span className='hidden sm:inline'>•</span>
+                            <span>{transaction.account.name}</span>
+                            {transaction.account.institution.logo && (
+                              <img
+                                src={`data:image/png;base64,${transaction.account.institution.logo}`}
+                                alt=''
+                                className='ml-1 h-3 w-3 rounded-full object-contain'
+                              />
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className='flex flex-col items-end'>
-                      {(() => {
-                        // Plaid convention: positive = expense (OUT), negative = income (IN)
-                        const isExpense = transaction.amount > 0
-                        const sign = isExpense ? '-' : '+'
-                        const amountClass = isExpense
-                          ? 'text-red-500'
-                          : 'text-green-500'
-
-                        return (
-                          <p
-                            className={cn(
-                              'whitespace-nowrap text-sm font-light',
-                              amountClass,
-                            )}
-                          >
-                            {sign}$
-                            {Math.abs(transaction.amount).toLocaleString(
-                              undefined,
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              },
-                            )}
-                          </p>
-                        )
-                      })()}
-
-                      <div className='flex items-center gap-1 text-xs text-muted-foreground'>
-                        <span className='hidden sm:inline'>
-                          {transaction.account.institution.institutionName}
-                        </span>
-                        <span className='hidden sm:inline'>•</span>
-                        <span>{transaction.account.name}</span>
-                        {transaction.account.institution.logo && (
-                          <img
-                            src={`data:image/png;base64,${transaction.account.institution.logo}`}
-                            alt=''
-                            className='ml-1 h-3 w-3 rounded-full object-contain'
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+                    )
+                  })}
                 </div>
               </motion.div>
             )}

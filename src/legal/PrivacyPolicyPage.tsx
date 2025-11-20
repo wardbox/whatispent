@@ -91,7 +91,9 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-light'>3. How We Use Your Information</h2>
+          <h2 className='text-2xl font-light'>
+            3. How We Use Your Information
+          </h2>
           <p>We use the collected information for the following purposes:</p>
           <ul>
             <li>

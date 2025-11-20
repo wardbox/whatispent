@@ -255,7 +255,9 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-light'>8. Privacy and Data Protection</h2>
+          <h2 className='text-2xl font-light'>
+            8. Privacy and Data Protection
+          </h2>
           <p>
             Your privacy is important to us. Our collection and use of your
             information is governed by our{' '}
@@ -278,7 +280,9 @@ export default function TermsOfServicePage() {
         </section>
 
         <section>
-          <h2 className='text-2xl font-light'>9. Disclaimers and Limitations</h2>
+          <h2 className='text-2xl font-light'>
+            9. Disclaimers and Limitations
+          </h2>
 
           <h3 className='text-xl font-light'>9.1 No Financial Advice</h3>
           <p>
@@ -354,9 +358,11 @@ export default function TermsOfServicePage() {
 
           <h3 className='text-xl font-light'>11.1 By You</h3>
           <p>
-            You may terminate your account at any time by using the account
-            deletion feature in your Profile settings. This will permanently
-            delete all your data.
+            You may initiate account deletion at any time by using the account
+            deletion feature in your Profile settings. Account deletion is
+            subject to our Privacy Policy's retention and grace-period
+            procedures, which may include a grace period (such as 30 days) and
+            retention windows for backups and system logs.
           </p>
 
           <h3 className='text-xl font-light'>11.2 By Us</h3>

@@ -127,7 +127,12 @@ export const createUpdateModeLinkToken = (async (
     // Fetch the institution and verify ownership
     const institution = await context.entities.Institution.findUnique({
       where: { id: args.institutionId },
-      select: { id: true, userId: true, accessToken: true, institutionName: true },
+      select: {
+        id: true,
+        userId: true,
+        accessToken: true,
+        institutionName: true,
+      },
     })
 
     if (!institution) {
@@ -135,7 +140,10 @@ export const createUpdateModeLinkToken = (async (
     }
 
     if (institution.userId !== context.user.id) {
-      throw new HttpError(403, 'You do not have permission to access this institution')
+      throw new HttpError(
+        403,
+        'You do not have permission to access this institution',
+      )
     }
 
     // Verify accessToken exists before attempting to decrypt
@@ -147,9 +155,14 @@ export const createUpdateModeLinkToken = (async (
     const decryptedAccessToken = decrypt(institution.accessToken)
 
     // Create link token in Update Mode
-    const linkToken = await _internalCreateLinkToken(context.user.id, decryptedAccessToken)
+    const linkToken = await _internalCreateLinkToken(
+      context.user.id,
+      decryptedAccessToken,
+    )
 
-    console.log(`Created Update Mode link token for institution ${institution.institutionName}`)
+    console.log(
+      `Created Update Mode link token for institution ${institution.institutionName}`,
+    )
 
     return { linkToken }
   } catch (error: any) {
@@ -161,7 +174,10 @@ export const createUpdateModeLinkToken = (async (
 
     throw new HttpError(500, 'Failed to create Update Mode link token')
   }
-}) satisfies CreateUpdateModeLinkToken<CreateUpdateModeLinkTokenPayload, CreateUpdateModeLinkTokenResult>
+}) satisfies CreateUpdateModeLinkToken<
+  CreateUpdateModeLinkTokenPayload,
+  CreateUpdateModeLinkTokenResult
+>
 
 /**
  * Wasp Action: Exchanges a Plaid public token for an access token,
@@ -296,7 +312,10 @@ export const exchangeUpdateModeToken = (async (
     }
 
     if (institution.userId !== context.user.id) {
-      throw new HttpError(403, 'You do not have permission to update this institution')
+      throw new HttpError(
+        403,
+        'You do not have permission to update this institution',
+      )
     }
 
     // 2. Exchange the public token for a new access token
@@ -316,15 +335,22 @@ export const exchangeUpdateModeToken = (async (
       },
     })
 
-    console.log(`Successfully re-authenticated institution ${institution.institutionName}`)
+    console.log(
+      `Successfully re-authenticated institution ${institution.institutionName}`,
+    )
 
     // 4. Trigger immediate sync to refresh data after re-authentication
     try {
       await syncTransactions({ institutionId: args.institutionId }, context)
-      console.log(`Triggered immediate sync after re-authentication for institution ${institution.institutionName}`)
+      console.log(
+        `Triggered immediate sync after re-authentication for institution ${institution.institutionName}`,
+      )
     } catch (syncError: any) {
       // Log sync error but don't fail the re-authentication
-      console.error(`Failed to sync after re-authentication for institution ${args.institutionId}:`, syncError.message)
+      console.error(
+        `Failed to sync after re-authentication for institution ${args.institutionId}:`,
+        syncError.message,
+      )
     }
 
     return {
@@ -337,10 +363,7 @@ export const exchangeUpdateModeToken = (async (
       throw error
     }
 
-    throw new HttpError(
-      500,
-      'Failed to update institution credentials',
-    )
+    throw new HttpError(500, 'Failed to update institution credentials')
   }
 }) satisfies ExchangeUpdateModeToken<
   ExchangeUpdateModeTokenPayload,
@@ -765,9 +788,7 @@ export const deleteInstitution = (async (
         `Failed to remove Plaid item for institution ${institutionId}:`,
         plaidError.response?.data || plaidError.message,
       )
-      console.warn(
-        'Continuing with database deletion despite Plaid API error',
-      )
+      console.warn('Continuing with database deletion despite Plaid API error')
     }
   }
 
@@ -1165,7 +1186,13 @@ export const getAllTransactions = (async (args, context) => {
 // Update the result type to include accounts, logo, status, and errorCode
 type GetInstitutionsResult = (Pick<
   Institution,
-  'id' | 'institutionName' | 'lastSync' | 'plaidInstitutionId' | 'logo' | 'status' | 'errorCode'
+  | 'id'
+  | 'institutionName'
+  | 'lastSync'
+  | 'plaidInstitutionId'
+  | 'logo'
+  | 'status'
+  | 'errorCode'
 > & {
   accounts: Pick<
     Account,

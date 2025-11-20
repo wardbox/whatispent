@@ -22,7 +22,7 @@ export function PlaidConsentDialog({
   isUpdateMode = false,
 }: PlaidConsentDialogProps) {
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onDecline()}>
+    <Dialog open={isOpen} onOpenChange={open => !open && onDecline()}>
       <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-[500px]'>
         <DialogHeader>
           <DialogTitle>
@@ -72,7 +72,9 @@ export function PlaidConsentDialog({
               </li>
               <li className='flex items-start gap-2'>
                 <span className='mt-0.5'>•</span>
-                <span>Display your account balances and transaction history</span>
+                <span>
+                  Display your account balances and transaction history
+                </span>
               </li>
               <li className='flex items-start gap-2'>
                 <span className='mt-0.5'>•</span>
@@ -116,11 +118,7 @@ export function PlaidConsentDialog({
           >
             Cancel
           </Button>
-          <Button
-            type='button'
-            onClick={onAccept}
-            className='w-full sm:w-auto'
-          >
+          <Button type='button' onClick={onAccept} className='w-full sm:w-auto'>
             {isUpdateMode ? 'Continue to Reconnect' : 'Continue to Connect'}
           </Button>
         </DialogFooter>

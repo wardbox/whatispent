@@ -106,10 +106,9 @@ const Profile = ({ user }: { user: AuthUser }) => {
       variants={fadeIn}
       className='mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:px-8'
     >
-      <h1 className='text-4xl font-thin tracking-tight'>Profile</h1>
-      <p className='text-lg text-muted-foreground'>
+      <h1 className='text-4xl font-light tracking-tight'>
         {greeting}, {user?.username || 'there'}!
-      </p>
+      </h1>
       <div className='space-y-6 rounded-lg border bg-card p-6 text-card-foreground shadow-sm'>
         <div className='space-y-2'>
           <p className='text-sm font-medium text-muted-foreground'>Email</p>
@@ -131,8 +130,6 @@ const Profile = ({ user }: { user: AuthUser }) => {
       </div>
 
       <div className='space-y-6 rounded-lg border bg-card p-6 text-card-foreground shadow-sm'>
-        <h2 className='text-2xl font-thin tracking-tight'>Data & Privacy</h2>
-
         <div className='space-y-4'>
           <div className='space-y-2'>
             <p className='text-sm font-medium'>Export Your Data</p>
