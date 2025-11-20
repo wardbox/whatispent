@@ -398,7 +398,7 @@ export default function TermsOfServicePage() {
           <h3 className='text-xl font-thin'>12.1 Governing Law</h3>
           <p>
             These Terms are governed by and construed in accordance with the
-            laws of [Your State/Country], without regard to conflict of law
+            laws of Washington, USA, without regard to conflict of law
             principles.
           </p>
 

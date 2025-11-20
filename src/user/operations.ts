@@ -90,7 +90,7 @@ export const deleteUserAccount = (async (_args, context) => {
     return { success: true }
   } catch (error: any) {
     console.error('Error deleting user account:', error)
-    throw new HttpError(500, `Failed to delete account: ${error.message}`)
+    throw new HttpError(500, 'Failed to delete account')
   }
 }) satisfies DeleteUserAccount
 
@@ -175,6 +175,6 @@ export const exportUserData = (async (_args, context) => {
     return exportData
   } catch (error: any) {
     console.error('Error exporting user data:', error)
-    throw new HttpError(500, `Failed to export data: ${error.message}`)
+    throw new HttpError(500, 'Failed to export data')
   }
 }) satisfies ExportUserData

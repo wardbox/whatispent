@@ -74,11 +74,24 @@ async function verifyPlaidWebhook(
       return false
     }
 
-    // Step 6: Verify body hash matches
+    // Step 6: Verify body hash matches (using constant-time comparison to prevent timing attacks)
+    // Note: The request body must be normalized exactly as Plaid sent it (canonical JSON, no extra whitespace)
+    // for the computed hash to match Plaid's signature
     const bodyHash = crypto.createHash('sha256').update(body).digest('hex')
     const claimedHash = payload.request_body_sha256 as string
 
-    if (bodyHash !== claimedHash) {
+    // Convert to buffers for constant-time comparison
+    const bodyHashBuffer = Buffer.from(bodyHash, 'hex')
+    const claimedHashBuffer = Buffer.from(claimedHash, 'hex')
+
+    // Ensure same length before comparison (timingSafeEqual requires equal lengths)
+    if (bodyHashBuffer.length !== claimedHashBuffer.length) {
+      console.error('Webhook body hash length mismatch')
+      return false
+    }
+
+    // Use constant-time comparison to prevent timing attacks
+    if (!crypto.timingSafeEqual(bodyHashBuffer, claimedHashBuffer)) {
       console.error('Webhook body hash mismatch')
       return false
     }

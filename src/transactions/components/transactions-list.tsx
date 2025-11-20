@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import dayjs from 'dayjs'
-import { motion } from 'motion/react'
+import { motion, AnimatePresence } from 'motion/react'
 import {
   getPrettyCategoryName,
   getCategoryIcon,
@@ -235,14 +235,23 @@ export function TransactionsList({
             </div>
           </div>
 
-          {expandedGroup.has(group.id) && (
-            <motion.div
-              className='space-y-2 overflow-hidden rounded-xl border border-border bg-background p-1'
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-            >
+          <AnimatePresence initial={false}>
+            {expandedGroup.has(group.id) && (
+              <motion.div
+                className='overflow-hidden rounded-xl border border-border bg-background'
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                transition={{
+                  duration: 0.15,
+                  ease: [0.32, 0.72, 0, 1],
+                }}
+                style={{
+                  willChange: 'height, opacity',
+                  transform: 'translateZ(0)'
+                }}
+              >
+                <div className='space-y-2 p-1'>
               {group.transactions.map((transaction, index) => {
                 const TransactionIcon = getCategoryIcon(
                   transaction.category?.[0],
@@ -257,12 +266,9 @@ export function TransactionsList({
                 )
 
                 return (
-                  <motion.div
+                  <div
                     key={transaction.id}
                     className='flex cursor-pointer items-center justify-between gap-2 rounded-md p-2 hover:bg-muted'
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 * index, duration: 0.3 }}
                     onClick={() => onTransactionClick(transaction)}
                   >
                     <div className='flex flex-1 items-center gap-3 overflow-hidden'>
@@ -330,11 +336,13 @@ export function TransactionsList({
                         )}
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 )
               })}
-            </motion.div>
-          )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       ))}
       {totalPages > 1 && (
