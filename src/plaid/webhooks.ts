@@ -94,7 +94,24 @@ async function verifyPlaidWebhook(
     // Note: The request body must be normalized exactly as Plaid sent it (canonical JSON, no extra whitespace)
     // for the computed hash to match Plaid's signature
     const bodyHash = crypto.createHash('sha256').update(body).digest('hex')
-    const claimedHash = payload.request_body_sha256 as string
+
+    // Validate the claimed hash from JWT payload
+    const claimedHash = payload.request_body_sha256
+
+    if (typeof claimedHash !== 'string') {
+      console.error(
+        `Webhook JWT missing or invalid request_body_sha256 claim: ${typeof claimedHash}`,
+      )
+      return false
+    }
+
+    // Verify it's a valid 64-character hex SHA-256 digest
+    if (!/^[0-9a-f]{64}$/i.test(claimedHash)) {
+      console.error(
+        `Webhook JWT request_body_sha256 claim is not a valid SHA-256 hex digest: ${claimedHash}`,
+      )
+      return false
+    }
 
     // Convert to buffers for constant-time comparison
     const bodyHashBuffer = Buffer.from(bodyHash, 'hex')
@@ -132,7 +149,7 @@ export async function handlePlaidWebhook(
 
   // Verify webhook JWT signature
   const jwtToken = req.headers['plaid-verification'] as string
-  const rawBody = (req as any).rawBody || JSON.stringify(req.body)
+  const rawBody = (req as any).rawBody ?? JSON.stringify(req.body)
 
   if (!jwtToken) {
     console.error('Missing Plaid-Verification header')
