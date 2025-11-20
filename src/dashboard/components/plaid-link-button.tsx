@@ -190,7 +190,13 @@ export const PlaidLinkButton: React.FC<PlaidLinkButtonProps> = ({
       disabled={isButtonDisabled}
     >
       {isLoading ? (
-        <CircleNotch className='h-4 w-4 animate-spin' /> // Show spinner when loading
+        <>
+          <CircleNotch
+            className='h-4 w-4 animate-spin'
+            aria-hidden='true'
+          />
+          <span className='sr-only'>{buttonText}</span>
+        </>
       ) : (
         buttonText // Show original text otherwise
       )}
