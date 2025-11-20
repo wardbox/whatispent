@@ -586,11 +586,23 @@ async function _syncSingleInstitution(
     // Check if this is a Plaid error requiring re-authentication
     const errorCode = error.response?.data?.error_code || error.error_code
     const requiresReauth = [
+      // Primary re-authentication errors
       'ITEM_LOGIN_REQUIRED',
       'ITEM_LOCKED',
-      'ITEM_NOT_SUPPORTED',
       'INVALID_CREDENTIALS',
+      'INVALID_MFA',
+      'ACCESS_NOT_GRANTED',
+      'NO_AUTH_ACCOUNTS',
+      'USER_SETUP_REQUIRED',
+      'PASSWORD_RESET_REQUIRED',
+      'MANUAL_VERIFICATION_REQUIRED',
+      // Secondary authentication errors
       'INSUFFICIENT_CREDENTIALS',
+      'INVALID_UPDATED_USERNAME',
+      'INVALID_OTP',
+      'INVALID_PHONE_NUMBER',
+      // Account/Item status errors
+      'ITEM_NOT_SUPPORTED',
       'MFA_NOT_SUPPORTED',
       'NO_ACCOUNTS',
       'INSTITUTION_NO_LONGER_SUPPORTED',

@@ -187,7 +187,9 @@ export function PlaidIntegration({
 
   // Handle successful reconnection
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleReconnectSuccess = async (_result: ExchangeResult | undefined) => {
+  const handleReconnectSuccess = async (
+    _result: ExchangeResult | undefined,
+  ) => {
     setReconnectingInstitutionId(null)
     try {
       await refetch()

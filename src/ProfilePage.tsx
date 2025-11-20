@@ -86,14 +86,18 @@ const Profile = ({ user }: { user: AuthUser }) => {
       })
 
       // Log out and redirect to landing page
-      await logout()
-      navigate('/')
+      try {
+        await logout()
+      } finally {
+        navigate('/')
+      }
     } catch (error: any) {
       toast({
         title: 'Deletion failed',
         description: error.message || 'Failed to delete your account',
         variant: 'destructive',
       })
+    } finally {
       setIsDeleting(false)
     }
   }
