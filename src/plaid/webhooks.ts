@@ -83,7 +83,7 @@ export async function handlePlaidWebhook(
           import('./operations.js').then(({ syncTransactions }) => {
             syncTransactions({ institutionId: institution.id }, {
               user: { id: institution.userId },
-              entities: { Institution: prisma.institution },
+              entities: prisma,
             } as any).catch(error => {
               console.error(
                 `Error syncing transactions for institution ${institution.id}:`,
