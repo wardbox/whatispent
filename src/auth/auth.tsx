@@ -53,6 +53,18 @@ export function Signup() {
         <SignupForm appearance={authAppearance} />
       </div>
       <br />
+      <span className='login-text text-xs text-muted-foreground'>
+        By signing up, you agree to our{' '}
+        <Link to='/terms' className='underline hover:text-foreground'>
+          Terms of Service
+        </Link>{' '}
+        and{' '}
+        <Link to='/privacy' className='underline hover:text-foreground'>
+          Privacy Policy
+        </Link>
+        .
+      </span>
+      <br />
       <span className='login-text text-sm font-medium'>
         I already have an account (
         <Link to='/login' className='underline'>

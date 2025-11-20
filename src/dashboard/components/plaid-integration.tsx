@@ -376,35 +376,36 @@ export function PlaidIntegration({
             </DialogDescription>
           </DialogHeader>
           <div className='space-y-4 py-4'>
-            {(institutions
-              ?.find(inst => inst.id === manageAccountsInstitutionId)
-              ?.accounts ?? []
+            {(
+              institutions?.find(
+                inst => inst.id === manageAccountsInstitutionId,
+              )?.accounts ?? []
             ).map(account => (
-                <div
-                  key={account.id}
-                  className='flex items-center justify-between rounded-lg border border-border p-4'
-                >
-                  <div className='flex-1'>
-                    <div className='flex items-center gap-2'>
-                      <p className='text-sm font-medium'>{account.name}</p>
-                      {account.mask && (
-                        <span className='text-xs text-muted-foreground'>
-                          ••{account.mask}
-                        </span>
-                      )}
-                    </div>
-                    <p className='text-xs text-muted-foreground'>
-                      {account.type} • {account.subtype}
-                    </p>
+              <div
+                key={account.id}
+                className='flex items-center justify-between rounded-lg border border-border p-4'
+              >
+                <div className='flex-1'>
+                  <div className='flex items-center gap-2'>
+                    <p className='text-sm font-medium'>{account.name}</p>
+                    {account.mask && (
+                      <span className='text-xs text-muted-foreground'>
+                        ••{account.mask}
+                      </span>
+                    )}
                   </div>
-                  <Switch
-                    checked={account.isTracked}
-                    onCheckedChange={() =>
-                      handleToggleAccount(account.id, account.isTracked)
-                    }
-                  />
+                  <p className='text-xs text-muted-foreground'>
+                    {account.type} • {account.subtype}
+                  </p>
                 </div>
-              ))}
+                <Switch
+                  checked={account.isTracked}
+                  onCheckedChange={() =>
+                    handleToggleAccount(account.id, account.isTracked)
+                  }
+                />
+              </div>
+            ))}
           </div>
         </DialogContent>
       </Dialog>

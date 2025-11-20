@@ -37,6 +37,10 @@ const navigation = {
     { name: 'Transactions', href: '/transactions' },
     { name: 'Subscription', href: '/subscription' },
   ],
+  legal: [
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Terms of Service', href: '/terms' },
+  ],
   social: [
     {
       name: 'GitHub',
@@ -104,6 +108,26 @@ export function Footer() {
               ))}
             </nav>
           </div>
+
+          {/* Legal Links - Mobile */}
+          <div className='flex flex-wrap gap-3 border-t pt-3 text-xs'>
+            {navigation.legal.map(item => (
+              <ScrollToTopLink
+                key={item.name}
+                to={item.href}
+                className='text-muted-foreground transition-colors hover:text-foreground'
+              >
+                {item.name}
+              </ScrollToTopLink>
+            ))}
+            <span className='text-muted-foreground'>•</span>
+            <a
+              href='mailto:support@whatispent.com'
+              className='text-muted-foreground transition-colors hover:text-foreground'
+            >
+              Support
+            </a>
+          </div>
         </div>
 
         {/* Desktop Layout */}
@@ -134,8 +158,29 @@ export function Footer() {
             </nav>
           </div>
 
-          {/* Social & Copyright */}
+          {/* Social, Legal & Copyright */}
           <div className='flex items-center gap-6'>
+            {/* Legal Links */}
+            <nav className='flex gap-3 text-xs' aria-label='Legal'>
+              {navigation.legal.map(item => (
+                <ScrollToTopLink
+                  key={item.name}
+                  to={item.href}
+                  className='text-muted-foreground transition-colors hover:text-foreground'
+                >
+                  {item.name}
+                </ScrollToTopLink>
+              ))}
+              <span className='text-muted-foreground'>•</span>
+              <a
+                href='mailto:support@whatispent.com'
+                className='text-muted-foreground transition-colors hover:text-foreground'
+              >
+                Support
+              </a>
+            </nav>
+
+            {/* Social Icons */}
             <div className='flex gap-4'>
               {navigation.social.map(item => (
                 <a
@@ -154,6 +199,8 @@ export function Footer() {
                 </a>
               ))}
             </div>
+
+            {/* Copyright */}
             <p className='text-xs text-muted-foreground'>
               &copy; {new Date().getFullYear()} what i spent
             </p>

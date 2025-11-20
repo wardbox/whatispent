@@ -606,7 +606,7 @@ export const getSpendingSummary: GetSpendingSummary<
         gte: startOfLastMonth.toDate(), // Fetch data needed for comparisons
       },
       amount: {
-        gt: 0, // Expenses are positive amounts (Plaid sandbox behavior)
+        gt: 0, // Only expenses (Plaid convention: positive = OUT, negative = IN)
       },
       pending: false,
       account: {
@@ -630,8 +630,8 @@ export const getSpendingSummary: GetSpendingSummary<
   // Aggregate amounts into periods
   transactions.forEach(tx => {
     const txDate = dayjs.utc(tx.date)
-    // Plaid amounts are negative for expenses, so use absolute value
-    const amount = Math.abs(tx.amount)
+    // Amount is already positive (we filtered for expenses only)
+    const amount = tx.amount
 
     // Check this month vs last month
     if (txDate.isBetween(startOfMonth, endOfMonth, null, '[]')) {
@@ -736,7 +736,7 @@ export const getMonthlySpending: GetMonthlySpending<
         gte: startDate,
       },
       amount: {
-        gt: 0, // Expenses are positive amounts (Plaid sandbox behavior)
+        gt: 0, // Only expenses (Plaid convention: positive = OUT, negative = IN)
       },
       pending: false,
       account: {
@@ -756,8 +756,8 @@ export const getMonthlySpending: GetMonthlySpending<
 
   transactions.forEach(tx => {
     const periodKey = dayjs.utc(tx.date).format(periodFormat)
-    const amount = Math.abs(tx.amount)
-    periodTotals[periodKey] = (periodTotals[periodKey] || 0) + amount
+    // Amount is already positive (we filtered for expenses only)
+    periodTotals[periodKey] = (periodTotals[periodKey] || 0) + tx.amount
   })
 
   const result: MonthlySpendingEntry[] = []
@@ -814,7 +814,7 @@ export const getCategorySpending: GetCategorySpending<
         lte: endDate,
       },
       amount: {
-        gt: 0, // Expenses are positive amounts (Plaid sandbox behavior)
+        gt: 0, // Only expenses (Plaid convention: positive = OUT, negative = IN)
       },
       pending: false,
       account: {
@@ -837,9 +837,9 @@ export const getCategorySpending: GetCategorySpending<
   transactions.forEach(tx => {
     const primaryCategory = tx.category[0]
     if (primaryCategory) {
-      const amount = Math.abs(tx.amount)
+      // Amount is already positive (we filtered for expenses only)
       categoryTotals[primaryCategory] =
-        (categoryTotals[primaryCategory] || 0) + amount
+        (categoryTotals[primaryCategory] || 0) + tx.amount
     }
   })
 

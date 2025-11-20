@@ -289,7 +289,8 @@ export function TransactionsList({
                     </div>
                     <div className='flex flex-col items-end'>
                       {(() => {
-                        const isExpense = transaction.amount < 0
+                        // Plaid convention: positive = expense (OUT), negative = income (IN)
+                        const isExpense = transaction.amount > 0
                         const sign = isExpense ? '-' : '+'
                         const amountClass = isExpense
                           ? 'text-red-500'
