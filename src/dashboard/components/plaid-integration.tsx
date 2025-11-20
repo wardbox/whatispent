@@ -376,9 +376,10 @@ export function PlaidIntegration({
             </DialogDescription>
           </DialogHeader>
           <div className='space-y-4 py-4'>
-            {institutions
+            {(institutions
               ?.find(inst => inst.id === manageAccountsInstitutionId)
-              ?.accounts.map(account => (
+              ?.accounts ?? []
+            ).map(account => (
                 <div
                   key={account.id}
                   className='flex items-center justify-between rounded-lg border border-border p-4'
