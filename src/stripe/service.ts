@@ -6,7 +6,10 @@ import stripe from './client.js'
 // Import Prisma types if needed for the delegate type
 import { type PrismaClient } from '@prisma/client'
 
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000' // Default for development
+const CLIENT_URL =
+  process.env.WASP_WEB_CLIENT_URL ||
+  process.env.CLIENT_URL ||
+  'http://localhost:3000'
 
 async function _findOrCreateStripeCustomer(
   user: User,

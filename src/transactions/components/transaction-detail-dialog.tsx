@@ -30,13 +30,14 @@ export function TransactionDetailDialog({
   const TransactionIcon = getCategoryIcon(transaction.category?.[0])
   const formattedDate = formatDateUTC(transaction.date)
   const formattedTime = formatTimeLocal(transaction.date)
-  const amountColor =
-    transaction.amount < 0 ? 'text-green-500' : 'text-foreground' // Plaid expenses are positive
-  const amountSign = transaction.amount < 0 ? '+' : '-'
+  // Plaid convention: positive = expense (OUT), negative = income (IN)
+  const isExpense = transaction.amount > 0
+  const amountColor = isExpense ? 'text-red-500' : 'text-green-500'
+  const amountSign = isExpense ? '-' : '+'
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} modal={false}>
-      <DialogContent className='sm:max-w-[425px]'>
+      <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-[425px]'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <TransactionIcon className='h-5 w-5' />

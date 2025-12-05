@@ -88,7 +88,7 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className='flex min-h-screen w-full flex-col bg-background'>
+    <div className='flex w-full flex-col bg-background'>
       <header className='sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-background/90 px-6 backdrop-blur-md'>
         <div className='flex items-center gap-2'>
           <Link to='/dashboard'>
